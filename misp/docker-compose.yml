@@ -16,7 +16,8 @@ services:
       - "SMARTHOST_USER=${SMARTHOST_USER}"
       - "SMARTHOST_PASSWORD=${SMARTHOST_PASSWORD}"
       - "SMARTHOST_ALIASES=${SMARTHOST_ALIASES}"
-
+    networks:
+      - cti-net
   redis:
     image: valkey/valkey:7.2
     restart: always
@@ -47,7 +48,8 @@ services:
       start_interval: 5s
     volumes:
       - cache_data:/data:Z
-
+    networks:
+      - cti-net
   db:
     # We use MariaDB because it supports ARM and has the expected collations
     image: mariadb:10.11
@@ -77,7 +79,8 @@ services:
       retries: 3
       start_period: 30s
       start_interval: 5s
-
+    networks:
+      - cti-net
   misp-core:
     image: ghcr.io/misp/misp-docker/misp-core:${CORE_RUNNING_TAG:-latest}
     restart: always
@@ -308,7 +311,8 @@ services:
       - "CONTENT_SECURITY_POLICY=${CONTENT_SECURITY_POLICY}"
       # compose profiles
       - "COMPOSE_PROFILES=${COMPOSE_PROFILES}"
-
+    networks:
+      - cti-net 
   misp-modules:
     image: ghcr.io/misp/misp-docker/misp-modules:${MODULES_RUNNING_TAG:-latest}
     restart: always
@@ -331,7 +335,8 @@ services:
       - "./custom/expansion/:/custom/expansion/:Z"
       - "./custom/export_mod/:/custom/export_mod/:Z"
       - "./custom/import_mod/:/custom/import_mod/:Z"
-
+    networks:
+      - cti-net
   misp-guard:
     profiles:
       - misp-guard
@@ -358,7 +363,9 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-
+    networks:
+      - cti-net
+      
 volumes:
   mysql_data:
   cache_data:
