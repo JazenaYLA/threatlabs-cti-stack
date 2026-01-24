@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.8
@@ -8,12 +6,12 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
-      # Important for OpenCTI / heavy search workloads
+      - cluster.name=${ES_CLUSTER_NAME}
+      - node.name=${ES_NODE_NAME}
       - thread_pool.search.queue_size=5000
-      # Heap size (adjust to about 50% of host RAM, but stay <= 30G)
       - ES_JAVA_OPTS=-Xms${ES_HEAP_SIZE_GB} -Xmx${ES_HEAP_SIZE_GB}
     ports:
-      - "9200:9200"
+      - "${INFRA_ES_PORT}:9200"
     volumes:
       - ./vol/esdata:/usr/share/elasticsearch/data
     ulimits:
@@ -24,6 +22,20 @@ services:
         soft: 65536
         hard: 65536
     restart: unless-stopped
+    networks:
+      - cti-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.19.2
+    container_name: kibana-cti
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es-cti:9200
+      - SERVER_NAME=kibana-cti
+      - SERVER_PUBLICBASEURL=http://${INFRA_HOST}:${INFRA_KIBANA_PORT}
+    ports:
+      - "${INFRA_KIBANA_PORT}:5601"
+    depends_on:
+      - elasticsearch
     networks:
       - cti-net
 
