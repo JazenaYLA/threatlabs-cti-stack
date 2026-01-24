@@ -1,0 +1,142 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true                  # OK for lab; remove in production
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --log.level=WARN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"                          # Traefik dashboard
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - cti-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0  # Cortex 4 compatible
+    container_name: elasticsearch
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:9200:9200"
+    environment:
+      - http.host=0.0.0.0
+      - discovery.type=single-node
+      - cluster.name=hive
+      - script.allowed_types=inline           # removed stray space
+      - thread_pool.search.queue_size=100000
+      - thread_pool.write.queue_size=10000
+      - gateway.recover_after_nodes=1
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms4g -Xmx4g           # 256m was way too low for ES8
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./vol/elasticsearch/data:/usr/share/elasticsearch/data
+      - ./vol/elasticsearch/logs:/usr/share/elasticsearch/logs
+    networks:
+      - cti-net
+
+  cortex:
+    image: thehiveproject/cortex:4.0.0
+    container_name: cortex
+    restart: unless-stopped
+    command:
+      # JOB_DIRECTORY must be set in .env, e.g. /var/run/cortex/jobs
+      --job-directory "${JOB_DIRECTORY}"
+      --es-uri http://elasticsearch:9200
+    environment:
+      - job_directory=${JOB_DIRECTORY}
+      # if you don't fully disable security via image env, ensure ES8 works as expected
+    volumes:
+      - ./vol/cortex/application.conf:/etc/cortex/application.conf
+      - ${JOB_DIRECTORY}:${JOB_DIRECTORY}
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - elasticsearch
+    ports:
+      - "0.0.0.0:9001:9001"
+    networks:
+      - cti-net
+
+  postgres:
+    image: postgres:16
+    container_name: PostgresDB
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./vol/postgres/data:/var/lib/postgresql/data
+    networks:
+      - n8n-net
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}  # 32+ char random string
+      - N8N_HOST=n8n.local                       # or your real FQDN
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://n8n.local:5678/       # adjust to Traefik URL in prod
+    ports:
+      - "0.0.0.0:5678:5678"
+    volumes:
+      - ./vol/n8n/.n8n:/home/node/.n8n           # recommended path for recent n8n
+      - ./vol/n8n/workflows:/opt/workflows
+    networks:
+      - n8n-net
+      - cti-net
+    depends_on:
+      - postgres
+    command: n8n start
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.yourdomain.com`)"
+      - "traefik.http.routers.n8n.entrypoints=web"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  thehive:
+    image: thehiveproject/thehive4:latest
+    container_name: thehive4
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:9000:9000"
+    volumes:
+      - ./vol/thehive/application.conf:/etc/thehive/application.conf
+      - ./vol/thehive/db:/opt/thp/thehive/db
+      - ./vol/thehive/data:/opt/thp/thehive/data
+      - ./vol/thehive/index:/opt/thp/thehive/index
+    command: "--no-config --no-config-secret"
+    networks:
+      - cti-net
+
+networks:
+  cti-net:
+  n8n-net:
