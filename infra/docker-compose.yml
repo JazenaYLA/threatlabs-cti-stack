@@ -8,8 +8,10 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
+      # Important for OpenCTI / heavy search workloads
       - thread_pool.search.queue_size=5000
-      - ES_JAVA_OPTS=-Xms8g -Xmx8g
+      # Heap size (adjust to about 50% of host RAM, but stay <= 30G)
+      - ES_JAVA_OPTS=-Xms${ES_HEAP_SIZE_GB} -Xmx${ES_HEAP_SIZE_GB}
     ports:
       - "9200:9200"
     volumes:
