@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.6.1  # ← FIXED: Docker 29 compatible
     command:
       - --api.dashboard=true
       - --api.insecure=true
@@ -11,14 +11,13 @@ services:
       - --log.level=WARN
     ports:
       - "80:80"
-      - "443:443"
-      - "8080:8080"
+      - "8443:443"        # Avoid 443 clash if needed
+      - "9080:8080"       # Dashboard (safe from XTM)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - cti-net
     restart: always
-
   cortex:
     image: thehiveproject/cortex:4.0.0
     container_name: cortex-cti
@@ -50,7 +49,11 @@ services:
       - ./vol/postgres/data:/var/lib/postgresql/data
     networks:
       - cti-net
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n-cti
@@ -93,7 +96,7 @@ services:
       - "${THEHIVE_PORT:-9000}:9000"
     environment:
       - ES_HOSTS=es-cti:9200  # Existing ES container name
-      - CORTEX_URLS=[http://cortex-cti:9001](http://cortex-cti:9001)  # Internal
+      - CORTEX_URLS=http://cortex-cti:9001  # Internal
     depends_on:
       - cortex
     networks:
