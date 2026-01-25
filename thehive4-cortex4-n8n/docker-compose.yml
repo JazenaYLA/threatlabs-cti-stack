@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.6.1  # ← FIXED: Docker 29 compatible
+    image: traefik:v3.6.1  # Docker 29 fixed
     command:
       - --api.dashboard=true
       - --api.insecure=true
@@ -11,25 +11,54 @@ services:
       - --log.level=WARN
     ports:
       - "80:80"
-      - "8443:443"        # Avoid 443 clash if needed
-      - "9080:8080"       # Dashboard (safe from XTM)
+      - "8443:443"
+      - "9080:8080"  # Dashboard safe
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - cti-net
     restart: always
+
+  # Cassandra (NEW - replaces BerkeleyDB)
+  cassandra:
+    image: cassandra:4.1
+    container_name: thehive-cassandra
+    restart: unless-stopped
+    ports:
+      - "9042:9042"  # CQL port
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TheHive
+      - CASSANDRA_DC=dc1
+      - MAX_HEAP_SIZE=2G
+      - HEAP_NEWSIZE=800M
+    volumes:
+      - ./vol/cassandra/data:/var/lib/cassandra/data
+    networks:
+      - cti-net
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces;"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   cortex:
     image: thehiveproject/cortex:4.0.0
     container_name: cortex-cti
     restart: unless-stopped
     volumes:
       - ./vol/cortex/application.conf:/etc/cortex/application.conf:ro
-      - ${JOB_DIRECTORY}:/opt/cortex/jobs
+      - ${JOB_DIRECTORY:-/opt/cortex/jobs}:/opt/cortex/jobs
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "${CORTEX_PORT:-9001}:9001"
     environment:
       - job_directory=/opt/cortex/jobs
+      - es_uri=http://es-cti:9200  # Your shared ES
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      es-cti:
+        condition: service_healthy
     networks:
       - cti-net
     labels:
@@ -42,18 +71,18 @@ services:
     container_name: n8n-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER:-n8nuser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-n8npass123!}
+      - POSTGRES_DB=${POSTGRES_DB:-n8n}
     volumes:
       - ./vol/postgres/data:/var/lib/postgresql/data
     networks:
       - cti-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-n8nuser} -d ${POSTGRES_DB:-n8n}"]
       interval: 10s
-      timeout: 5s
       retries: 5
+
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n-cti
@@ -61,13 +90,13 @@ services:
     environment:
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
-      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
-      - DB_POSTGRESDB_USER=${POSTGRES_USER}
-      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-n8n}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER:-n8nuser}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD:-n8npass123!}
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
-      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8NBASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8NBASIC_AUTH_PASSWORD=${N8N_PASSWORD:-n8npass123!}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-SuperSecret32CharKeyForN8NEncryptionChangeThis!!!}
       - N8N_HOST=localhost
       - N8N_PORT=5678
       - WEBHOOK_URL=http://localhost:5678/
@@ -91,14 +120,17 @@ services:
     restart: unless-stopped
     volumes:
       - ./vol/thehive/application.conf:/etc/thehive/application.conf:ro
-      - ./vol/thehive/data:/opt/thp/thehive/data
     ports:
       - "${THEHIVE_PORT:-9000}:9000"
     environment:
-      - ES_HOSTS=es-cti:9200  # Existing ES container name
-      - CORTEX_URLS=http://cortex-cti:9001  # Internal
+      - CQL_HOSTNAMES=cassandra  # ← NEW Cassandra
+      - ES_HOSTS=es-cti:9200     # Your shared ES
+      - CORTEX_URLS=http://cortex-cti:9001
     depends_on:
-      - cortex
+      cassandra:
+        condition: service_healthy
+      cortex:
+        condition: service_healthy
     networks:
       - cti-net
     labels:
@@ -108,4 +140,4 @@ services:
 
 networks:
   cti-net:
-    external: true  # Joins OpenCTI/ES network
+    external: true
