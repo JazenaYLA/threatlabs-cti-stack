@@ -119,6 +119,10 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      openaev:
+        condition: service_healthy
+    networks:
+      - cti-net        
     restart: always
 
   ###########################
@@ -244,7 +248,7 @@ services:
     networks:
       - cti-net        
   connector-import-file-stix:
-    image: opencti/connector-import-file-stix:6.3.11 # latest
+    image: opencti/connector-import-file-stix:latest
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -261,7 +265,7 @@ services:
     networks:
       - cti-net        
   connector-import-document:
-    image: opencti/connector-import-document:6.3.11 #latest
+    image: opencti/connector-import-document:latest
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -280,7 +284,7 @@ services:
     networks:
       - cti-net        
   connector-import-file-yara:
-    image: opencti/connector-import-file-yara:6.3.11 #latest
+    image: opencti/connector-import-file-yara:latest
     environment:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
@@ -444,7 +448,9 @@ services:
       - "COLLECTOR_NAME=MITRE ATT&CK"
     depends_on:
       openaev:
-        condition: service_healthy
+        condition: service_healthy  # Wait for healthcheck
+    networks:
+      - cti-net
     restart: always
   collector-openaev:
     image: openaev/collector-openaev:latest
@@ -455,7 +461,9 @@ services:
       - "COLLECTOR_NAME=OpenAEV Datasets"
     depends_on:
       openaev:
-        condition: service_healthy
+        condition: service_healthy  # Wait for healthcheck
+    networks:
+      - cti-net
     restart: always
   collector-atomic-red-team:
     image: openaev/collector-atomic-red-team:latest
@@ -466,7 +474,9 @@ services:
       - "COLLECTOR_NAME=Atomic Red Team"
     depends_on:
       openaev:
-        condition: service_healthy
+        condition: service_healthy  # Wait for healthcheck
+    networks:
+      - cti-net
     restart: always
   collector-nvd-nist-cve:
     image: openaev/collector-nvd-nist-cve:latest
@@ -478,7 +488,9 @@ services:
       - "COLLECTOR_NAME=CVE by NVD NIST"
     depends_on:
       openaev:
-        condition: service_healthy
+        condition: service_healthy  # Wait for healthcheck
+    networks:
+      - cti-net
     restart: always
 
   ###########################
@@ -496,6 +508,8 @@ services:
       openaev:
         condition: service_healthy
     restart: always
+    networks:
+      - cti-net    
   injector-nuclei:
     image: openaev/injector-nuclei:latest
     environment:
@@ -507,6 +521,8 @@ services:
       openaev:
         condition: service_healthy
     restart: always
+    networks:
+      - cti-net    
 
 volumes:
   # esdata: # no local ES in this stack anymore
