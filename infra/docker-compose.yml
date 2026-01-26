@@ -1,19 +1,18 @@
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.8
-    container_name: es-cti
+  elasticsearch7:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
-      - cluster.name=${ES_CLUSTER_NAME}
-      - node.name=${ES_NODE_NAME}
+      - cluster.name=${ES7_CLUSTER_NAME}
+      - node.name=${ES7_NODE_NAME}
       - thread_pool.search.queue_size=5000
-      - ES_JAVA_OPTS=-Xms${ES_HEAP_SIZE_GB} -Xmx${ES_HEAP_SIZE_GB}
+      - ES_JAVA_OPTS=-Xms${ES7_HEAP_SIZE_GB} -Xmx${ES7_HEAP_SIZE_GB}
     ports:
-      - "${INFRA_ES_PORT}:9200"
+      - "${INFRA7_ES_PORT}:9200"
     volumes:
-      - ./vol/esdata:/usr/share/elasticsearch/data
+      - ./vol/esdata7:/usr/share/elasticsearch/data
     ulimits:
       memlock:
         soft: -1
@@ -25,17 +24,57 @@ services:
     networks:
       - cti-net
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.19.2
-    container_name: kibana-cti
+  kibana7:
+    image: docker.elastic.co/kibana/kibana:7.17.18
+    container_name: kibana7-cti
     environment:
-      - ELASTICSEARCH_HOSTS=http://es-cti:9200
-      - SERVER_NAME=kibana-cti
-      - SERVER_PUBLICBASEURL=http://${INFRA_HOST}:${INFRA_KIBANA_PORT}
+      - ELASTICSEARCH_HOSTS=http://es7-cti:9200
+      - SERVER_NAME=kibana7-cti
+      - SERVER_PUBLICBASEURL=http://${INFRA_HOST}:${INFRA7_KIBANA_PORT}
     ports:
-      - "${INFRA_KIBANA_PORT}:5601"
+      - "${INFRA7_KIBANA_PORT}:5601"
     depends_on:
-      - elasticsearch
+      - elasticsearch7
+    networks:
+      - cti-net
+
+  elasticsearch8:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.8
+    container_name: es8-cti
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.ml.enabled=false
+      - cluster.name=${ES8_CLUSTER_NAME}
+      - node.name=${ES8_NODE_NAME}
+      - thread_pool.search.queue_size=5000
+      - ES_JAVA_OPTS=-Xms${ES8_HEAP_SIZE_GB} -Xmx${ES8_HEAP_SIZE_GB}
+    ports:
+      - "${INFRA8_ES_PORT}:9200"
+    volumes:
+      - ./vol/esdata8:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    restart: unless-stopped
+    networks:
+      - cti-net
+
+  kibana8:
+    image: docker.elastic.co/kibana/kibana:8.19.2
+    container_name: kibana8-cti
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es8-cti:9200
+      - SERVER_NAME=kibana8-cti
+      - SERVER_PUBLICBASEURL=http://${INFRA_HOST}:${INFRA8_KIBANA_PORT}
+    ports:
+      - "${INFRA8_KIBANA_PORT}:5601"
+    depends_on:
+      - elasticsearch8
     networks:
       - cti-net
 
