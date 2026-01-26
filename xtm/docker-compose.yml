@@ -161,7 +161,7 @@ services:
       - XTM__OPENAEV_API_URL=http://openaev:8080
       - XTM__OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       # ES CTI
-      - ELASTICSEARCH__URL=http://es-cti:9200
+      - ELASTICSEARCH__URL=http://es8-cti:9200
       - ELASTICSEARCH__NUMBER_OF_REPLICAS=0      
     ports:
       - "${OPENCTI_PORT}:8080"
@@ -413,7 +413,7 @@ services:
       - OPENAEV_XTM_OPENCTI_API_URL=http://opencti:8080
       - OPENAEV_XTM_OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       # ES CTI infra
-      - ENGINE_URL=http://es-cti:9200
+      - ENGINE_URL=http://es8-cti:9200
     networks:
       - cti-net
     ports:
