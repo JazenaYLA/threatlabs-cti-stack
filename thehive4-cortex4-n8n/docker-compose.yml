@@ -10,7 +10,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --log.level=WARN
     ports:
-      - "80:80"
+      - "8000:80"
       - "8443:443"
       - "9080:8080"  # Dashboard safe
     volumes:
@@ -53,12 +53,18 @@ services:
       - "${CORTEX_PORT:-9001}:9001"
     environment:
       - job_directory=/opt/cortex/jobs
-      - es_uri=http://es-cti:9200  # Your shared ES
-    depends_on:
-      cassandra:
-        condition: service_healthy
-      es-cti:
-        condition: service_healthy
+      - es_uri=http://es8-cti:9200  
+    #depends_on:
+    #  cassandra:
+    #    condition: service_healthy
+    #  es-cti:
+    #    condition: service_healthy
+    healthcheck:  # ← ADD THIS
+      test: ["CMD", "curl", "-f", "http://localhost:9001/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s    
     networks:
       - cti-net
     labels:
@@ -123,8 +129,8 @@ services:
     ports:
       - "${THEHIVE_PORT:-9000}:9000"
     environment:
-      - CQL_HOSTNAMES=cassandra  # ← NEW Cassandra
-      - ES_HOSTS=es-cti:9200     # Your shared ES
+      - CQL_HOSTNAMES=cassandra  
+      - ES_HOSTS=es7-cti:9200     
       - CORTEX_URLS=http://cortex-cti:9001
     depends_on:
       cassandra:
