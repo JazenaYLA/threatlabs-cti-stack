@@ -293,6 +293,7 @@ services:
       - CONNECTOR_VALIDATE_BEFORE_IMPORT=true # Validate any bundle before import
       - CONNECTOR_SCOPE=text/yara+plain
       - CONNECTOR_AUTO=false # Enable/disable auto-import of file
+      - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE # JAMZ ADDED THIS LINE
       - YARA_IMPORT_FILE_SPLIT_RULES=true
     restart: always
     depends_on:
@@ -325,13 +326,13 @@ services:
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_IMPORT_EXTERNAL_REFERENCE_ID}
       - CONNECTOR_NAME=ImportExternalReference
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
     restart: always
     depends_on:
       opencti:
         condition: service_healthy          
     networks:
       - cti-net
-
   connector-misp:
     image: opencti/connector-misp:latest
     environment:
@@ -342,6 +343,7 @@ services:
       - CONNECTOR_SCOPE=misp
       - CONNECTOR_LOG_LEVEL=info
       - CONNECTOR_DURATION_PERIOD=PT5M
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT
       - MISP_URL=${CONNECTOR_MISP_URL} # http://example.com
       - MISP_KEY=${CONNECTOR_MISP_KEY}
       - MISP_SSL_VERIFY=false
@@ -384,6 +386,252 @@ services:
         condition: service_healthy          
     networks:
       - cti-net
+  connector-thehive:
+    image: opencti/connector-thehive:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_THEHIVE_ID} 
+      - CONNECTOR_NAME=TheHive
+      - CONNECTOR_SCOPE=thehive
+      - CONNECTOR_LOG_LEVEL=error
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
+      - THEHIVE_URL=${CONNECTOR_THEHIVE_URL}
+      - THEHIVE_API_KEY=${CONNECTOR_THEHIVE_KEY}
+      - THEHIVE_CHECK_SSL=true
+      - THEHIVE_ORGANIZATION_NAME=${XTM_ORGANIZATION_NAME}
+      - THEHIVE_IMPORT_FROM_DATE=2025-06-01T00:00:00 # Optional
+      - THEHIVE_IMPORT_ONLY_TLP=0,1,2,3,4
+      - THEHIVE_IMPORT_ALERTS=true
+      - "THEHIVE_SEVERITY_MAPPING=1:low,2:medium,3:high,4:critical"
+      - THEHIVE_CASE_STATUS_MAPPING= # TheHive_ExtStatus_Text1:OpenCTI_Status_ID1,TheHive_ExtStatus_Text2:OpenCTI_Status_ID2
+      - THEHIVE_TASK_STATUS_MAPPING= # Waiting:OpenCTI_Status_ID1,InProgress:OpenCTI_Status_ID2,Completed:OpenCTI_Status_ID2
+      - THEHIVE_ALERT_STATUS_MAPPING= # TheHive_ExtStatus_Text1:OpenCTI_Status_ID1,TheHive_ExtStatus_Text2:OpenCTI_Status_ID2
+      - THEHIVE_USER_MAPPING= # Format: TheHive_Assignee_Email1:OpenCTI_User_ID1,TheHive_Assignee_Email2:OpenCTI_User_ID2
+      - THEHIVE_INTERVAL=5 # In minutes
+      - THEHIVE_CASE_TAG_WHITELIST= # TAG_OK,TAG_GOOD
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+  connector-alienvault:
+    image: opencti/connector-alienvault:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_OTX_ID}   # Optional (default: 8bbae241-6289-4faf-b7d6-7503bed50bbc)
+      - CONNECTOR_NAME=AlienVault  # Optional (default: AlienVault)
+      - CONNECTOR_SCOPE=alienvault  # Optional (default: alienvault)
+      - CONNECTOR_LOG_LEVEL=error  # Optional (default: error)
+      - CONNECTOR_DURATION_PERIOD=PT30M  # Optional (default: PT30M) - ISO8601 Format starting with "P" for Period ex: "PT30M" = Period time of 30 minutes
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - ALIENVAULT_BASE_URL=${CONNECTOR_OTX_URL} # Optional (default: https://otx.alienvault.com)
+      - ALIENVAULT_API_KEY=${CONNECTOR_OTX_KEY}  # Required
+      - ALIENVAULT_TLP=White  # Optional (default: White)
+      - ALIENVAULT_CREATE_OBSERVABLES=true  # Optional (default: true)
+      - ALIENVAULT_CREATE_INDICATORS=true  # Optional (default: true)
+      - ALIENVAULT_PULSE_START_TIMESTAMP=2025-06-01T00:00:00  # Optional (default: 2020-05-01T00:00:00) - ISO 8601 format, UTC - BEWARE! Could be a lot of pulses!
+      - ALIENVAULT_REPORT_TYPE=threat-report  # Optional (default: threat-report)
+      - ALIENVAULT_REPORT_STATUS=New  # Optional (default: New) - New, In progress, Analyzed and Closed
+      - ALIENVAULT_GUESS_MALWARE=false  # Optional (default: false) - Use tags to guess malware
+      - ALIENVAULT_GUESS_CVE=false  # Optional (default: false) - Use tags to guess CVE
+      - ALIENVAULT_EXCLUDED_PULSE_INDICATOR_TYPES=FileHash-MD5,FileHash-SHA1  # Optional (default: "") - Comma-separated list of Pulse indicator types to exclude
+      - ALIENVAULT_ENABLE_RELATIONSHIPS=true  # Optional (default: true) - Enable/Disable relationship creation between SDOs
+      - ALIENVAULT_ENABLE_ATTACK_PATTERNS_INDICATES=true  # Optional (default: true) - Enable/Disable "indicates" relationships between indicators and attack patterns
+      - ALIENVAULT_FILTER_INDICATORS=false  # Optional (default: false) - Filter indicators by their created datetime
+      - ALIENVAULT_DEFAULT_X_OPENCTI_SCORE=50  # Optional (default: 50) - The default x_opencti_score to use for indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_IP=60  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for IP indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_DOMAIN=70  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for Domain indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_HOSTNAME=75  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for Hostname indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_EMAIL=70  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for Email indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_FILE=80  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for StixFile indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_URL=80  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for URL indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_MUTEX=60  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for Mutex indicators
+      - ALIENVAULT_X_OPENCTI_SCORE_CRYPTOCURRENCY_WALLET=80  # Optional (default: uses default_x_opencti_score) - The x_opencti_score to use for Cryptocurrency Wallet indicators
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+  connector-cisa-known-exploited-vulnerabilities:
+    image: opencti/connector-cisa-known-exploited-vulnerabilities:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+
+#  connector-cape:
+#    image: opencti/connector-cape:latest
+#    environment:
+#      - OPENCTI_URL=http://opencti:8080
+#      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+#      - CONNECTOR_ID=${CONNECTOR_CAPE_ID} 
+#      - CONNECTOR_NAME=CAPE
+#      - CONNECTOR_LOG_LEVEL=error
+#      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
+#      - CAPE_CREATE_INDICATORS=true
+#      - CAPE_ENABLE_NETWORK_TRAFFIC=false # enable creation of net Traffic (Very Loud)
+#      - CAPE_ENABLE_REGISTRY_KEYS=false # enable creation of Created registry Keys (Very Loud)
+#      - CAPE_API_URL=${CONNECTOR_CAPE_URL}/apiv2/ # CAPE API EP
+#      - CAPE_BASE_URL=${CONNECTOR_CAPE_URL}/ # CAPE Web UI URL
+#      - CAPE_INTERVAL=30 #in Min
+#      - CAPE_START_TASK_ID=0 #in Min
+#      - CAPE_REPORT_SCORE=7
+#      - VERIFY_SSL=true
+#    restart: always
+#    depends_on:
+#      opencti:
+#        condition: service_healthy          
+#    networks:
+#      - cti-net
+
+  connector-malpedia:
+    image: opencti/connector-malpedia:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_MALPEDIA_ID}  # Optional (default: '8a277536-ca52-4d87-9f8e-4f77e3e6512c')
+      - CONNECTOR_NAME=Malpedia # Optional (default: 'Malpedia')
+      - CONNECTOR_SCOPE=malpedia # Optional (default: ['malpedia'])
+      - CONNECTOR_LOG_LEVEL=info # Optional (default: 'error')
+      - CONNECTOR_DURATION_PERIOD=PT24H # Optional (default: 24 hours)
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
+      - MALPEDIA_AUTH_KEY=${CONNECTOR_MALPEDIA_KEY} # Optional (default: none)
+      - MALPEDIA_IMPORT_INTRUSION_SETS=true # Optional (default: true)
+      - MALPEDIA_IMPORT_YARA=true # Optional (default: true)
+      - MALPEDIA_CREATE_INDICATORS=true # Optional (default: true)
+      - MALPEDIA_CREATE_OBSERVABLES=true # Optional (default: true)
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+
+  connector-malwarebazaar:
+    image: opencti/connector-malwarebazaar:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_MALWAREBAZAAR_ID}
+      - CONNECTOR_NAME=MalwareBazaar
+      - CONNECTOR_SCOPE=StixFile
+      - CONNECTOR_LOG_LEVEL=info
+      - CONNECTOR_DURATION_PERIOD=PT50M
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
+      - MALWAREBAZAAR_API_BASE_URL=https://mb-api.abuse.ch/api/v1/
+      - MALWAREBAZAAR_API_KEY=${CONNECTOR_MALWAREBAZAAR_KEY}
+      - MALWAREBAZAAR_TLP_LEVEL=clear
+      - MALWAREBAZAAR_X_OPENCTI_SCORE=100
+      - MALWAREBAZAAR_INCLUDE_TAGS=exe,dll,docm,docx,doc,xls,xlsx,xlsm,js
+      - MALWAREBAZAAR_INCLUDE_REPORTERS=
+      - MALWAREBAZAAR_LABELS=malware-bazaar
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+  connector-malwarebazaar-recent-additions:
+    image: opencti/connector-malwarebazaar-recent-additions:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_MALWAREBAZAAR_RECENT_ID}
+      - "CONNECTOR_NAME=MalwareBazaar Recent Additions"
+      - CONNECTOR_LOG_LEVEL=error
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT      
+      - MALWAREBAZAAR_RECENT_ADDITIONS_API_URL=https://mb-api.abuse.ch/api/v1/
+      - MALWAREBAZAAR_RECENT_ADDITIONS_API_KEY=${CONNECTOR_MALWAREBAZAAR_RECENT_KEY} # Required, issued for free by MalwareBazaar - https://bazaar.abuse.ch/api/#auth_key
+      - MALWAREBAZAAR_RECENT_ADDITIONS_COOLDOWN_SECONDS=300 # Time to wait in seconds between subsequent requests
+      - MALWAREBAZAAR_RECENT_ADDITIONS_INCLUDE_TAGS=exe,dll,docm,docx,doc,xls,xlsx,xlsm,js # (Optional) Only download files if any tag matches. (Comma separated)
+      - MALWAREBAZAAR_RECENT_ADDITIONS_INCLUDE_REPORTERS= # (Optional) Only download files uploaded by these reporters. (Comma separated)
+      - MALWAREBAZAAR_RECENT_ADDITIONS_LABELS=malware-bazaar # (Optional) Labels to apply to uploaded Artifacts. (Comma separated)
+      - MALWAREBAZAAR_RECENT_ADDITIONS_LABELS_COLOR=#54483b # Color to use for labels
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+
+  connector-shodan:
+    image: opencti/connector-shodan:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_SHODAN_ID} # Optional (default: '82b58916-a654-4cd4-81de-700eb72a5c94')
+      - CONNECTOR_NAME=Shodan # Optional (default: 'Shodan')
+      - CONNECTOR_SCOPE=ipv4-addr,indicator # Optional (default: ['ipv4-addr', 'indicator'])
+      - CONNECTOR_AUTO=true # Optional (default: false)
+      - CONNECTOR_LOG_LEVEL=info # Optional (default: error)
+      - CONNECTOR_TYPE=INTERNAL_ENRICHMENT
+      - SHODAN_TOKEN=${CONNECTOR_SHODAN_KEY}
+      - SHODAN_MAX_TLP=TLP:AMBER # Optional (default: 'TLP:AMBER')
+      - SHODAN_DEFAULT_SCORE=50 # Optional (default: 50)
+      - SHODAN_IMPORT_SEARCH_RESULTS=true # Optional (default: true)
+      - SHODAN_CREATE_NOTE=true # Optional (default: true)
+      - SHODAN_USE_ISP_NAME_FOR_ASN=false # Optional (default: false)
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+
+  connector-malbeacon:
+    image: opencti/connector-malbeacon:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_MALBEACON_ID}
+      - CONNECTOR_NAME=Malbeacon
+      - CONNECTOR_AUTO=false # Enable/disable auto-enrichment of observables
+      - CONNECTOR_SCOPE=IPv4-Addr,IPv6-Addr,Domain-Name
+      - CONNECTOR_LOG_LEVEL=error
+      - CONNECTOR_TYPE=INTERNAL_ENRICHMENT      
+      - MALBEACON_API_KEY=${CONNECTOR_MALBEACON_KEY} # Required
+      - MALBEACON_API_BASE_URL=https://api.malbeacon.com/v1/ # Required
+      - MALBEACON_INDICATOR_SCORE_LEVEL=50 # Optional
+      - MALBEACON_MAX_TLP=TLP:AMBER # Required, Available values: TLP:CLEAR, TLP:WHITE, TLP:GREEN, TLP:AMBER, TLP:AMBER+STRICT, TLP:RED
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+
+  connector-ipinfo:
+    image: opencti/connector-ipinfo:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IPINFO_ID}
+      - CONNECTOR_NAME=IpInfo
+      - CONNECTOR_SCOPE=IPv4-Addr,IPv6-Addr
+      - CONNECTOR_AUTO=true
+      - CONNECTOR_CONFIDENCE_LEVEL=75 # From 0 (Unknown) to 100 (Fully trusted)
+      - CONNECTOR_LOG_LEVEL=error
+      - CONNECTOR_TYPE=INTERNAL_ENRICHMENT            
+      - IPINFO_TOKEN=${CONNECTOR_IPINFO_KEY}
+      - IPINFO_MAX_TLP=TLP:AMBER # "TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED"
+      - IPINFO_USE_ASN_NAME=true      # Set false if you want ASN name to be just the number e.g. AS8075
+    restart: always
+    depends_on:
+      opencti:
+        condition: service_healthy          
+    networks:
+      - cti-net
+
 
   ###########################
   # OPENCTI DEFAULT DATA    #
@@ -399,6 +647,7 @@ services:
       - CONNECTOR_SCOPE=marking-definition,identity,location
       - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
       - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=100
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT         
     restart: always
     depends_on:
       opencti:
@@ -412,7 +661,8 @@ services:
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_MITRE_ID}
       - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
-      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75      
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT            
     restart: always
     depends_on:
       opencti:
