@@ -364,7 +364,7 @@ services:
       - MISP_ENFORCE_WARNING_LIST=false
       - MISP_REPORT_TYPE=misp-event
       - MISP_IMPORT_FROM_DATE=2025-06-01
-      - MISP_IMPORT_TAGS=
+      - MISP_IMPORT_TAGS=openctiimport,type:osint 
       - MISP_IMPORT_TAGS_NOT=
       - MISP_IMPORT_CREATOR_ORGS=
       - MISP_IMPORT_CREATOR_ORGS_NOT=
