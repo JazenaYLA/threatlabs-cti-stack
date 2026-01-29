@@ -99,7 +99,15 @@ The services must be started in a specific order to ensure database availability
     ```
 
 3. **Start Application Stacks**
-    You can start these in any order.
+
+    > [!IMPORTANT]
+    > **Cortex Users**: First run the index setup script (required for ES8):
+>
+    > ```bash
+    > cd cortex && ./create-cortex-index.sh && cd ..
+    > ```
+
+    You can start the stacks in any order:
 
     * **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
     * **MISP**: `cd misp && docker compose up -d`

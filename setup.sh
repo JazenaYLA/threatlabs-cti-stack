@@ -48,7 +48,22 @@ sudo chown -R 1000:1000 flowintel/vol || echo "[-] Warning: Failed to chown flow
 mkdir -p thehive/vol/{cassandra/data,thehive}
 sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
 
-# 5. Check Host Requirements
+# 5. Migrate Legacy Configurations (One-time check)
+echo "[*] Checking for legacy configuration migration..."
+
+# Cortex Config
+if [ ! -f cortex/vol/cortex/application.conf ] && [ -f thehive4-cortex4-n8n/vol/cortex/application.conf ]; then
+    echo "[!] Migrating Cortex application.conf..."
+    cp thehive4-cortex4-n8n/vol/cortex/application.conf cortex/vol/cortex/
+fi
+
+# TheHive Config
+if [ ! -f thehive/vol/thehive/application.conf ] && [ -f thehive4-cortex4-n8n/vol/thehive/application.conf ]; then
+    echo "[!] Migrating TheHive application.conf..."
+    cp thehive4-cortex4-n8n/vol/thehive/application.conf thehive/vol/thehive/
+fi
+
+# 6. Check Host Requirements
 echo "[*] Checking host requirements..."
 VM_MAX_MAP_COUNT=$(sysctl -n vm.max_map_count)
 if [ "$VM_MAX_MAP_COUNT" -lt 262144 ]; then
