@@ -1,0 +1,48 @@
+services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: thehive-cassandra
+    restart: unless-stopped
+    ports:
+      - "9042:9042" # CQL port
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TheHive
+      - CASSANDRA_DC=dc1
+      - MAX_HEAP_SIZE=2G
+      - HEAP_NEWSIZE=800M
+    volumes:
+      - ./vol/cassandra/data:/var/lib/cassandra/data
+    networks:
+      - cti-net
+    healthcheck:
+      test: [ "CMD", "cqlsh", "-e", "describe keyspaces;" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  thehive:
+    image: thehiveproject/thehive4:4.1.15
+    container_name: thehive-cti
+    restart: unless-stopped
+    volumes:
+      - ./vol/thehive/application.conf:/etc/thehive/application.conf:ro
+    ports:
+      - "${THEHIVE_PORT:-9000}:9000"
+    environment:
+      - CQL_HOSTNAMES=cassandra
+      # TheHive 4 requires ES 7.x (ES 8.x not supported for TH4)
+      - ES_HOSTS=es7-cti:9200
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    networks:
+      - cti-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.thehive.rule=Host(`thehive.local`)"
+      - "traefik.http.services.thehive.loadbalancer.server.port=9000"
+
+networks:
+  cti-net:
+    external: true
+    name: cti-net

@@ -1,0 +1,24 @@
+services:
+  flowise:
+    image: flowiseai/flowise:latest
+    container_name: flowise-cti
+    restart: unless-stopped
+    ports:
+      - "${FLOWISE_PORT:-3000}:3000"
+    environment:
+      - PORT=3000
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME:-admin}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD:-changeme}
+    volumes:
+      - ./vol/flowise/.flowise:/root/.flowise
+    networks:
+      - cti-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flowise.rule=Host(`flowise.local`)"
+      - "traefik.http.services.flowise.loadbalancer.server.port=3000"
+
+networks:
+  cti-net:
+    external: true
+    name: cti-net
