@@ -38,6 +38,8 @@ services:
     networks:
       - cti-net
     labels:
+      # Optional: Traefik Reverse Proxy (Auto-Discovery)
+      # Can be ignored if using Nginx/Caddy/etc via port 9000
       - "traefik.enable=true"
       - "traefik.http.routers.thehive.rule=Host(`thehive.local`)"
       - "traefik.http.services.thehive.loadbalancer.server.port=9000"

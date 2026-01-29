@@ -21,6 +21,8 @@ services:
       retries: 3
       start_period: 40s
     labels:
+      # Optional: Traefik Reverse Proxy (Auto-Discovery)
+      # Can be ignored if using Nginx/Caddy/etc via port 9001
       - "traefik.enable=true"
       - "traefik.http.routers.cortex.rule=Host(`cortex.local`)"
       - "traefik.http.services.cortex.loadbalancer.server.port=9001"

@@ -44,6 +44,8 @@ services:
     networks:
       - cti-net
     labels:
+      # Optional: Traefik Reverse Proxy (Auto-Discovery)
+      # Can be ignored if using Nginx/Caddy/etc via port 5678
       - "traefik.enable=true"
       - "traefik.http.routers.n8n.rule=Host(`n8n.local`)"
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"

@@ -14,6 +14,8 @@ services:
     networks:
       - cti-net
     labels:
+      # Optional: Traefik Reverse Proxy (Auto-Discovery)
+      # Can be ignored if using Nginx/Caddy/etc via port 3000
       - "traefik.enable=true"
       - "traefik.http.routers.flowise.rule=Host(`flowise.local`)"
       - "traefik.http.services.flowise.loadbalancer.server.port=3000"

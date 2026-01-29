@@ -54,6 +54,8 @@ services:
     networks:
       - cti-net
     labels:
+      # Optional: Traefik Reverse Proxy (Auto-Discovery)
+      # Can be ignored if using Nginx/Caddy/etc via port 7006
       - "traefik.enable=true"
       - "traefik.http.routers.flowintel.rule=Host(`flowintel.local`)"
       - "traefik.http.services.flowintel.loadbalancer.server.port=7006"
