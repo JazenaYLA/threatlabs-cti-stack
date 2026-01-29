@@ -6,6 +6,51 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 This repository is organized into modular stacks that share common infrastructure.
 
+```mermaid
+graph TD
+    subgraph "Gateway Layer"
+        Proxy[Traefik Proxy]
+    end
+
+    subgraph "Infrastructure (infra/)"
+        ES8[(ElasticSearch 8)]
+        ES7[(ElasticSearch 7)]
+        MinIO[(MinIO S3)]
+        Redis[(Redis)]
+        RabbitMQ[(RabbitMQ)]
+    end
+
+    subgraph "Core CTI (xtm/ & misp/)"
+        OpenCTI[OpenCTI XTM]
+        MISP[MISP]
+        OpenAEV[OpenAEV]
+    end
+
+    subgraph "Feeders & Analysis"
+        AIL[AIL Framework LXC]
+        Lacus[Lacus Crawler]
+        Cortex[Cortex 4]
+        TheHive[TheHive 4]
+    end
+
+    subgraph "Automation & Content"
+        n8n[n8n Automation]
+        Flowise[Flowise AI]
+        FlowIntel[FlowIntel]
+    end
+
+    %% Connections
+    Proxy --> OpenCTI & MISP & n8n & Flowise & AIL
+    OpenCTI --> ES8 & MinIO & Redis & RabbitMQ
+    OpenAEV --> ES8 & MinIO
+    Cortex --> ES8
+    TheHive --> ES7
+    AIL --> Lacus
+    AIL -.->|Push| MISP
+    n8n -->|Fetch| MISP & OpenCTI
+    n8n -->|Generate| Flowise
+```
+
 ### Directory Structure
 
 * **`infra/`**: **Core Infrastructure**. Hosting shared ElasticSearch (v7 & v8) and Kibana clusters.
@@ -15,6 +60,7 @@ This repository is organized into modular stacks that share common infrastructur
 * **`cortex/`**: **Observable Analysis**. Cortex 4, depends on `infra` (ES8).
 * **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
+* **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 
@@ -100,7 +146,6 @@ The services must be started in a specific order to ensure database availability
 
 3. **Start Application Stacks**
 
-    > [!IMPORTANT]
     > **Cortex Users**: First run the index setup script (required for ES8):
 >
     > ```bash
@@ -115,6 +160,7 @@ The services must be started in a specific order to ensure database availability
     * **n8n**: `cd n8n && docker compose up -d`
     * **Flowise**: `cd flowise && docker compose up -d`
     * **FlowIntel**: `cd flowintel && docker compose up -d`
+    * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
 ## Notes
