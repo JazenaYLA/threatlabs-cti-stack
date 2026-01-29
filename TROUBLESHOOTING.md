@@ -78,9 +78,17 @@ ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
 
 ### Cortex
 
-* **Issue**: Cortex cannot connect to ElasticSearch.
-* **Check**: Does `infra` have `es8-cti` running? Cortex 4 requires ES (often ES7 or ES8 depending on config, here configured for ES8).
-* **Fix**: Update `cortex` service env `es_uri` to point to `http://es8-cti:9200`.
+* **Issue**: Cortex cannot connect to ElasticSearch or fails to start.
+* **Check**:
+    1. Does `infra` have `es8-cti` running?
+    2. **Did you run `./create-cortex-index.sh`?** Cortex 4 requires a specific index mapping when using ES8.
+* **Fix**: Run `cd cortex && ./create-cortex-index.sh`.
+
+### AIL Project
+
+* **Issue**: Redis continuously restarts/crashes in LXC.
+* **Cause**: ZFS file system incompatibility with Redis persistence.
+* **Fix**: Disable `use_direct_io_for_flush_and_compaction` in `redis.conf`. See `ail-project/README.md` for the full fix.
 
 ### TheHive
 
