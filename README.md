@@ -8,47 +8,55 @@ This repository is organized into modular stacks that share common infrastructur
 
 ```mermaid
 graph TD
-    subgraph "Gateway Layer"
-        Proxy[Traefik Proxy]
+    subgraph "Gateway (Optional)"
+        Proxy[Reverse Proxy<br/>Traefik / Nginx / Other]
     end
 
     subgraph "Infrastructure (infra/)"
-        ES8[(ElasticSearch 8)]
-        ES7[(ElasticSearch 7)]
-        MinIO[(MinIO S3)]
-        Redis[(Redis)]
-        RabbitMQ[(RabbitMQ)]
+        ES8[(Shared ElasticSearch 8)]
+        ES7[(Shared ElasticSearch 7)]
     end
 
-    subgraph "Core CTI (xtm/ & misp/)"
-        OpenCTI[OpenCTI XTM]
-        MISP[MISP]
-        OpenAEV[OpenAEV]
+    subgraph "Extended Threat Management (xtm/)"
+        OpenCTI[OpenCTI Platform]
+        OpenAEV[OpenAEV Platform]
+        XTMPersist[(Redis / MinIO / RabbitMQ / PgSQL)]
     end
 
-    subgraph "Feeders & Analysis"
-        AIL[AIL Framework LXC]
-        Lacus[Lacus Crawler]
+    subgraph "MISP"
+        MISP[MISP Core]
+        MISPDB[(MariaDB)]
+    end
+
+    subgraph "Legacy & Analysis"
         Cortex[Cortex 4]
         TheHive[TheHive 4]
+        Cassandra[(Cassandra)]
     end
 
-    subgraph "Automation & Content"
+    subgraph "Automation & Feeds"
         n8n[n8n Automation]
         Flowise[Flowise AI]
-        FlowIntel[FlowIntel]
+        AIL[AIL Framework LXC]
+        Lacus[Lacus Crawler]
     end
 
-    %% Connections
-    Proxy --> OpenCTI & MISP & n8n & Flowise & AIL
-    OpenCTI --> ES8 & MinIO & Redis & RabbitMQ
-    OpenAEV --> ES8 & MinIO
-    Cortex --> ES8
+    %% Network Flow
+    Proxy -.->|Route| OpenCTI & OpenAEV & MISP & n8n & Flowise & AIL & TheHive & Cortex
+    
+    %% Infrastructure Dependencies
+    OpenCTI & OpenAEV & Cortex --> ES8
     TheHive --> ES7
+    
+    %% Local Stack Dependencies
+    OpenCTI & OpenAEV --> XTMPersist
+    TheHive --> Cassandra
+    MISP --> MISPDB
+    
+    %% Integrations
     AIL --> Lacus
     AIL -.->|Push| MISP
-    n8n -->|Fetch| MISP & OpenCTI
-    n8n -->|Generate| Flowise
+    n8n -->|API| MISP & OpenCTI & Flowise
 ```
 
 ### Directory Structure
