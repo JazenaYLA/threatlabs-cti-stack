@@ -23,7 +23,7 @@ graph TD
         XTMPersist[(Redis / MinIO / RabbitMQ / PgSQL)]
     end
 
-    subgraph "MISP"
+    subgraph "MISP Stack (misp/)"
         MISP[MISP Core]
         MISPDB[(MariaDB)]
     end
