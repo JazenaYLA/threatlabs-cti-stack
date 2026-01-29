@@ -55,14 +55,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-example}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-misp}
-    command: --innodb-buffer-pool-size=${INNODB_BUFFER_POOL_SIZE:-2048M}
-      --innodb-change-buffering=${INNODB_CHANGE_BUFFERING:-none}
-      --innodb-io-capacity=${INNODB_IO_CAPACITY:-1000}
-      --innodb-io-capacity-max=${INNODB_IO_CAPACITY_MAX:-2000}
-      --innodb-log-file-size=${INNODB_LOG_FILE_SIZE:-600M}
-      --innodb-read-io-threads=${INNODB_READ_IO_THREADS:-16}
-      --innodb-stats-persistent=${INNODB_STATS_PERSISTENT:-ON}
-      --innodb-write-io-threads=${INNODB_WRITE_IO_THREADS:-4}
+    command: --innodb-buffer-pool-size=${INNODB_BUFFER_POOL_SIZE:-2048M} --innodb-change-buffering=${INNODB_CHANGE_BUFFERING:-none} --innodb-io-capacity=${INNODB_IO_CAPACITY:-1000} --innodb-io-capacity-max=${INNODB_IO_CAPACITY_MAX:-2000} --innodb-log-file-size=${INNODB_LOG_FILE_SIZE:-600M} --innodb-read-io-threads=${INNODB_READ_IO_THREADS:-16} --innodb-stats-persistent=${INNODB_STATS_PERSISTENT:-ON} --innodb-write-io-threads=${INNODB_WRITE_IO_THREADS:-4}
     volumes:
       - mysql_data:/var/lib/mysql:Z
     cap_add:
@@ -82,12 +75,10 @@ services:
     build:
       context: core/.
       args:
-        - CORE_TAG=${CORE_TAG:?Missing or outdated .env file, see README.md for
-          instructions}
+        - CORE_TAG=${CORE_TAG:?Missing or outdated .env file, see README.md for instructions}
         - CORE_COMMIT=${CORE_COMMIT}
         - CORE_FLAVOR=${CORE_FLAVOR:-standard}
-        - PHP_VER=${PHP_VER:?Missing or outdated .env file, see README.md for
-          instructions}
+        - PHP_VER=${PHP_VER:?Missing or outdated .env file, see README.md for instructions}
         - PYPI_REDIS_VERSION=${PYPI_REDIS_VERSION}
         - PYPI_LIEF_VERSION=${PYPI_LIEF_VERSION}
         - PYPI_PYDEEP2_VERSION=${PYPI_PYDEEP2_VERSION}
@@ -109,8 +100,7 @@ services:
       misp-modules:
         condition: service_healthy
     healthcheck:
-      test: curl -ks ${BASE_URL:-https://localhost}/users/heartbeat > /dev/null ||
-        exit 1
+      test: curl -ks ${BASE_URL:-https://localhost}/users/heartbeat > /dev/null || exit 1
       interval: 2s
       timeout: 1s
       retries: 3
@@ -313,8 +303,7 @@ services:
     build:
       context: modules/.
       args:
-        - MODULES_TAG=${MODULES_TAG:?Missing or outdated .env file, see
-          README.md for instructions}
+        - MODULES_TAG=${MODULES_TAG:?Missing or outdated .env file, see README.md for instructions}
         - MODULES_COMMIT=${MODULES_COMMIT}
         - MODULES_FLAVOR=${MODULES_FLAVOR:-standard}
     healthcheck:
@@ -338,8 +327,7 @@ services:
     build:
       context: guard/.
       args:
-        - GUARD_TAG=${GUARD_TAG:?Missing or outdated .env file, see README.md
-          for instructions}
+        - GUARD_TAG=${GUARD_TAG:?Missing or outdated .env file, see README.md for instructions}
         - GUARD_COMMIT=${GUARD_COMMIT}
     depends_on:
       - misp-core
@@ -362,5 +350,6 @@ volumes:
   cache_data: null
   misp_guard_ca: null
 networks:
+  # Shared network for CTI stack communication (OpenCTI, TheHive, etc.)
   cti-net:
     external: true

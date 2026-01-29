@@ -1,8 +1,9 @@
 services:
+  # Shared ElasticSearch 7.x cluster for legacy apps or testing
   elasticsearch7:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
     environment:
-      - discovery.type=single-node
+      # Single-node discovery for homelab simplicity
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
       - cluster.name=${ES7_CLUSTER_NAME}
@@ -79,5 +80,6 @@ services:
       - cti-net
 
 networks:
+  # Shared network for all CTI stack components (xtm, misp, etc.) to communicate
   cti-net:
     name: cti-net

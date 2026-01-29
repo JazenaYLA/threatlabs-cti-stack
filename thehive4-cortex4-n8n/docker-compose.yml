@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.6.1  # Docker 29 fixed
+    image: traefik:v3.6.1 # Docker 29 fixed
     command:
       - --api.dashboard=true
       - --api.insecure=true
@@ -12,7 +12,7 @@ services:
     ports:
       - "8000:80"
       - "8443:443"
-      - "9080:8080"  # Dashboard safe
+      - "9080:8080" # Dashboard safe
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -24,7 +24,7 @@ services:
     container_name: thehive-cassandra
     restart: unless-stopped
     ports:
-      - "9042:9042"  # CQL port
+      - "9042:9042" # CQL port
     environment:
       - CASSANDRA_CLUSTER_NAME=TheHive
       - CASSANDRA_DC=dc1
@@ -35,7 +35,7 @@ services:
     networks:
       - cti-net
     healthcheck:
-      test: ["CMD", "cqlsh", "-e", "describe keyspaces;"]
+      test: [ "CMD", "cqlsh", "-e", "describe keyspaces;" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -52,18 +52,20 @@ services:
       - "${CORTEX_PORT:-9001}:9001"
     environment:
       - job_directory=/opt/cortex/jobs
-      - es_uri=http://es8-cti:9200  
+      # Cortex 4.x supports ES 8.x (check compatibility)
+      - es_uri=http://es8-cti:9200
     #depends_on:
     #  cassandra:
     #    condition: service_healthy
     #  es-cti:
     #    condition: service_healthy
-    healthcheck:  # ← ADD THIS
-      test: ["CMD", "curl", "-f", "http://localhost:9001/api/status"]
+    healthcheck:
+      # ← ADD THIS
+      test: [ "CMD", "curl", "-f", "http://localhost:9001/api/status" ]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s    
+      start_period: 40s
     networks:
       - cti-net
     labels:
@@ -84,7 +86,7 @@ services:
     networks:
       - cti-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-n8nuser} -d ${POSTGRES_DB:-n8n}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-n8nuser} -d ${POSTGRES_DB:-n8n}" ]
       interval: 10s
       retries: 5
 
@@ -129,8 +131,9 @@ services:
     ports:
       - "${THEHIVE_PORT:-9000}:9000"
     environment:
-      - CQL_HOSTNAMES=cassandra  
-      - ES_HOSTS=es7-cti:9200     
+      - CQL_HOSTNAMES=cassandra
+      # TheHive 4 requires ES 7.x (ES 8.x not supported for TH4)
+      - ES_HOSTS=es7-cti:9200
       - CORTEX_URLS=http://cortex-cti:9001
     depends_on:
       cassandra:
