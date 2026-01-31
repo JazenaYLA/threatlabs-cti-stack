@@ -24,6 +24,7 @@ sudo chown -R 1000:1000 infra/vol || echo "[-] Warning: Failed to chown infra/vo
 # 3. Prepare XTM Volumes (OpenCTI/OpenAEV)
 echo "[*] Preparing XTM volumes..."
 mkdir -p xtm/volumes/{pgsqldata,s3data,redisdata,amqpdata,rsakeys}
+sudo chown -R 1000:1000 xtm/volumes || echo "[-] Warning: Failed to chown xtm/volumes."
 
 # 4. Prepare Modular Stack Volumes
 echo "[*] Preparing modular stack volumes..."
@@ -52,19 +53,57 @@ sudo chown -R 1000:1000 lacus/vol || echo "[-] Warning: Failed to chown lacus/vo
 mkdir -p thehive/vol/{cassandra/data,thehive}
 sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
 
-# 5. Migrate Legacy Configurations (One-time check)
-echo "[*] Checking for legacy configuration migration..."
+# 5. Generate Default Configurations (if missing)
+echo "[*] Checking for default configurations..."
 
-# Cortex Config
-if [ ! -f cortex/vol/cortex/application.conf ] && [ -f thehive4-cortex4-n8n/vol/cortex/application.conf ]; then
-    echo "[!] Migrating Cortex application.conf..."
-    cp thehive4-cortex4-n8n/vol/cortex/application.conf cortex/vol/cortex/
+# Cortex Default Config
+if [ ! -f cortex/vol/cortex/application.conf ]; then
+    echo "[+] Generating default Cortex application.conf..."
+    cat <<EOF > cortex/vol/cortex/application.conf
+## Cortex Configuration (Auto-Generated)
+play.http.secret.key="changeme_$(date +%s | sha256sum | base64 | head -c 32)"
+search {
+  index = "cortex"
+  hostnames = ["http://es8-cti:9200"]
+}
+job {
+  runner = [docker, process]
+}
+analyzer {
+  urls = ["https://catalogs.download.strangebee.com/latest/json/analyzers.json"]
+}
+responder {
+  urls = ["https://catalogs.download.strangebee.com/latest/json/responders.json"]
+}
+EOF
 fi
 
-# TheHive Config
-if [ ! -f thehive/vol/thehive/application.conf ] && [ -f thehive4-cortex4-n8n/vol/thehive/application.conf ]; then
-    echo "[!] Migrating TheHive application.conf..."
-    cp thehive4-cortex4-n8n/vol/thehive/application.conf thehive/vol/thehive/
+# TheHive Default Config
+if [ ! -f thehive/vol/thehive/application.conf ]; then
+    echo "[+] Generating default TheHive application.conf..."
+    cat <<EOF > thehive/vol/thehive/application.conf
+## TheHive Configuration (Auto-Generated)
+play.http.secret.key="changeme_$(date +%s | sha256sum | base64 | head -c 32)"
+db.janusgraph {
+  storage {
+    backend = cql
+    hostname = ["cassandra"]
+    cql {
+      cluster-name = thp
+      keyspace = thehive
+    }
+  }
+  index.search {
+    backend = elasticsearch
+    hostname = ["es7-cti"]
+    index-name = thehive
+  }
+}
+storage {
+  provider = localfs
+  localfs.location = /var/lib/thehive/data
+}
+EOF
 fi
 
 # 6. Check Host Requirements

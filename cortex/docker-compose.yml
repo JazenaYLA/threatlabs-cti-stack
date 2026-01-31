@@ -1,6 +1,6 @@
 services:
   cortex:
-    image: thehiveproject/cortex:4.0.0
+    image: thehiveproject/cortex:latest #original version 4.0.0
     container_name: cortex-cti
     restart: unless-stopped
     volumes:
