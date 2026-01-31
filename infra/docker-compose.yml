@@ -79,6 +79,41 @@ services:
     networks:
       - cti-net
 
+  # Shared Database (Postgres 17)
+  postgres:
+    image: postgres:17-alpine
+    container_name: infra-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_ROOT_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD:-changeme}
+      - POSTGRES_DB=postgres
+    volumes:
+      - ./vol/postgres/data:/var/lib/postgresql/data
+      - ./vol/postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - cti-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_ROOT_USER:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Shared Cache (Valkey - Redis compatible)
+  valkey:
+    image: valkey/valkey:latest
+    container_name: infra-valkey
+    restart: unless-stopped
+    volumes:
+      - ./vol/valkey/data:/data
+    networks:
+      - cti-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 networks:
   # Shared network for all CTI stack components (xtm, misp, etc.) to communicate
   cti-net:

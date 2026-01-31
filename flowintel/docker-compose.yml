@@ -1,33 +1,6 @@
 services:
-  postgresql:
-    container_name: flowintel-postgres
-    image: postgres:17
-    restart: unless-stopped
-    #ports:
-    #  - '${POSTGRES_PORT:-5432}:5432'
-    volumes:
-      - ./vol/postgres/data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-flowintel}
-      - POSTGRES_USER=${POSTGRES_USER:-flowintel}
-      - POSTGRES_DB=${POSTGRES_DB:-flowintel}
-    networks:
-      - cti-net
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flowintel} -d ${POSTGRES_DB:-flowintel}" ]
-      interval: 10s
-      retries: 5
-
-  valkey:
-    container_name: flowintel-valkey
-    image: valkey/valkey
-    restart: unless-stopped
-    #ports:
-    #  - '${VALKEY_PORT:-6379}:6379'
-    volumes:
-      - ./vol/valkey/data:/data
-    networks:
-      - cti-net
+  # postgresql: REMOVED - Using shared infra-postgres
+  # valkey: REMOVED - Using shared infra-valkey
 
   flowintel:
     image: ghcr.io/flowintel/flowintel:latest
@@ -37,18 +10,18 @@ services:
     ports:
       - '${APP_PORT:-7006}:7006'
     environment:
-      - DB_HOST=postgresql
+      - DB_HOST=infra-postgres
       - DB_PORT=5432
-      - DB_USER=${POSTGRES_USER:-flowintel}
-      - DB_PASSWORD=${POSTGRES_PASSWORD:-flowintel}
+      - DB_USER=${POSTGRES_USER:-flowintel} # infra/init-dbs.sh default
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-changeme} # infra/init-dbs.sh default
       - DB_NAME=${POSTGRES_DB:-flowintel}
-      - VALKEY_IP=${VALKEY_IP:-valkey}
+      - VALKEY_IP=${VALKEY_IP:-infra-valkey}
       - JWT_SECRET=${JWT_SECRET:-changeme}
     depends_on:
-      postgresql:
-        condition: service_healthy
-      valkey:
-        condition: service_started
+      # postgresql: REMOVED (Shared Infra)
+      #   condition: service_healthy
+      # valkey: REMOVED (Shared Infra)
+      #   condition: service_started
     volumes:
       - ./vol/flowintel/data:/var/lib/flowintel
     networks:
