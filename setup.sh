@@ -18,7 +18,9 @@ fi
 
 # 2. Prepare Infrastructure Volumes (Infra)
 echo "[*] Preparing Infra volumes..."
-mkdir -p infra/vol/{esdata7/data,esdata8/data}
+mkdir -p infra/vol/{esdata7/data,esdata8/data,postgres/data,valkey/data,postgres-init}
+# Ensure init script execution permission
+chmod +x infra/vol/postgres-init/init-dbs.sh 2>/dev/null || true
 sudo chown -R 1000:1000 infra/vol || echo "[-] Warning: Failed to chown infra/vol. You may need sudo."
 
 # 3. Prepare XTM Volumes (OpenCTI/OpenAEV)
@@ -33,20 +35,20 @@ echo "[*] Preparing modular stack volumes..."
 mkdir -p cortex/vol/cortex
 sudo chown -R 1000:1000 cortex/vol || echo "[-] Warning: Failed to chown cortex/vol."
 
-# n8n
-mkdir -p n8n/vol/{n8n,postgres/data}
+# n8n (DB moved to infra)
+mkdir -p n8n/vol/n8n
 sudo chown -R 1000:1000 n8n/vol || echo "[-] Warning: Failed to chown n8n/vol."
 
 # Flowise
 mkdir -p flowise/vol/flowise
 sudo chown -R 1000:1000 flowise/vol || echo "[-] Warning: Failed to chown flowise/vol."
 
-# FlowIntel
-mkdir -p flowintel/vol/{postgres/data,valkey/data,flowintel/data}
+# FlowIntel (DB/Cache moved to infra)
+mkdir -p flowintel/vol/flowintel/data
 sudo chown -R 1000:1000 flowintel/vol || echo "[-] Warning: Failed to chown flowintel/vol."
 
-# Lacus (AIL Crawler)
-mkdir -p lacus/vol/{lacus-data,lacus-cache,valkey}
+# Lacus (Cache moved to infra)
+mkdir -p lacus/vol/{lacus-data,lacus-cache}
 sudo chown -R 1000:1000 lacus/vol || echo "[-] Warning: Failed to chown lacus/vol."
 
 # TheHive (Legacy/Archive)
