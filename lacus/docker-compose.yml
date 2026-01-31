@@ -4,7 +4,7 @@ services:
     container_name: lacus
     restart: unless-stopped
     ports:
-      - "7100:7100" # Lacus API/Web UI
+      - "${LACUS_PORT:-7100}:7100" # Lacus API/Web UI
     volumes:
       - ./vol/lacus-data:/lacus/data
       - ./vol/lacus-cache:/lacus/cache
