@@ -3,8 +3,8 @@ services:
     container_name: flowintel-postgres
     image: postgres:17
     restart: unless-stopped
-    ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+    #ports:
+    #  - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - ./vol/postgres/data:/var/lib/postgresql/data
     environment:
@@ -22,8 +22,8 @@ services:
     container_name: flowintel-valkey
     image: valkey/valkey
     restart: unless-stopped
-    ports:
-      - '${VALKEY_PORT:-6379}:6379'
+    #ports:
+    #  - '${VALKEY_PORT:-6379}:6379'
     volumes:
       - ./vol/valkey/data:/data
     networks:
