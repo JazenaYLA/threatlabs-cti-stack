@@ -129,6 +129,12 @@ cp flowintel/.env.example flowintel/.env
 
 # TheHive (Legacy)
 cp thehive/.env.example thehive/.env
+
+# Lacus
+cp lacus/.env.example lacus/.env
+
+# AIL Project
+cp ail-project/.env.example ail-project/.env
 ```
 
 > [!IMPORTANT]
@@ -140,19 +146,20 @@ The services must be started in a specific order to ensure database availability
 
 1. **Start Infrastructure Stack (REQUIRED FIRST)**
 
-    ```bash
-    cd infra && docker compose up -d
-    ```
+1. **Start Infrastructure Stack (REQUIRED FIRST)**
+
+    * **CLI**: `cd infra && docker compose up -d`
+    * **Dockge**: Go to `/opt/stacks` (Dashboard), select `infra`, and click **Active** / **Update**.
 
     *Wait for ElasticSearch clusters to be fully healthy.*
 
-2. **Start Proxy (Optional but Recommended)**
+1. **Start Proxy (Optional but Recommended)**
 
     ```bash
     cd proxy && docker compose up -d
     ```
 
-3. **Start Application Stacks**
+1. **Start Application Stacks**
 
     > **Cortex Users**: First run the index setup script (required for ES8):
 >

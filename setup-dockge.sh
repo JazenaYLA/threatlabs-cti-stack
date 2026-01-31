@@ -54,5 +54,7 @@ link_stack "n8n"
 link_stack "flowise"
 link_stack "flowintel"
 link_stack "thehive"
+link_stack "lacus"
+link_stack "ail-project"
 
 echo "[*] Done. Refresh Dockge to see your stacks."
