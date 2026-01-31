@@ -84,6 +84,30 @@ ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
     2. **Did you run `./create-cortex-index.sh`?** Cortex 4 requires a specific index mapping when using ES8.
 * **Fix**: Run `cd cortex && ./create-cortex-index.sh`.
 
+### Cortex Initial Setup & Maintenance
+
+#### initial Setup
+
+When you first access Cortex (`http://localhost:9001` or via proxy):
+
+1. **"Database schema is not up to date"**: This is normal. Click the **Update Database** button.
+2. **Create Administrator**: You will be prompted to create the first user (Superadmin).
+    * **Note**: There is no default "admin/admin". You define the credentials here.
+
+#### Resetting Access / Factory Reset
+
+If you lose the admin password and cannot recover it via email (SMTP not configured):
+
+* **Method**: Wipe the Cortex index in ElasticSearch to trigger a fresh setup.
+* **Command**:
+
+    ```bash
+    # WARNING: This deletes ALL Cortex data (users, organizations, analysis results)
+    docker exec -it es8-cti curl -X DELETE "http://localhost:9200/cortex"
+    ```
+
+* **Restart**: Restart the Cortex container. You will be presented with the "Update Database" screen again.
+
 ### AIL Project
 
 * **Issue**: Redis continuously restarts/crashes in LXC.
