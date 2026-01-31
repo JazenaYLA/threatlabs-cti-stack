@@ -46,7 +46,7 @@ mkdir -p flowintel/vol/{postgres/data,valkey/data,flowintel/data}
 sudo chown -R 1000:1000 flowintel/vol || echo "[-] Warning: Failed to chown flowintel/vol."
 
 # Lacus (AIL Crawler)
-mkdir -p lacus/vol/{lacus-data,lacus-cache}
+mkdir -p lacus/vol/{lacus-data,lacus-cache,valkey}
 sudo chown -R 1000:1000 lacus/vol || echo "[-] Warning: Failed to chown lacus/vol."
 
 # TheHive (Legacy/Archive)
