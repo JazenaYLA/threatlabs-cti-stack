@@ -70,6 +70,15 @@ graph TD
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
+* **`infra/`**: **Core Infrastructure**. Hosting shared ElasticSearch (v7 & v8) and Kibana clusters.
+* **`proxy/`**: **Traefik Proxy**. Shared reverse proxy for accessing services via subdomains.
+* **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra` (ES8).
+* **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
+* **`cortex/`**: **Observable Analysis**. Cortex 4, depends on `infra` (ES8).
+* **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
+* **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
+* **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
+* **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 
 ### Shared Network
@@ -78,6 +87,20 @@ All stacks communicate via an external Docker network named `cti-net`.
 
 > [!TIP]
 > See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for network, permission, and common boot issues.
+
+## Factory Reset
+
+If you need to completely wipe the stack and start over (delete all data):
+
+1. Run the reset script:
+
+    ```bash
+    chmod +x reset.sh
+    ./reset.sh
+    ```
+
+2. Type `NUKE` when prompted.
+3. Run `./setup.sh` to re-initialize the environment.
 
 ## Getting Started
 
