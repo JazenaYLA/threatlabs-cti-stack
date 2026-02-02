@@ -44,7 +44,20 @@ create_vol "infra/vol/valkey/data"
 create_vol "infra/vol/postgres-init"
 # Ensure init script execution permission
 chmod +x infra/vol/postgres-init/init-dbs.sh 2>/dev/null || true
-sudo chown -R 1000:1000 infra/vol || echo "[-] Warning: Failed to chown infra/vol. You may need sudo."
+# Set permissions selectively based on container requirements
+# ElasticSearch (runs as 1000)
+if [ -d "infra/vol/esdata7" ]; then sudo chown -R 1000:1000 infra/vol/esdata7; fi
+if [ -d "infra/vol/esdata8" ]; then sudo chown -R 1000:1000 infra/vol/esdata8; fi
+
+# Postgres (Alpine runs as 70, Debian as 999. using 70 for alpine image)
+if [ -d "infra/vol/postgres" ]; then sudo chown -R 70:70 infra/vol/postgres; fi
+
+# Valkey/Redis (runs as 999 usually, sometimes 1000? Valkey docker follows Redis)
+# Redis standard image uses 999.
+if [ -d "infra/vol/valkey" ]; then sudo chown -R 999:999 infra/vol/valkey; fi
+
+# Init scripts
+sudo chown -R 1000:1000 infra/vol/postgres-init || true
 
 # 3. Prepare XTM Volumes (OpenCTI/OpenAEV)
 # 3. Prepare XTM Volumes (OpenCTI/OpenAEV)
