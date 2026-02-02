@@ -79,6 +79,11 @@ create_vol "thehive/vol/cassandra/data"
 create_vol "thehive/vol/thehive"
 sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
 
+# OpenClaw (AI Agent)
+create_vol "openclaw/vol/config"
+create_vol "openclaw/vol/workspace"
+sudo chown -R 1000:1000 openclaw/vol || echo "[-] Warning: Failed to chown openclaw/vol."
+
 # 5. Generate Default Configurations (if missing)
 echo "[*] Checking for default configurations..."
 
