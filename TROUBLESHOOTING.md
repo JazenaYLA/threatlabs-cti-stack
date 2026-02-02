@@ -74,6 +74,29 @@ ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
 1. Increase workers in **Administration > Server Settings > Workers**.
 2. Restart workers: `sudo supervisorctl restart all` (inside container).
 
+### Database Connection Failures (Shared Infra)
+
+**Issue**: Services like `n8n`, `xtm` (OpenAEV), or `flowintel` fail to start with database auth errors.
+
+**Cause**: Mismatch between the credentials created by `infra` and what is configured in your `.env`.
+
+**Check**:
+
+1. Verify `infra` is running and healthy (`infra-postgres`).
+2. Check the logs of the failing service (`docker logs n8n-cti`). If you see "password authentication failed":
+    * Compare your local `.env` (e.g., `n8n/.env`) against the defaults in `infra/vol/postgres-init/init-dbs.sh`.
+    * **Fix**: Update your `.env` to match the expected credentials (e.g., `n8n` / `n8npass123!`).
+
+### "Factory Reset" Needed
+
+**Issue**: The stack is in an undefined state, volumes are corrupted, or you just want to start over.
+
+**Fix**: Use the provided nuking script.
+
+1. Run `./reset.sh`.
+2. Type `NUKE` to confirm.
+3. Run `./setup.sh` to recreate the directory structure and permissions.
+
 ## Specific Stack Issues
 
 ### Cortex
