@@ -61,25 +61,16 @@ graph TD
 
 ### Directory Structure
 
-* **`infra/`**: **Core Infrastructure**. Hosting shared ElasticSearch (v7 & v8) and Kibana clusters.
+* **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
 * **`proxy/`**: **Traefik Proxy**. Shared reverse proxy for accessing services via subdomains.
-* **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra` (ES8).
+* **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
 * **`cortex/`**: **Observable Analysis**. Cortex 4, depends on `infra` (ES8).
 * **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
-* **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
-* **`infra/`**: **Core Infrastructure**. Hosting shared ElasticSearch (v7 & v8) and Kibana clusters.
-* **`proxy/`**: **Traefik Proxy**. Shared reverse proxy for accessing services via subdomains.
-* **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra` (ES8).
-* **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
-* **`cortex/`**: **Observable Analysis**. Cortex 4, depends on `infra` (ES8).
-* **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
-* **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
-* **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
-* **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
+* **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 
 ### Shared Network
 
