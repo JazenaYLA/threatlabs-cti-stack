@@ -22,7 +22,7 @@ fi
 echo "[*] Stopping and removing containers..."
 # We try to use docker compose down if possible, but a blanket kill is more effective for a "nuke"
 # Iterate through known stacks
-STACKS=("infra" "xtm" "cortex" "misp" "n8n" "flowise" "flowintel" "lacus" "thehive" "proxy" "ail-project")
+STACKS=("infra" "xtm" "cortex" "misp" "n8n" "flowise" "flowintel" "lacus" "thehive" "proxy" "ail-project" "openclaw")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then
@@ -55,6 +55,7 @@ sudo rm -rf flowintel/vol
 sudo rm -rf lacus/vol
 sudo rm -rf thehive/vol
 sudo rm -rf ail-project/vol
+sudo rm -rf openclaw/vol
 
 # Explicitly delete /opt/stacks volume directories (Dockge)
 if [ -d "/opt/stacks" ]; then
