@@ -71,6 +71,7 @@ graph TD
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
+* **`openclaw/`**: **AI Agent**. Self-hosted AI agent with Docker support.
 
 ### Shared Network
 
@@ -189,8 +190,9 @@ The services must be started in a specific order to ensure database availability
     * **n8n**: `cd n8n && docker compose up -d`
     * **Flowise**: `cd flowise && docker compose up -d`
     * **FlowIntel**: `cd flowintel && docker compose up -d`
-    * **Lacus**: `cd lacus && docker compose up -d`
-    * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
+    *   **Lacus**: `cd lacus && docker compose up -d`
+    *   **OpenClaw**: `cd openclaw && docker compose up -d` (Builds from source, may take time)
+    *   **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
 ## Notes
 
