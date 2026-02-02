@@ -183,7 +183,13 @@ The services must be started in a specific order to ensure database availability
     * **Flowise**: `cd flowise && docker compose up -d`
     * **FlowIntel**: `cd flowintel && docker compose up -d`
     *   **Lacus**: `cd lacus && docker compose up -d`
-    *   **OpenClaw**: `cd openclaw && docker compose up -d` (Builds from source, may take time)
+    *   **OpenClaw**:
+        ```bash
+        cd openclaw
+        docker compose up -d --build
+        # REQUIRED: Initial Onboarding
+        docker compose run --rm openclaw-cli onboard --no-install-daemon
+        ```
     *   **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
 ## Notes
