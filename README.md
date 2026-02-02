@@ -102,55 +102,27 @@ Ensure Docker and Docker Compose are installed.
 
 ### 2. Configuration
 
-Run the setup script to prepare networks and volumes:
+Run the setup script to prepare networks, volumes, and generate environment files:
 
 ```bash
 ./setup.sh
 ```
 
-**For Dockge Users:**
-If you use Dockge, you can automatically link these stacks to your `/opt/stacks` directory:
+**What the script does:**
 
-```bash
-sudo ./setup-dockge.sh
-```
+1. Creates the shared network `cti-net`.
+2. Creates necessary docker volumes.
+3. **Generates `.env` files** for all stacks from templates.
+   * For **OpenCTI (xtm)**, it automatically generates unique UUIDv4 tokens for all connectors.
+4. **Pauses** to allow you to review and edit the generated `.env` files.
 
-Navigate to each directory and create your environment file from the example:
+**Action Required:**
+When the script pauses, open the `.env` files in each directory (e.g., `infra/.env`, `xtm/.env`) and set your specific secrets (passwords, API keys, domains).
 
-```bash
-# Infrastructure
-cp infra/.env.example infra/.env
-# Edit infra/.env
-
-# OpenCTI / OpenAEV
-cp xtm/.env.example xtm/.env
-# Edit xtm/.env
-
-# MISP
-cp misp/template.env misp/.env
-# Edit misp/.env
-
-# Cortex
-cp cortex/.env.example cortex/.env
-
-# n8n
-cp n8n/.env.example n8n/.env
-
-# Flowise
-cp flowise/.env.example flowise/.env
-
-# FlowIntel
-cp flowintel/.env.example flowintel/.env
-
-# TheHive (Legacy)
-cp thehive/.env.example thehive/.env
-
-# Lacus
-cp lacus/.env.example lacus/.env
-
-# AIL Project
-cp ail-project/.env.example ail-project/.env
-```
+> [!IMPORTANT]
+>
+> * **infra/.env**: Verify `ES_HEAP_SIZE_GB` fits your host's RAM.
+> * **xtm/.env**: Review generated UUIDs. If you are migrating an existing OpenCTI instance, you may need to replace these with your potential existing connector IDs.
 
 > [!IMPORTANT]
 > Ensure you verify the `ES_HEAP_SIZE_GB` in `infra/.env` fits your host's available RAM.

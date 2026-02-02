@@ -137,7 +137,81 @@ storage {
 EOF
 fi
 
-# 6. Check Host Requirements
+# 6. Generate Environment Files
+echo "[*] Checking for environment files..."
+
+generate_uuid() {
+    if command -v uuidgen &> /dev/null; then
+        uuidgen | tr '[:upper:]' '[:lower:]'
+    else
+        # Fallback for systems without uuidgen
+        cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "00000000-0000-0000-0000-000000000000"
+    fi
+}
+
+STACKS=("infra" "xtm" "misp" "cortex" "n8n" "flowise" "flowintel" "thehive" "lacus" "openclaw" "ail-project")
+
+for stack in "${STACKS[@]}"; do
+    if [ -d "$stack" ]; then
+        if [ ! -f "$stack/.env" ]; then
+            echo "    [$stack] .env not found. Creating from template..."
+            
+            # Determine template file
+            TEMPLATE="$stack/.env.example"
+            if [ "$stack" == "misp" ]; then
+                TEMPLATE="$stack/template.env"
+            fi
+            
+            if [ -f "$TEMPLATE" ]; then
+                cp "$TEMPLATE" "$stack/.env"
+                
+                # Special handling for XTM UUIDs to ensure UNIQUE UUIDs for each connector
+                if [ "$stack" == "xtm" ]; then
+                    echo "    [$stack] Generating unique UUIDs for connectors..."
+                    TEMP_ENV="$stack/.env.tmp"
+                    # Reset temp file
+                    : > "$TEMP_ENV"
+                    
+                    while IFS= read -r line || [ -n "$line" ]; do
+                        if [[ "$line" == *"ChangeMe_UUIDv4"* ]]; then
+                            NEW_UUID=$(generate_uuid)
+                            # Bash string replacement for first occurrence per line
+                            echo "${line/ChangeMe_UUIDv4/$NEW_UUID}" >> "$TEMP_ENV"
+                        else
+                            echo "$line" >> "$TEMP_ENV"
+                        fi
+                    done < "$stack/.env"
+                    
+                    if [ -s "$TEMP_ENV" ]; then
+                        mv "$TEMP_ENV" "$stack/.env"
+                    else
+                         echo "    [-] Error generating xtm/.env"
+                         rm "$TEMP_ENV"
+                    fi
+                fi
+                echo "    [+] Created $stack/.env"
+            else
+                echo "    [-] Warning: Template $TEMPLATE not found for $stack"
+            fi
+        else
+            echo "    [$stack] .env exists. Skipping."
+        fi
+    fi
+done
+
+echo ""
+echo "################################################################################"
+echo "# ACTION REQUIRED: Environment configuration"
+echo "# .env files have been referenced or created."
+echo "#"
+echo "# Please REVIEW the .env files in each directory before starting the stacks."
+echo "# 1. infra/.env: Check ES_HEAP_SIZE_GB based on your RAM."
+echo "# 2. xtm/.env:   UUIDs have been auto-generated. Review tokens/passwords."
+echo "#"
+echo "################################################################################"
+read -p "Press Enter once you have reviewed your .env files to continue..."
+
+# 7. Check Host Requirements
 echo "[*] Checking host requirements..."
 VM_MAX_MAP_COUNT=$(sysctl -n vm.max_map_count)
 if [ "$VM_MAX_MAP_COUNT" -lt 262144 ]; then
