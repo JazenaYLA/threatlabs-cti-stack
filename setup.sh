@@ -6,6 +6,12 @@ set -e
 
 echo "[*] Initializing ThreatLabs CTI Stack Setup..."
 
+# 0. Initialize Submodules (if missing)
+if [ -f ".gitmodules" ]; then
+    echo "[*] checking submodules..."
+    git submodule update --init --recursive
+fi
+
 # 1. Create Shared Network
 # We check if it exists first to avoid errors
 if docker network ls | grep -q "cti-net"; then

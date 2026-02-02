@@ -100,7 +100,27 @@ If you need to completely wipe the stack and start over (delete all data):
 
 Ensure Docker and Docker Compose are installed.
 
-### 2. Configuration
+If cloning for the first time:
+
+```bash
+git clone --recurse-submodules https://github.com/JazenaYLA/threatlabs-cti-stack.git
+```
+
+(If you forgot `--recurse-submodules`, simply run `./setup.sh` and it will fix it).
+
+### 2. (Optional) For Dockge Users
+
+If you are managing your stacks with **Dockge**, you can use the `setup-dockge.sh` script to symlink these stacks into your Dockge directory (default `/opt/stacks`).
+
+> [!NOTE]
+> `setup.sh` is **MANDATORY** for everyone as it creates the necessary docker network (`cti-net`) and volumes.
+> `setup-dockge.sh` is **OPTIONAL** and only for users who want to see these stacks in their Dockge dashboard.
+
+```bash
+sudo ./setup-dockge.sh
+```
+
+### 3. Configuration
 
 Run the setup script to prepare networks, volumes, and generate environment files:
 
@@ -113,7 +133,7 @@ Run the setup script to prepare networks, volumes, and generate environment file
 1. Creates the shared network `cti-net`.
 2. Creates necessary docker volumes.
 3. **Generates `.env` files** for all stacks from templates.
-   * For **OpenCTI (xtm)**, it automatically generates unique UUIDv4 tokens for all connectors.
+    * For **OpenCTI (xtm)**, it automatically generates unique UUIDv4 tokens for all connectors.
 4. **Pauses** to allow you to review and edit the generated `.env` files.
 
 **Action Required:**
