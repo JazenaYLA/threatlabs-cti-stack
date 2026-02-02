@@ -189,6 +189,19 @@ The services must be started in a specific order to ensure database availability
         docker compose up -d --build
         # REQUIRED: Initial Onboarding
         docker compose run --rm openclaw-cli onboard --no-install-daemon
+        # REQUIRED: Initial Onboarding
+        docker compose run --rm openclaw-cli onboard --no-install-daemon
+
+        # INTERACTIVE PROMPTS CHEAT SHEET:
+        # 1.  Risk Acknowledgement? -> Yes
+        # 2.  Onboarding mode? -> **Manual**  <-- CRITICAL (QuickStart forces 127.0.0.1)
+        # 3.  Model/Auth Provider? -> **Skip** (or enter your OpenAI/Anthropic key)
+        # 4.  Gateway bind? -> **LAN** (0.0.0.0)
+        # 5.  Gateway auth? -> Token (Press Enter)
+        # 6.  Tailscale exposure? -> Off
+        # 7.  Configure chat channels? -> **No** (Skip for now, configure later via CLI)
+        # 8.  Configure skills? -> **No** (Skip for now)
+        # 9.  Install shell completion? -> No
         ```
     *   **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
