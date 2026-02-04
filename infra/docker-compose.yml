@@ -89,6 +89,9 @@ services:
       - POSTGRES_USER=${POSTGRES_ROOT_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD:-changeme}
       - POSTGRES_DB=postgres
+      - OPENAEV_DB_PASSWORD=${OPENAEV_DB_PASSWORD:-changeme}
+      - N8N_DB_PASSWORD=${N8N_DB_PASSWORD:-n8npass123!}
+      - FLOWINTEL_DB_PASSWORD=${FLOWINTEL_DB_PASSWORD:-changeme}
     volumes:
       - ./vol/postgres/data:/var/lib/postgresql/data
       - ./vol/postgres-init:/docker-entrypoint-initdb.d

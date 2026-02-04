@@ -654,14 +654,14 @@ services:
       - OPENAEV_ADMIN_EMAIL=${OPENAEV_ADMIN_EMAIL}
       - OPENAEV_ADMIN_PASSWORD=${OPENAEV_ADMIN_PASSWORD}
       - OPENAEV_ADMIN_TOKEN=${OPENAEV_ADMIN_TOKEN}
-      - OPENAEV_HEALTHCHECK_KEY=${OPENAEV_HEALTHCHECK_KEY:-ChangeMe}
+      - OPENAEV_HEALTHCHECK_KEY=${OPENAEV_HEALTHCHECK_KEY}
       - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
       - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
       - SPRING_DATASOURCE_URL=jdbc:postgresql://infra-postgres:5432/openaev
       # Using shared credentials defined in infra/init-dbs.sh
       # Defaults: openaev / changeme
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-openaev}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - SPRING_DATASOURCE_PASSWORD=${OPENAEV_DB_PASSWORD}
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS-KEY=${MINIO_ROOT_USER}
       - MINIO_ACCESS-SECRET=${MINIO_ROOT_PASSWORD}

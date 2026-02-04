@@ -11,7 +11,9 @@ services:
       - "${CORTEX_PORT:-9001}:9001"
     environment:
       - job_directory=/opt/cortex/jobs
+      - job_directory=/opt/cortex/jobs
       - es_uri=http://es8-cti:9200 # Infra ES8 (Shared)
+      - CORTEX_SECRET=${CORTEX_SECRET}
     networks:
       - cti-net
     healthcheck:
