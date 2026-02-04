@@ -32,6 +32,7 @@ services:
       - CQL_HOSTNAMES=cassandra
       # TheHive 4 requires ES 7.x (ES 8.x not supported for TH4)
       - ES_HOSTS=es7-cti:9200
+      - THEHIVE_SECRET=${THEHIVE_SECRET}
     depends_on:
       cassandra:
         condition: service_healthy

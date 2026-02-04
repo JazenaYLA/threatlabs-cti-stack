@@ -8,7 +8,7 @@ services:
     environment:
       - PORT=3000
       - FLOWISE_USERNAME=${FLOWISE_USERNAME:-admin}
-      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD:-changeme}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
     volumes:
       - ./vol/flowise/.flowise:/root/.flowise
     networks:
