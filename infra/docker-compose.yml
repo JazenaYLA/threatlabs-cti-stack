@@ -5,6 +5,7 @@ services:
     container_name: es7-cti
     environment:
       # Single-node discovery for homelab simplicity
+      - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
       - cluster.name=${ES7_CLUSTER_NAME}
