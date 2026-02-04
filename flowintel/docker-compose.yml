@@ -17,11 +17,7 @@ services:
       - DB_NAME=${POSTGRES_DB:-flowintel}
       - VALKEY_IP=${VALKEY_IP:-infra-valkey}
       - JWT_SECRET=${JWT_SECRET:-changeme}
-    depends_on:
-      # postgresql: REMOVED (Shared Infra)
-      #   condition: service_healthy
-      # valkey: REMOVED (Shared Infra)
-      #   condition: service_started
+
     volumes:
       - ./vol/flowintel/data:/var/lib/flowintel
     networks:
