@@ -23,9 +23,7 @@ services:
       - "${N8N_PORT:-5678}:5678"
     volumes:
       - ./vol/n8n/.n8n:/home/node/.n8n
-    depends_on:
-      # postgres: REMOVED (Shared Infra)
-      #   condition: service_healthy
+
     networks:
       - cti-net
     labels:

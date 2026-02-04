@@ -15,7 +15,7 @@ services:
       - REDIS_PORT=6379
       - PW_TEST_SCREENSHOT_NO_FONTS_READY=1
       - PLAYWRIGHT_CHROMIUM_USE_HEADLESS_NEW=1
-    depends_on: # - valkey: REMOVED (Shared Infra)
+
     networks:
       - cti-net
     healthcheck:
