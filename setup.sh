@@ -111,7 +111,7 @@ if [ ! -f cortex/vol/cortex/application.conf ]; then
     echo "[+] Generating default Cortex application.conf..."
     cat <<EOF > cortex/vol/cortex/application.conf
 ## Cortex Configuration (Auto-Generated)
-play.http.secret.key="changeme_$(date +%s | sha256sum | base64 | head -c 32)"
+play.http.secret.key="\${?CORTEX_SECRET}"
 search {
   index = "cortex"
   hostnames = ["http://es8-cti:9200"]
@@ -128,12 +128,20 @@ responder {
 EOF
 fi
 
+# Ensure CORTEX_SECRET exists in .env
+if [ -f cortex/.env ]; then
+    if ! grep -q "CORTEX_SECRET" cortex/.env; then
+        echo "CORTEX_SECRET=$(date +%s | sha256sum | base64 | head -c 64)" >> cortex/.env
+    fi
+fi
+
+
 # TheHive Default Config
 if [ ! -f thehive/vol/thehive/application.conf ]; then
     echo "[+] Generating default TheHive application.conf..."
     cat <<EOF > thehive/vol/thehive/application.conf
 ## TheHive Configuration (Auto-Generated)
-play.http.secret.key="changeme_$(date +%s | sha256sum | base64 | head -c 32)"
+play.http.secret.key="\${?THEHIVE_SECRET}"
 db.janusgraph {
   storage {
     backend = cql
@@ -154,6 +162,13 @@ storage {
   localfs.location = /var/lib/thehive/data
 }
 EOF
+fi
+
+# Ensure THEHIVE_SECRET exists in .env
+if [ -f thehive/.env ]; then
+    if ! grep -q "THEHIVE_SECRET" thehive/.env; then
+        echo "THEHIVE_SECRET=$(date +%s | sha256sum | base64 | head -c 64)" >> thehive/.env
+    fi
 fi
 
 # 6. Generate Environment Files
@@ -224,6 +239,10 @@ echo "# ACTION REQUIRED: Environment configuration"
 echo "# .env files have been referenced or created."
 echo "#"
 echo "# Please REVIEW the .env files in each directory before starting the stacks."
+echo "# NEW: Check 'infra/.env' matching passwords with other stacks:"
+echo "#      - OPENAEV_DB_PASSWORD (matches xtm/.env)"
+echo "#      - N8N_DB_PASSWORD (matches n8n/.env)"
+echo "#      - FLOWINTEL_DB_PASSWORD (matches flowintel/.env)"
 echo "# 1. infra/.env: Check ES_HEAP_SIZE_GB based on your RAM."
 echo "# 2. xtm/.env:   UUIDs have been auto-generated. Review tokens/passwords."
 echo "#"

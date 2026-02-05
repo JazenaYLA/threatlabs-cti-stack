@@ -68,7 +68,7 @@ Create a `.env` file with the required configuration. An example is available in
 ```bash
 # PostgreSQL
 POSTGRES_USER=openaev
-POSTGRES_PASSWORD=<generate-strong-password>
+OPENAEV_DB_PASSWORD=<generate-strong-password>
 
 # MinIO
 MINIO_ROOT_USER=minioadmin
@@ -128,9 +128,9 @@ docker compose up -d
 
 Once all services are healthy (this may take a few minutes on first start):
 
-- **OpenCTI**: http://localhost:8080
-- **OpenAEV**: http://localhost:8081
-- **RabbitMQ Management**: http://localhost:15672
+- **OpenCTI**: <http://localhost:8080>
+- **OpenAEV**: <http://localhost:8081>
+- **RabbitMQ Management**: <http://localhost:15672>
 
 ## Included Components
 
@@ -238,6 +238,7 @@ docker compose down -v
 ### Services not starting
 
 1. Check if Elasticsearch has enough virtual memory:
+
    ```bash
    sudo sysctl -w vm.max_map_count=262144
    ```
@@ -245,6 +246,7 @@ docker compose down -v
 2. Verify all environment variables are set in `.env`
 
 3. Check logs for specific errors:
+
    ```bash
    docker compose logs <service-name>
    ```
@@ -266,7 +268,7 @@ If you wish to report bugs or request new features:
 
 ### Discussion
 
-For support or discussions about the XTM stack, join us on our [Slack channel](https://community.filigran.io) or email us at contact@filigran.io.
+For support or discussions about the XTM stack, join us on our [Slack channel](https://community.filigran.io) or email us at <contact@filigran.io>.
 
 ## About
 
