@@ -83,7 +83,7 @@ create_vol "cortex/vol/cortex"
 sudo chown -R 1000:1000 cortex/vol || echo "[-] Warning: Failed to chown cortex/vol."
 
 # n8n (DB moved to infra)
-create_vol "n8n/vol/n8n"
+create_vol "n8n/vol/n8n/.n8n"
 sudo chown -R 1000:1000 n8n/vol || echo "[-] Warning: Failed to chown n8n/vol."
 
 # Flowise
