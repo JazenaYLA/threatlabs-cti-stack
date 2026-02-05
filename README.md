@@ -189,8 +189,6 @@ The services must be started in a specific order to ensure database availability
         docker compose up -d --build
         # REQUIRED: Initial Onboarding
         docker compose run --rm openclaw-cli onboard --no-install-daemon
-        # REQUIRED: Initial Onboarding
-        docker compose run --rm openclaw-cli onboard --no-install-daemon
 
         # INTERACTIVE PROMPTS CHEAT SHEET:
         # 1.  Risk Acknowledgement? -> Yes
