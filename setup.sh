@@ -14,11 +14,17 @@ fi
 
 # 1. Create Shared Network
 # We check if it exists first to avoid errors
+
 if docker network ls | grep -q "cti-net"; then
     echo "[+] Network 'cti-net' already exists."
 else
     echo "[+] Network 'cti-net' created."
 fi
+
+# 2. Ensure Permissions on Shell Scripts
+echo "[*] Ensuring shell scripts are executable..."
+find . -name "*.sh" -exec chmod +x {} +
+
 
 # Helper function to create volumes in both Repo and /opt/stacks
 create_vol() {
