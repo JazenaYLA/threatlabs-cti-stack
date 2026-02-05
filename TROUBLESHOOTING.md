@@ -84,8 +84,8 @@ ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
 
 1. Verify `infra` is running and healthy (`infra-postgres`).
 2. Check the logs of the failing service (`docker logs n8n-cti`). If you see "password authentication failed":
-    * Compare your local `.env` (e.g., `n8n/.env`) against the defaults in `infra/vol/postgres-init/init-dbs.sh`.
-    * **Fix**: Update your `.env` to match the expected credentials (e.g., `n8n` / `n8npass123!`).
+    * Compare your local `.env` (e.g., `n8n/.env`) against the defaults in `infra/vol/postgres-init/init-dbs.sh` or `infra/.env` variables.
+    * **Fix**: Update your `.env` to match the expected credentials (e.g., ensure `N8N_DB_PASSWORD` in `n8n/.env` matches `infra/.env`).
 
 ### "Factory Reset" Needed
 
@@ -106,6 +106,17 @@ ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
     1. Does `infra` have `es8-cti` running?
     2. **Did you run `./create-cortex-index.sh`?** Cortex 4 requires a specific index mapping when using ES8.
 * **Fix**: Run `cd cortex && ./create-cortex-index.sh`.
+
+### "Secret Key" Errors (Cortex/TheHive)
+
+**Issue**: Service logs show errors about `play.http.secret.key` or fails to start with configuration errors.
+
+**Cause**: The application secret key is missing or invalid. We now use environment variables (`CORTEX_SECRET` / `THEHIVE_SECRET`) instead of hardcoding them in `application.conf`.
+
+**Fix**:
+
+1. Check `cortex/.env` or `thehive/.env` for `CORTEX_SECRET` / `THEHIVE_SECRET`.
+2. Ensure `docker-compose.yml` passes this variable to the container.
 
 ### Cortex Initial Setup & Maintenance
 
