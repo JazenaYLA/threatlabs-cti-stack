@@ -180,14 +180,21 @@ The services must be started in a specific order to ensure database availability
     * **MISP**: `cd misp && docker compose up -d`
     * **Cortex**: `cd cortex && docker compose up -d`
     * **n8n**: `cd n8n && docker compose up -d`
-    * **Flowise**: `cd flowise && docker compose up -d`
-    * **FlowIntel**: `cd flowintel && docker compose up -d`
+    *   **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
+    *   **MISP**: `cd misp && docker compose up -d`
+    *   **Cortex**: `cd cortex && docker compose up -d`
+    *   **n8n**: `cd n8n && docker compose up -d`
+    *   **Flowise**: `cd flowise && docker compose up -d`
+    *   **FlowIntel**: `cd flowintel && docker compose up -d`
     *   **Lacus**: `cd lacus && docker compose up -d`
     *   **OpenClaw**:
         ```bash
         cd openclaw
-        
-        
+        docker compose up -d --build
+        ```
+        > **Note**: To install extra system tools (e.g., `ffmpeg`), add `OPENCLAW_DOCKER_APT_PACKAGES="ffmpeg"` to `.env` and rebuild.
+
+        ```bash
         # REQUIRED: Initial Onboarding
         docker compose run --rm openclaw-cli onboard --no-install-daemon
 
