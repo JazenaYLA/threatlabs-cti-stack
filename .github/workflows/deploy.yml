@@ -1,0 +1,41 @@
+name: Deploy CTI Stack
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    # This MUST match the label you used in the registration command
+    runs-on: local-shell
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Tools (Container Only)
+        # Since the runner image is minimal, we ensure docker client is present
+        run: |
+          apk update
+          apk add --no-cache docker-cli docker-compose
+
+      - name: Deploy to Dockge
+        run: |
+          # 1. Define Target
+          TARGET="/opt/stacks/threatlabs-cti-stack"
+          
+          # 2. Ensure Directory Exists (and set permissions if needed)
+          mkdir -p $TARGET
+          
+          # 3. Copy Files
+          # We use simple copy because we are 'local' to the filesystem
+          echo "📂 Copying files to $TARGET..."
+          cp -r ./* $TARGET/
+          
+          # 4. Execute Docker Compose
+          echo "🚀 Updating Stack..."
+          cd $TARGET
+          docker compose pull
+          docker compose up -d --remove-orphans
+          
+          echo "✅ Done!"
