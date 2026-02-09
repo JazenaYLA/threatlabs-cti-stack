@@ -44,4 +44,9 @@ if [ -d "thehive/vol" ]; then echo "  - Fixing TheHive..."; chown -R 1000:1000 t
 # OpenClaw
 if [ -d "openclaw/vol" ]; then echo "  - Fixing OpenClaw..."; chown -R 1000:1000 openclaw/vol; fi
 
+# --- 3. Executable Permissions ---
+echo "  - Making scripts executable..."
+find . -name "*.sh" -exec chmod +x {} +
+if [ -f "infra/vol/postgres-init/init-dbs.sh" ]; then chmod +x infra/vol/postgres-init/init-dbs.sh; fi
+
 echo "✅ Permissions Restored."
