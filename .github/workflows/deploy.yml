@@ -1,4 +1,4 @@
-name: Deploy CTI Stack
+name: Deploy Monorepo (Mixed Filenames)
 
 on:
   push:
@@ -6,36 +6,53 @@ on:
 
 jobs:
   deploy:
-    # This MUST match the label you used in the registration command
     runs-on: local-shell
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Tools (Container Only)
-        # Since the runner image is minimal, we ensure docker client is present
-        run: |
-          apk update
-          apk add --no-cache docker-cli docker-compose
+      - name: Install Tools
+        run: apk add --no-cache docker-cli docker-compose rsync
 
-      - name: Deploy to Dockge
+      - name: Deploy Stacks
         run: |
-          # 1. Define Target
-          TARGET="/opt/stacks/threatlabs-cti-stack"
+          # 1. Define Root
+          DOCKGE_ROOT="/opt/stacks"
           
-          # 2. Ensure Directory Exists (and set permissions if needed)
-          mkdir -p $TARGET
+          # 2. Sync Files (Exclude .git and the runner itself)
+          echo "📂 Syncing files to $DOCKGE_ROOT..."
+          rsync -av --delete --exclude='.git' --exclude='forgejo-runner' ./ $DOCKGE_ROOT/
+
+          # 3. Loop through every folder in the root
+          cd $DOCKGE_ROOT
+          for d in */ ; do
+              # Remove trailing slash (e.g., "cortex/" -> "cortex")
+              stack_name=${d%/}
+              
+              # SKIP the runner folder explicitly
+              if [ "$stack_name" == "forgejo-runner" ]; then continue; fi
+
+              echo "🔍 Checking $stack_name..."
+              
+              # CHECK 1: Preferred Name
+              if [ -f "$stack_name/compose.yml" ]; then
+                  echo "✅ Found compose.yml in $stack_name. Updating..."
+                  cd "$DOCKGE_ROOT/$stack_name"
+                  docker compose pull
+                  docker compose up -d --remove-orphans
+                  cd $DOCKGE_ROOT
+
+              # CHECK 2: Legacy Name
+              elif [ -f "$stack_name/docker-compose.yml" ]; then
+                  echo "✅ Found docker-compose.yml in $stack_name. Updating..."
+                  cd "$DOCKGE_ROOT/$stack_name"
+                  docker compose pull
+                  docker compose up -d --remove-orphans
+                  cd $DOCKGE_ROOT
+                  
+              else
+                  echo "⚠️  No compose file in $stack_name. Skipping."
+              fi
+          done
           
-          # 3. Copy Files
-          # We use simple copy because we are 'local' to the filesystem
-          echo "📂 Copying files to $TARGET..."
-          cp -r ./* $TARGET/
-          
-          # 4. Execute Docker Compose
-          echo "🚀 Updating Stack..."
-          cd $TARGET
-          docker compose pull
-          docker compose up -d --remove-orphans
-          
-          echo "✅ Done!"
+          echo "🎉 All stacks processed!"

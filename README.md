@@ -142,16 +142,12 @@ When the script pauses, open the `.env` files in each directory (e.g., `infra/.e
 > [!IMPORTANT]
 >
 > * **infra/.env**: Verify `ES_HEAP_SIZE_GB` fits your host's RAM.
-> * **xtm/.env**: Review generated UUIDs. If you are migrating an existing OpenCTI instance, you may need to replace these with your potential existing connector IDs.
-
-> [!IMPORTANT]
-> Ensure you verify the `ES_HEAP_SIZE_GB` in `infra/.env` fits your host's available RAM.
+>
+* **xtm/.env**: Review generated UUIDs. If you are migrating an existing OpenCTI instance, you may need to replace these with your potential existing connector IDs.
 
 1. Startup Order
 
 The services must be started in a specific order to ensure database availability.
-
-1. **Start Infrastructure Stack (REQUIRED FIRST)**
 
 1. **Start Infrastructure Stack (REQUIRED FIRST)**
 
@@ -169,7 +165,7 @@ The services must be started in a specific order to ensure database availability
 1. **Start Application Stacks**
 
     > **Cortex Users**: First run the index setup script (required for ES8):
->
+    >
     > ```bash
     > cd cortex && ./create-cortex-index.sh && cd ..
     > ```
@@ -180,18 +176,20 @@ The services must be started in a specific order to ensure database availability
     * **MISP**: `cd misp && docker compose up -d`
     * **Cortex**: `cd cortex && docker compose up -d`
     * **n8n**: `cd n8n && docker compose up -d`
-    *   **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
-    *   **MISP**: `cd misp && docker compose up -d`
-    *   **Cortex**: `cd cortex && docker compose up -d`
-    *   **n8n**: `cd n8n && docker compose up -d`
-    *   **Flowise**: `cd flowise && docker compose up -d`
-    *   **FlowIntel**: `cd flowintel && docker compose up -d`
-    *   **Lacus**: `cd lacus && docker compose up -d`
-    *   **OpenClaw**:
+    * **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
+    * **MISP**: `cd misp && docker compose up -d`
+    * **Cortex**: `cd cortex && docker compose up -d`
+    * **n8n**: `cd n8n && docker compose up -d`
+    * **Flowise**: `cd flowise && docker compose up -d`
+    * **FlowIntel**: `cd flowintel && docker compose up -d`
+    * **Lacus**: `cd lacus && docker compose up -d`
+    * **OpenClaw**:
+
         ```bash
         cd openclaw
         docker compose up -d --build
         ```
+
         > **Note**: To install extra system tools (e.g., `ffmpeg`), add `OPENCLAW_DOCKER_APT_PACKAGES="ffmpeg"` to `.env` and rebuild.
 
         ```bash
@@ -209,7 +207,8 @@ The services must be started in a specific order to ensure database availability
         # 8.  Configure skills? -> **No** (Skip for now)
         # 9.  Install shell completion? -> No
         ```
-    *   **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
+
+    * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
 ## Notes
 
