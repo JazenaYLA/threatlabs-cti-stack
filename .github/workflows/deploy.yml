@@ -1,4 +1,4 @@
-name: Deploy Monorepo (Mixed Filenames)
+name: Deploy Monorepo (Root Fix)
 
 on:
   push:
@@ -16,43 +16,51 @@ jobs:
 
       - name: Deploy Stacks
         run: |
-          # 1. Define Root
+          # --- CONFIGURATION ---
+          # We deploy directly to the Dockge Root, not a subfolder
           DOCKGE_ROOT="/opt/stacks"
           
-          # 2. Sync Files (Exclude .git and the runner itself)
-          echo "📂 Syncing files to $DOCKGE_ROOT..."
-          rsync -av --delete --exclude='.git' --exclude='forgejo-runner' ./ $DOCKGE_ROOT/
+          echo "📂 Syncing Git Repo to $DOCKGE_ROOT..."
+          
+          # 1. SYNC FILES
+          # We use --no-owner --no-group to prevent permission errors on the host
+          # We exclude the .git folder and the runner itself
+          rsync -av --no-owner --no-group \
+            --exclude='.git' \
+            --exclude='forgejo-runner' \
+            --exclude='README.md' \
+            ./ "$DOCKGE_ROOT/"
 
-          # 3. Loop through every folder in the root
-          cd $DOCKGE_ROOT
+          # 2. UPDATE STACKS
+          cd "$DOCKGE_ROOT"
+          
+          # Loop through every folder in /opt/stacks
           for d in */ ; do
-              # Remove trailing slash (e.g., "cortex/" -> "cortex")
+              # Clean up directory name (remove trailing slash)
               stack_name=${d%/}
               
-              # SKIP the runner folder explicitly
+              # Skip the runner folder (don't restart the hand that feeds you)
               if [ "$stack_name" == "forgejo-runner" ]; then continue; fi
 
-              echo "🔍 Checking $stack_name..."
-              
-              # CHECK 1: Preferred Name
-              if [ -f "$stack_name/compose.yml" ]; then
-                  echo "✅ Found compose.yml in $stack_name. Updating..."
+              # Check for Compose files
+              if [ -f "$stack_name/compose.yaml" ]; then
+                  echo "✅ [compose.yaml] Updating $stack_name..."
                   cd "$DOCKGE_ROOT/$stack_name"
                   docker compose pull
                   docker compose up -d --remove-orphans
-                  cd $DOCKGE_ROOT
+                  cd "$DOCKGE_ROOT"
 
-              # CHECK 2: Legacy Name
               elif [ -f "$stack_name/docker-compose.yml" ]; then
-                  echo "✅ Found docker-compose.yml in $stack_name. Updating..."
+                  echo "✅ [docker-compose.yml] Updating $stack_name..."
                   cd "$DOCKGE_ROOT/$stack_name"
                   docker compose pull
                   docker compose up -d --remove-orphans
-                  cd $DOCKGE_ROOT
-                  
-              else
-                  echo "⚠️  No compose file in $stack_name. Skipping."
+                  cd "$DOCKGE_ROOT"
+              
+              # Optional: Log skips to reduce noise
+              # else
+              #    echo "⏭️  Skipping $stack_name (No compose file)"
               fi
           done
           
-          echo "🎉 All stacks processed!"
+          echo "🎉 Deployment Complete!"
