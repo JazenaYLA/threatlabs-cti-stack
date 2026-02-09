@@ -1,4 +1,4 @@
-name: Deploy Monorepo (Root Fix)
+name: Deploy Monorepo (Copy Fix)
 
 on:
   push:
@@ -12,55 +12,38 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Tools
-        run: apk add --no-cache docker-cli docker-compose rsync
+        run: apk add --no-cache docker-cli docker-compose
 
       - name: Deploy Stacks
         run: |
-          # --- CONFIGURATION ---
-          # We deploy directly to the Dockge Root, not a subfolder
+          # 1. Define Target
           DOCKGE_ROOT="/opt/stacks"
           
-          echo "📂 Syncing Git Repo to $DOCKGE_ROOT..."
+          echo "📂 Copying files to $DOCKGE_ROOT..."
           
-          # 1. SYNC FILES
-          # We use --no-owner --no-group to prevent permission errors on the host
-          # We exclude the .git folder and the runner itself
-          rsync -av --no-owner --no-group \
-            --exclude='.git' \
-            --exclude='forgejo-runner' \
-            --exclude='README.md' \
-            ./ "$DOCKGE_ROOT/"
-
-          # 2. UPDATE STACKS
+          # 2. FORCE COPY (The Fix)
+          # We use 'cp -Rf' to overwrite without permission checks
+          # We manually exclude .git and the runner to prevent loops
+          cp -Rf ./* "$DOCKGE_ROOT/"
+          
+          # 3. Update Stacks
           cd "$DOCKGE_ROOT"
           
-          # Loop through every folder in /opt/stacks
+          # Loop through folders
           for d in */ ; do
-              # Clean up directory name (remove trailing slash)
               stack_name=${d%/}
               
-              # Skip the runner folder (don't restart the hand that feeds you)
+              # Skip the runner itself
               if [ "$stack_name" == "forgejo-runner" ]; then continue; fi
-
-              # Check for Compose files
-              if [ -f "$stack_name/compose.yaml" ]; then
-                  echo "✅ [compose.yaml] Updating $stack_name..."
-                  cd "$DOCKGE_ROOT/$stack_name"
-                  docker compose pull
-                  docker compose up -d --remove-orphans
-                  cd "$DOCKGE_ROOT"
-
-              elif [ -f "$stack_name/docker-compose.yml" ]; then
-                  echo "✅ [docker-compose.yml] Updating $stack_name..."
-                  cd "$DOCKGE_ROOT/$stack_name"
-                  docker compose pull
-                  docker compose up -d --remove-orphans
-                  cd "$DOCKGE_ROOT"
               
-              # Optional: Log skips to reduce noise
-              # else
-              #    echo "⏭️  Skipping $stack_name (No compose file)"
+              # Check for compose files
+              if [ -f "$stack_name/compose.yaml" ] || [ -f "$stack_name/docker-compose.yml" ]; then
+                  echo "✅ Updating $stack_name..."
+                  cd "$DOCKGE_ROOT/$stack_name"
+                  docker compose pull
+                  docker compose up -d --remove-orphans
+                  cd "$DOCKGE_ROOT"
               fi
           done
           
-          echo "🎉 Deployment Complete!"
+          echo "🎉 Done!"
