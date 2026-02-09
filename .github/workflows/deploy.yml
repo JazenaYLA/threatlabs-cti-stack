@@ -1,4 +1,4 @@
-name: Deploy (Final Fix)
+name: Deploy (Version Fix)
 
 on:
   push:
@@ -11,16 +11,36 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Tools
-        run: apk add --no-cache docker-cli docker-compose tar
+      # --- CHANGED STEP: Install Latest Docker Manually ---
+      - name: Install Latest Docker Tools
+        run: |
+          # 1. Install basics
+          apk add --no-cache curl tar
 
-      # --- NEW STEP: Fix Read Permissions ---
+          # 2. Download Latest Docker CLI (Static Binary)
+          echo "⬇️ Downloading Docker v26.1.3..."
+          curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-26.1.3.tgz -o docker.tgz
+          
+          # 3. Extract and Install
+          tar -xzf docker.tgz
+          mv docker/docker /usr/local/bin/docker
+          rm -rf docker docker.tgz
+          
+          # 4. Install Docker Compose Plugin (v2.27.0)
+          echo "⬇️ Downloading Docker Compose v2.27.0..."
+          mkdir -p /usr/local/lib/docker/cli-plugins
+          curl -SL https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+          
+          # 5. Verify Versions
+          echo "✅ Versions Installed:"
+          docker --version
+          docker compose version
+
       - name: Fix Source Permissions
         run: |
           echo "🔧 Fixing workspace permissions..."
-          # Force all files to be readable/writable by the current user
           chmod -R u+rwX,go+rX .
-          ls -la  # Verify we can see the files now
 
       - name: Deploy Stacks
         run: |
@@ -29,7 +49,6 @@ jobs:
           echo "🚀 Starting Deployment to $DOCKGE_ROOT..."
           
           # Use Docker to write files (Bypasses Host/LXC permission issues)
-          # We pipe the tar stream directly into a container mapped to the host
           tar --exclude='.git' --exclude='forgejo-runner' -c . | \
           docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
           
