@@ -19,4 +19,3 @@ services:
 networks:
   cti-net:
     external: true
-    name: cti-net

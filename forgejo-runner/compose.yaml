@@ -1,0 +1,24 @@
+services:
+  runner:
+    image: code.forgejo.org/forgejo/runner:3.3.0
+    container_name: forgejo_runner
+    restart: unless-stopped
+
+    # --- ADD THIS LINE ---
+    privileged: true
+    # ---------------------    
+
+    # ----------------------------------------------------
+    # THE FIX: Run as root to access the host docker.sock
+    # ----------------------------------------------------
+    user: root
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Allow it to deploy to your stacks folder
+      - /opt/stacks:/opt/stacks
+    # Corrected command from previous step
+    command: sh -c "apk add --no-cache nodejs && forgejo-runner daemon"
+networks: {}
