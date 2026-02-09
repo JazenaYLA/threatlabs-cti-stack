@@ -1,4 +1,4 @@
-name: Deploy via Docker Pipe
+name: Deploy (Final Fix)
 
 on:
   push:
@@ -14,23 +14,26 @@ jobs:
       - name: Install Tools
         run: apk add --no-cache docker-cli docker-compose tar
 
+      # --- NEW STEP: Fix Read Permissions ---
+      - name: Fix Source Permissions
+        run: |
+          echo "🔧 Fixing workspace permissions..."
+          # Force all files to be readable/writable by the current user
+          chmod -R u+rwX,go+rX .
+          ls -la  # Verify we can see the files now
+
       - name: Deploy Stacks
         run: |
-          # 1. Define Target
           DOCKGE_ROOT="/opt/stacks"
           
           echo "🚀 Starting Deployment to $DOCKGE_ROOT..."
           
-          # ---------------------------------------------------------
-          # THE FIX: Use Docker to write the files (Bypasses Permissions)
-          # We tar the current files and pipe them into a helper container
-          # ---------------------------------------------------------
-          echo "📦 Piping files to Host..."
+          # Use Docker to write files (Bypasses Host/LXC permission issues)
+          # We pipe the tar stream directly into a container mapped to the host
           tar --exclude='.git' --exclude='forgejo-runner' -c . | \
           docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
           
-          # 2. Update Stacks
-          # We can traverse directories because of the 777 permissions
+          # Update Stacks
           cd "$DOCKGE_ROOT"
           
           for d in */ ; do
