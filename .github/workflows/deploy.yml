@@ -1,4 +1,4 @@
-name: Deploy Monorepo (Copy Fix)
+name: Deploy via Docker Pipe
 
 on:
   push:
@@ -12,31 +12,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Tools
-        run: apk add --no-cache docker-cli docker-compose
+        run: apk add --no-cache docker-cli docker-compose tar
 
       - name: Deploy Stacks
         run: |
           # 1. Define Target
           DOCKGE_ROOT="/opt/stacks"
           
-          echo "📂 Copying files to $DOCKGE_ROOT..."
+          echo "🚀 Starting Deployment to $DOCKGE_ROOT..."
           
-          # 2. FORCE COPY (The Fix)
-          # We use 'cp -Rf' to overwrite without permission checks
-          # We manually exclude .git and the runner to prevent loops
-          cp -Rf ./* "$DOCKGE_ROOT/"
+          # ---------------------------------------------------------
+          # THE FIX: Use Docker to write the files (Bypasses Permissions)
+          # We tar the current files and pipe them into a helper container
+          # ---------------------------------------------------------
+          echo "📦 Piping files to Host..."
+          tar --exclude='.git' --exclude='forgejo-runner' -c . | \
+          docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
           
-          # 3. Update Stacks
+          # 2. Update Stacks
+          # We can traverse directories because of the 777 permissions
           cd "$DOCKGE_ROOT"
           
-          # Loop through folders
           for d in */ ; do
               stack_name=${d%/}
               
-              # Skip the runner itself
               if [ "$stack_name" == "forgejo-runner" ]; then continue; fi
               
-              # Check for compose files
               if [ -f "$stack_name/compose.yaml" ] || [ -f "$stack_name/docker-compose.yml" ]; then
                   echo "✅ Updating $stack_name..."
                   cd "$DOCKGE_ROOT/$stack_name"
@@ -46,4 +47,4 @@ jobs:
               fi
           done
           
-          echo "🎉 Done!"
+          echo "🎉 Deployment Complete!"
