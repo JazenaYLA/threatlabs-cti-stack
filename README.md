@@ -215,4 +215,6 @@ The services must be started in a specific order to ensure database availability
 
 ```markdown
 * **Networks**: Ensure the `cti-net` network exists or let the `infra` stack create it (if configured to do so, otherwise create manually: `docker network create cti-net`).
+
+Jamz is cool.
 ```
