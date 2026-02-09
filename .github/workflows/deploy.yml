@@ -68,5 +68,17 @@ jobs:
                   cd "$DOCKGE_ROOT"
               fi
           done
+
+      - name: Restore Service Permissions
+        run: |
+          echo "🔧 Re-applying special service permissions..."
+          DOCKGE_ROOT="/opt/stacks"
+          
+          # Run the fix script using a temporary Alpine container (as Root)
+          # This works around the runner's lack of sudo privileges
+          docker run --rm \
+            -v ${DOCKGE_ROOT}:/target \
+            -w /target \
+            alpine sh ./fix-permissions.sh
           
           echo "🎉 Deployment Complete!"
