@@ -8,8 +8,6 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 This repository is organized into modular stacks that share common infrastructure.
 
-```mermaid
-graph TD
     subgraph "Gateway (Optional)"
         Proxy[Reverse Proxy<br/>Traefik / Nginx / Other]
     end
@@ -31,7 +29,6 @@ graph TD
     end
 
     subgraph "Legacy & Analysis"
-        Cortex[Cortex 4]
         TheHive[TheHive 4]
         Cassandra[(Cassandra)]
     end
@@ -44,10 +41,10 @@ graph TD
     end
 
     %% Network Flow
-    Proxy -.->|Route| OpenCTI & OpenAEV & MISP & n8n & Flowise & AIL & TheHive & Cortex
+    Proxy -.->|Route| OpenCTI & OpenAEV & MISP & n8n & Flowise & AIL & TheHive
     
     %% Infrastructure Dependencies
-    OpenCTI & OpenAEV & Cortex --> ES8
+    OpenCTI & OpenAEV --> ES8
     TheHive --> ES7
     
     %% Local Stack Dependencies
@@ -67,13 +64,11 @@ graph TD
 * **`proxy/`**: **Traefik Proxy**. Shared reverse proxy for accessing services via subdomains.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
-* **`cortex/`**: **Observable Analysis**. Cortex 4, depends on `infra` (ES8).
 * **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
-* **`openclaw/`**: **AI Agent**. Self-hosted AI agent with Docker support.
 
 ### Shared Network
 
@@ -166,50 +161,14 @@ The services must be started in a specific order to ensure database availability
 
 1. **Start Application Stacks**
 
-    > **Cortex Users**: First run the index setup script (required for ES8):
-    >
-    > ```bash
-    > cd cortex && ./create-cortex-index.sh && cd ..
-    > ```
-
     You can start the stacks in any order:
 
     * **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
     * **MISP**: `cd misp && docker compose up -d`
-    * **Cortex**: `cd cortex && docker compose up -d`
-    * **n8n**: `cd n8n && docker compose up -d`
-    * **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
-    * **MISP**: `cd misp && docker compose up -d`
-    * **Cortex**: `cd cortex && docker compose up -d`
     * **n8n**: `cd n8n && docker compose up -d`
     * **Flowise**: `cd flowise && docker compose up -d`
     * **FlowIntel**: `cd flowintel && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
-    * **OpenClaw**:
-
-        ```bash
-        cd openclaw
-        docker compose up -d --build
-        ```
-
-        > **Note**: To install extra system tools (e.g., `ffmpeg`), add `OPENCLAW_DOCKER_APT_PACKAGES="ffmpeg"` to `.env` and rebuild.
-
-        ```bash
-        # REQUIRED: Initial Onboarding
-        docker compose run --rm openclaw-cli onboard --no-install-daemon
-
-        # INTERACTIVE PROMPTS CHEAT SHEET:
-        # 1.  Risk Acknowledgement? -> Yes
-        # 2.  Onboarding mode? -> **Manual**  <-- CRITICAL (QuickStart forces 127.0.0.1)
-        # 3.  Model/Auth Provider? -> **Skip** (or enter your OpenAI/Anthropic key)
-        # 4.  Gateway bind? -> **LAN** (0.0.0.0)
-        # 5.  Gateway auth? -> Token (Press Enter)
-        # 6.  Tailscale exposure? -> Off
-        # 7.  Configure chat channels? -> **No** (Skip for now, configure later via CLI)
-        # 8.  Configure skills? -> **No** (Skip for now)
-        # 9.  Install shell completion? -> No
-        ```
-
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
 ## Notes

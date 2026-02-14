@@ -78,10 +78,6 @@ sudo chown -R 1000:1000 xtm/volumes || echo "[-] Warning: Failed to chown xtm/vo
 # 4. Prepare Modular Stack Volumes
 echo "[*] Preparing modular stack volumes..."
 
-# Cortex
-create_vol "cortex/vol/cortex"
-sudo chown -R 1000:1000 cortex/vol || echo "[-] Warning: Failed to chown cortex/vol."
-
 # n8n (DB moved to infra)
 create_vol "n8n/vol/n8n/.n8n"
 sudo chown -R 1000:1000 n8n/vol || echo "[-] Warning: Failed to chown n8n/vol."
@@ -104,29 +100,9 @@ create_vol "thehive/vol/cassandra/data"
 create_vol "thehive/vol/thehive"
 sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
 
-# OpenClaw (AI Agent)
-create_vol "openclaw/vol/config"
-create_vol "openclaw/vol/workspace"
-sudo chown -R 1000:1000 openclaw/vol || echo "[-] Warning: Failed to chown openclaw/vol."
-
 # 5. Generate Default Configurations (if missing)
 echo "[*] Checking for default configurations..."
 
-# Cortex Default Config
-if [ ! -f cortex/vol/cortex/application.conf ]; then
-    echo "[+] Generating default Cortex application.conf..."
-    cat <<EOF > cortex/vol/cortex/application.conf
-## Cortex Configuration (Auto-Generated)
-play.http.secret.key="\${?CORTEX_SECRET}"
-search {
-  index = "cortex"
-  hostnames = ["http://es8-cti:9200"]
-}
-job {
-  runner = [docker, process]
-}
-analyzer {
-  urls = ["https://catalogs.download.strangebee.com/latest/json/analyzers.json"]
 }
 responder {
   urls = ["https://catalogs.download.strangebee.com/latest/json/responders.json"]
@@ -136,12 +112,6 @@ fi
 
 # Ensure CORTEX_SECRET exists in .env
 if [ -f cortex/.env ]; then
-    if ! grep -q "CORTEX_SECRET" cortex/.env; then
-        echo "CORTEX_SECRET=$(date +%s | sha256sum | base64 | head -c 64)" >> cortex/.env
-    fi
-fi
-
-
 # TheHive Default Config
 if [ ! -f thehive/vol/thehive/application.conf ]; then
     echo "[+] Generating default TheHive application.conf..."
@@ -166,7 +136,6 @@ db.janusgraph {
 storage {
   provider = localfs
   localfs.location = /var/lib/thehive/data
-}
 EOF
 fi
 
@@ -189,7 +158,7 @@ generate_uuid() {
     fi
 }
 
-STACKS=("infra" "xtm" "misp" "cortex" "n8n" "flowise" "flowintel" "thehive" "lacus" "openclaw" "ail-project")
+STACKS=("infra" "xtm" "misp" "n8n" "flowise" "flowintel" "thehive" "lacus" "ail-project")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then

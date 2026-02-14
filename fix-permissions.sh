@@ -42,8 +42,6 @@ ensure_vol "xtm/volumes/redisdata" "xtm/volumes" "1000:1000"
 ensure_vol "xtm/volumes/amqpdata" "xtm/volumes" "1000:1000"
 ensure_vol "xtm/volumes/rsakeys" "xtm/volumes" "1000:1000"
 
-# Cortex
-ensure_vol "cortex/vol/cortex" "cortex/vol" "1000:1000"
 
 # n8n
 ensure_vol "n8n/vol/n8n/.n8n" "n8n/vol" "1000:1000"
@@ -62,9 +60,6 @@ ensure_vol "lacus/vol/lacus-cache" "lacus/vol" "1000:1000"
 ensure_vol "thehive/vol/cassandra/data" "thehive/vol" "1000:1000"
 ensure_vol "thehive/vol/thehive" "thehive/vol" "1000:1000"
 
-# OpenClaw (AI Agent)
-ensure_vol "openclaw/vol/config" "openclaw/vol" "1000:1000"
-ensure_vol "openclaw/vol/workspace" "openclaw/vol" "1000:1000"
 
 # --- 3. Executable Permissions ---
 echo "  - Making scripts executable..."
