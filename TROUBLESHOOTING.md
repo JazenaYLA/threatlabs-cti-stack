@@ -152,6 +152,38 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 * **Check**: Is the shared RabbitMQ in `xtm` healthy?
 * **Fix**: Check `xtm` logs: `docker compose logs -f rabbitmq`.
 
+* **Issue**: `VALIDATION_ERROR` — `"input.id" is null` in OpenCTI logs (`RegisterConnector` operation).
+* **Cause**: One or more connector services defined in `docker-compose.yml` have a blank `CONNECTOR_*_ID` env var (commented out in `.env` but the service is still active).
+* **Fix**: Either:
+    1. Uncomment the connector ID in `.env` and generate a valid UUIDv4, or
+    2. Comment out the corresponding service definition in `docker-compose.yml`.
+
+### OpenAEV
+
+* **Issue**: OpenAEV logs show `"Response body does not conform to a GraphQL response"` or `"Unexpected response for request on: /"`.
+* **Cause**: `OPENAEV_XTM_OPENCTI_API_URL` is pointing to `http://opencti:8080` (root, returns HTML frontend) instead of the GraphQL endpoint.
+* **Fix**: Change the API URL in `docker-compose.yml`:
+    ```yaml
+    # WRONG:
+    - OPENAEV_XTM_OPENCTI_API_URL=http://opencti:8080
+    # CORRECT:
+    - OPENAEV_XTM_OPENCTI_API_URL=http://opencti:8080/graphql
+    ```
+
+* **Issue**: OpenAEV connector fails to register — `"input.id" is null` in OpenCTI logs but `OPENAEV_XTM_OPENCTI_ID` appears to be set.
+* **Cause**: `OPENAEV_XTM_OPENCTI_ID` is missing from `.env` or not passed through `docker-compose.yml`.
+* **Fix**: Ensure `.env` contains `OPENAEV_XTM_OPENCTI_ID=<valid-uuidv4>` and `docker-compose.yml` maps it:
+    ```yaml
+    - OPENAEV_XTM_OPENCTI_ID=${OPENAEV_XTM_OPENCTI_ID}
+    ```
+
+* **Issue**: PostgreSQL `Permission denied` errors in `infra-postgres` (especially after volume changes).
+* **Cause**: The Alpine-based Postgres 17 image uses UID `70` (not `999`). If data directory ownership doesn't match, Postgres can't start.
+* **Fix**: Run permissions fix:
+    ```bash
+    sudo chown -R 70:70 /opt/stacks/infra/vol/postgres-data
+    ```
+
 ### MISP Modules
 * **Issue**: Enrichment fails in MISP or FlowIntel.
 * **Check**: ensure `misp-modules` stack is running and healthy: `curl http://localhost:6666/modules`.

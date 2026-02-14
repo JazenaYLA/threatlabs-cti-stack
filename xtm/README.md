@@ -63,60 +63,23 @@ cd xtm-docker
 
 ### 2. Create environment file
 
-Create a `.env` file with the required configuration. An example is available in [.env.sample](.env.sample).
+Create a `.env` file from the provided template:
 
 ```bash
-# PostgreSQL
-POSTGRES_USER=openaev
-OPENAEV_DB_PASSWORD=<generate-strong-password>
-
-# MinIO
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=<generate-strong-password>
-
-# RabbitMQ
-RABBITMQ_DEFAULT_USER=guest
-RABBITMQ_DEFAULT_PASS=<generate-strong-password>
-
-# OpenCTI
-OPENCTI_EXTERNAL_SCHEME=http
-OPENCTI_HOST=localhost
-OPENCTI_PORT=8080
-OPENCTI_ADMIN_EMAIL=admin@opencti.io
-OPENCTI_ADMIN_PASSWORD=<generate-strong-password>
-OPENCTI_ADMIN_TOKEN=<generate-uuid-v4>
-OPENCTI_HEALTHCHECK_ACCESS_KEY=<generate-uuid-v4>
-
-# OpenAEV
-OPENAEV_EXTERNAL_SCHEME=http
-OPENAEV_HOST=localhost
-OPENAEV_PORT=8081
-OPENAEV_ADMIN_EMAIL=admin@openaev.io
-OPENAEV_ADMIN_PASSWORD=<generate-strong-password>
-OPENAEV_ADMIN_TOKEN=<generate-uuid-v4>
-OPENAEV_HEALTHCHECK_KEY=<generate-uuid-v4>
-
-# SMTP (mandatory)
-SMTP_HOST=localhost
-SMTP_PORT=25
-SMTP_USERNAME=
-SMTP_PASSWORD=
-SMTP_AUTH=false
-SMTP_SSL_ENABLE=false
-SMTP_STARTTLS_ENABLE=false
-
-# IMAP (optional)
-OPENAEV_MAIL_IMAP_ENABLED=false
-IMAP_HOST=
-IMAP_PORT=993
-IMAP_USERNAME=
-IMAP_PASSWORD=
-IMAP_AUTH=true
-IMAP_SSL_ENABLE=true
-IMAP_STARTTLS_ENABLE=false
+cp .env.example .env
 ```
 
-> **Tip:** Generate UUIDs using `uuidgen` or online tools like [uuidgenerator.net](https://www.uuidgenerator.net/)
+Then edit `.env` and replace all `ChangeMe_UUIDv4` and `changeme` values. Look for `[CRITICAL]` markers — these **must** be changed before first start:
+
+```bash
+# Generate UUIDs:
+uuidgen
+
+# Generate passwords/keys:
+openssl rand -hex 32
+```
+
+> **Important:** Every `CONNECTOR_*_ID`, `COLLECTOR_*_ID`, and `INJECTOR_*_ID` must be a **unique** UUIDv4. Do not reuse the same UUID across connectors.
 
 ### 3. Start the stack
 
@@ -134,36 +97,65 @@ Once all services are healthy (this may take a few minutes on first start):
 
 ## Included Components
 
-### OpenCTI Connectors
+### OpenCTI Connectors (Required — Default Install)
 
-| Connector | Description |
-|-----------|-------------|
-| Export File STIX | Export data in STIX 2.1 format |
-| Export File CSV | Export data in CSV format |
-| Export File TXT | Export data in plain text format |
-| Import File STIX | Import STIX 2.1 bundles |
-| Import Document | Import and analyze PDF, HTML, and text documents |
-| Import File YARA | Import YARA rules |
-| Analysis | Document analysis connector |
-| Import External Reference | Import external references |
-| OpenCTI Datasets | Default marking definitions and identities |
-| MITRE ATT&CK | MITRE ATT&CK framework data |
+These connectors are part of the **official XTM default install** and each requires a unique UUIDv4 in `.env`:
 
-### OpenAEV Collectors
+| Connector | `.env` Variable | Description |
+|-----------|-----------------|-------------|
+| Export File STIX | `CONNECTOR_EXPORT_FILE_STIX_ID` | Export data in STIX 2.1 format |
+| Export File CSV | `CONNECTOR_EXPORT_FILE_CSV_ID` | Export data in CSV format |
+| Export File TXT | `CONNECTOR_EXPORT_FILE_TXT_ID` | Export data in plain text format |
+| Import File STIX | `CONNECTOR_IMPORT_FILE_STIX_ID` | Import STIX 2.1 bundles |
+| Import Document | `CONNECTOR_IMPORT_DOCUMENT_ID` | Import PDF, HTML, and text documents |
+| Import File YARA | `CONNECTOR_IMPORT_FILE_YARA_ID` | Import YARA rules |
+| Analysis | `CONNECTOR_ANALYSIS_ID` | Document analysis connector |
+| Import External Reference | `CONNECTOR_IMPORT_EXTERNAL_REFERENCE_ID` | Import external references |
+| OpenCTI Datasets | `CONNECTOR_OPENCTI_ID` | Default marking definitions and identities |
+| MITRE ATT&CK | `CONNECTOR_MITRE_ID` | MITRE ATT&CK framework data |
 
-| Collector | Description |
-|-----------|-------------|
-| MITRE ATT&CK | Attack techniques and procedures |
-| OpenAEV Datasets | Default datasets and configurations |
-| Atomic Red Team | Red Canary's Atomic Red Team tests |
-| NVD NIST CVE | CVE data from NVD (requires API key) |
+### OpenCTI Connectors (Optional — Require API Keys)
 
-### OpenAEV Injectors
+These are **not** part of the default install. To enable one, uncomment both its `.env` variables **and** its service definition in `docker-compose.yml`:
 
-| Injector | Description |
-|-----------|-------------|
-| Nmap | Network scanning capabilities |
-| Nuclei | Vulnerability scanning with Nuclei |
+| Connector | Requires |
+|-----------|----------|
+| MISP | Running MISP instance + API key |
+| TheHive | Running TheHive instance + API key |
+| AlienVault OTX | OTX API key |
+| Malpedia | Malpedia API key |
+| MalwareBazaar | MalwareBazaar API key |
+| Shodan | Shodan API key |
+| Malbeacon | Malbeacon API key |
+| IPInfo | ipinfo.io API key |
+
+### OpenAEV Collectors (Required — Default Install)
+
+| Collector | `.env` Variable | Description |
+|-----------|-----------------|-------------|
+| MITRE ATT&CK | `COLLECTOR_MITRE_ATTACK_ID` | Attack techniques and procedures |
+| OpenAEV Datasets | `COLLECTOR_OPENAEV_ID` | Default datasets and configurations |
+| Atomic Red Team | `COLLECTOR_ATOMIC_RED_TEAM_ID` | Red Canary's Atomic Red Team tests |
+| NVD NIST CVE | `COLLECTOR_NVD_NIST_CVE_ID` | CVE data from NVD (API key optional) |
+
+### OpenAEV Injectors (Required — Default Install)
+
+| Injector | `.env` Variable | Description |
+|-----------|-----------------|-------------|
+| Nmap | `INJECTOR_NMAP_ID` | Network scanning capabilities |
+| Nuclei | `INJECTOR_NUCLEI_ID` | Vulnerability scanning with Nuclei |
+
+### Connector Service Accounts
+
+All non-export connectors use `CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true` to automatically create a dedicated service account on first registration with OpenCTI. This follows the [official Filigran documentation](https://docs.opencti.io/latest/deployment/connectors/#connector-token) recommendation of running each connector under its own identity.
+
+| Connector Role | Token Used | Service Account | Confidence |
+|---|---|---|---|
+| **Export File** (STIX/CSV/TXT) | `OPENCTI_ADMIN_TOKEN` | ❌ Not created — requires admin bypass to impersonate requesting user | N/A |
+| **OpenCTI Datasets** | `OPENCTI_ADMIN_TOKEN` (initial auth) | ✅ Auto-created | 100 |
+| **All other connectors** | `OPENCTI_ADMIN_TOKEN` (initial auth) | ✅ Auto-created | 75 |
+
+> **Note:** The admin token is only used for initial registration. Once the service account is created, the connector uses its own token automatically.
 
 ## Configuration
 
@@ -243,7 +235,7 @@ docker compose down -v
    sudo sysctl -w vm.max_map_count=262144
    ```
 
-2. Verify all environment variables are set in `.env`
+2. Verify **all** required UUIDs are set in `.env` — look for `ChangeMe_UUIDv4` values
 
 3. Check logs for specific errors:
 
@@ -251,11 +243,26 @@ docker compose down -v
    docker compose logs <service-name>
    ```
 
-### OpenCTI/OpenAEV not connecting
+### OpenAEV failing to connect to OpenCTI
 
-1. Ensure all dependency services are healthy
-2. Verify tokens match between services
-3. Check network connectivity within Docker network
+1. `OPENAEV_XTM_OPENCTI_API_URL` must end with `/graphql` — e.g., `http://opencti:8080/graphql`
+2. `OPENAEV_XTM_OPENCTI_ID` must be a valid UUIDv4 in `.env`
+3. `OPENAEV_XTM_OPENCTI_TOKEN` must match `OPENCTI_ADMIN_TOKEN`
+
+### `VALIDATION_ERROR: input.id is null`
+
+This means a connector service is running but its `CONNECTOR_*_ID` env var is blank. Either:
+- Uncomment the ID in `.env` and set a valid UUID, or
+- Comment out/remove the service in `docker-compose.yml`
+
+### PostgreSQL permission errors
+
+Alpine-based Postgres 17 uses UID `70`. Fix with:
+```bash
+sudo chown -R 70:70 /opt/stacks/infra/vol/postgres-data
+```
+
+See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) for the full stack troubleshooting guide.
 
 ## Community
 
