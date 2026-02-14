@@ -122,8 +122,33 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 * **Check**: TheHive 4 requires **ElasticSearch 7**.
 * **Fix**: Ensure `es7-cti` service in `infra` is healthy and env `ES_HOSTS` points to `es7-cti:9200`.
 
-### OpenCTI
+### FlowIntel
+ 
+* **Issue**: Initial admin credentials not working or want to change them.
+* **Cause**: FlowIntel by default hardcodes `admin@admin.admin` / `admin` in `init_db.py`.
+* **Fix**:
+    1. Update `flowintel/.env` with desired `INIT_ADMIN_EMAIL` and `INIT_ADMIN_PASSWORD`.
+    2. Reset the database to force re-initialization (WARNING: DATA LOSS):
 
+    ```bash
+    # Stop Container
+    docker compose -f flowintel/docker-compose.yml down
+    
+    # Drop and Recreate DB (in infra-postgres)
+    docker exec infra-postgres psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS flowintel;"
+    docker exec infra-postgres psql -U postgres -d postgres -c "CREATE DATABASE flowintel;"
+    docker exec infra-postgres psql -U postgres -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE flowintel TO flowintel;"
+    docker exec infra-postgres psql -U postgres -d flowintel -c "GRANT ALL ON SCHEMA public TO flowintel;"
+    
+    # Restart to trigger entrypoint patch and init
+    docker compose -f flowintel/docker-compose.yml up -d
+    ```
+    
+    *Note: The `entrypoint.sh` includes a python script that patches `app/utils/init_db.py` at runtime to enforce your environment variables.*
+
+### OpenCTI
+ 
 * **Issue**: Connectors not showing up or "rabbitmq" connection refused.
 * **Check**: Is the shared RabbitMQ in `xtm` healthy?
 * **Fix**: Check `xtm` logs: `docker compose logs -f rabbitmq`.
+

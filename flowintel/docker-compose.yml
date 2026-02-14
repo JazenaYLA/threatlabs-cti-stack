@@ -8,7 +8,7 @@ services:
     command: bash -i ./launch.sh -ld
     restart: unless-stopped
     ports:
-      - '${APP_PORT:-7006}:7006'
+      - ${APP_PORT:-7006}:7006
     environment:
       - DB_HOST=infra-postgres
       - DB_PORT=5432
@@ -17,18 +17,19 @@ services:
       - DB_NAME=${POSTGRES_DB:-flowintel}
       - VALKEY_IP=${VALKEY_IP:-infra-valkey}
       - JWT_SECRET=${JWT_SECRET:-changeme}
-
+      - INIT_ADMIN_EMAIL=${INIT_ADMIN_EMAIL:-admin@admin.admin}
+      - INIT_ADMIN_PASSWORD=${INIT_ADMIN_PASSWORD:-admin}
     volumes:
       - ./vol/flowintel/data:/var/lib/flowintel
+      - ./entrypoint.sh:/home/flowintel/app/bin/entrypoint.sh
     networks:
       - cti-net
     labels:
       # Optional: Traefik Reverse Proxy (Auto-Discovery)
       # Can be ignored if using Nginx/Caddy/etc via port 7006
-      - "traefik.enable=true"
-      - "traefik.http.routers.flowintel.rule=Host(`flowintel.local`)"
-      - "traefik.http.services.flowintel.loadbalancer.server.port=7006"
-
+      - traefik.enable=true
+      - traefik.http.routers.flowintel.rule=Host(`flowintel.local`)
+      - traefik.http.services.flowintel.loadbalancer.server.port=7006
 networks:
   cti-net:
     external: true
