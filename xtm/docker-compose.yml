@@ -1,5 +1,4 @@
 services:
-
   ###########################
   # DEPENDENCIES            #
   ###########################
@@ -9,10 +8,19 @@ services:
     image: alpine/openssl:3.5.4
     volumes:
       - rsakeys:/keys
-    entrypoint: [ "/bin/ash" ]
-    command: [ "-c", "if [ ! -f /keys/private_key.pem ]; then openssl genpkey -algorithm RSA -out /keys/private_key.pem -pkeyopt rsa_keygen_bits:4096; fi && tail -f /dev/null" ]
+    entrypoint:
+      - /bin/ash
+    command:
+      - -c
+      - if [ ! -f /keys/private_key.pem ]; then openssl genpkey -algorithm RSA
+        -out /keys/private_key.pem -pkeyopt rsa_keygen_bits:4096; fi && tail -f
+        /dev/null
     healthcheck:
-      test: [ "CMD", "test", "-f", "/keys/private_key.pem" ]
+      test:
+        - CMD
+        - test
+        - -f
+        - /keys/private_key.pem
       interval: 10s
       timeout: 5s
       retries: 3
@@ -31,7 +39,11 @@ services:
     command: server /data
     restart: always
     healthcheck:
-      test: [ "CMD", "mc", "ready", "local" ]
+      test:
+        - CMD
+        - mc
+        - ready
+        - local
       interval: 10s
       timeout: 5s
       retries: 3
@@ -59,7 +71,6 @@ services:
       retries: 3
     networks:
       - cti-net
-
   ###########################
   # COMMON                  #
   ###########################
@@ -96,7 +107,6 @@ services:
     networks:
       - cti-net
     restart: always
-
   ###########################
   # OPENCTI                 #
   ###########################
@@ -110,6 +120,7 @@ services:
       - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - APP__APP_LOGS__LOGS_LEVEL=error
       - APP__APP_LOGS__LOGS_LEVEL=error
       - REDIS__HOSTNAME=infra-valkey
       - REDIS__PORT=6379
@@ -136,7 +147,7 @@ services:
       - ELASTICSEARCH__URL=http://es8-cti:9200
       - ELASTICSEARCH__NUMBER_OF_REPLICAS=0
     ports:
-      - "${OPENCTI_PORT}:8080"
+      - ${OPENCTI_PORT}:8080
     depends_on:
       # redis: REMOVED (Shared Infra)
       #   condition: service_healthy
@@ -149,7 +160,11 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://opencti:8080/health?health_access_key=${OPENCTI_HEALTHCHECK_ACCESS_KEY}" ]
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://opencti:8080/health?health_access_key=${OPENCTI_HEALTHCHECK_ACCESS_KEY}
       interval: 10s
       timeout: 5s
       retries: 20
@@ -169,7 +184,6 @@ services:
     restart: always
     networks:
       - cti-net
-
   ###########################
   # OPENCTI CONNECTORS      #
   ###########################
@@ -375,7 +389,7 @@ services:
       - THEHIVE_IMPORT_FROM_DATE=2025-06-01T00:00:00 # Optional
       - THEHIVE_IMPORT_ONLY_TLP=0,1,2,3,4
       - THEHIVE_IMPORT_ALERTS=true
-      - "THEHIVE_SEVERITY_MAPPING=1:low,2:medium,3:high,4:critical"
+      - THEHIVE_SEVERITY_MAPPING=1:low,2:medium,3:high,4:critical
       - THEHIVE_CASE_STATUS_MAPPING= # TheHive_ExtStatus_Text1:OpenCTI_Status_ID1,TheHive_ExtStatus_Text2:OpenCTI_Status_ID2
       - THEHIVE_TASK_STATUS_MAPPING= # Waiting:OpenCTI_Status_ID1,InProgress:OpenCTI_Status_ID2,Completed:OpenCTI_Status_ID2
       - THEHIVE_ALERT_STATUS_MAPPING= # TheHive_ExtStatus_Text1:OpenCTI_Status_ID1,TheHive_ExtStatus_Text2:OpenCTI_Status_ID2
@@ -440,7 +454,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   #  connector-cape:
   #    image: opencti/connector-cape:latest
   #    environment:
@@ -488,7 +501,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   connector-malwarebazaar:
     image: opencti/connector-malwarebazaar:latest
     environment:
@@ -519,7 +531,7 @@ services:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_MALWAREBAZAAR_RECENT_ID}
-      - "CONNECTOR_NAME=MalwareBazaar Recent Additions"
+      - CONNECTOR_NAME=MalwareBazaar Recent Additions
       - CONNECTOR_LOG_LEVEL=error
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
       - MALWAREBAZAAR_RECENT_ADDITIONS_API_URL=https://mb-api.abuse.ch/api/v1/
@@ -535,7 +547,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   connector-shodan:
     image: opencti/connector-shodan:latest
     environment:
@@ -559,7 +570,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   connector-malbeacon:
     image: opencti/connector-malbeacon:latest
     environment:
@@ -581,7 +591,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   connector-ipinfo:
     image: opencti/connector-ipinfo:latest
     environment:
@@ -603,7 +612,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   ###########################
   # OPENCTI DEFAULT DATA    #
   ###########################
@@ -614,7 +622,7 @@ services:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_ID=${CONNECTOR_OPENCTI_ID}
-      - "CONNECTOR_NAME=OpenCTI Datasets"
+      - CONNECTOR_NAME=OpenCTI Datasets
       - CONNECTOR_SCOPE=marking-definition,identity,location
       - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
       - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=100
@@ -640,7 +648,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
   ###########################
   # OPENAEV                 #
   ###########################
@@ -658,14 +665,15 @@ services:
       - OPENAEV_ADMIN_ENCRYPTION_KEY=${OPENAEV_ADMIN_ENCRYPTION_PASSWORD}
       - OPENAEV_HEALTHCHECK_KEY=${OPENAEV_HEALTHCHECK_KEY}
       - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
+      - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
       - SPRING_DATASOURCE_URL=jdbc:postgresql://infra-postgres:5432/openaev
       # Using shared credentials defined in infra/init-dbs.sh
       # Defaults: openaev / changeme
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-openaev}
       - SPRING_DATASOURCE_PASSWORD=${OPENAEV_DB_PASSWORD}
       - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
-      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - MINIO_ACCESS-KEY=${MINIO_ROOT_USER}
+      - MINIO_ACCESS-SECRET=${MINIO_ROOT_PASSWORD}
       - OPENAEV_RABBITMQ_HOSTNAME=rabbitmq
       - OPENAEV_RABBITMQ_USER=${RABBITMQ_DEFAULT_USER}
       - OPENAEV_RABBITMQ_PASS=${RABBITMQ_DEFAULT_PASS}
@@ -696,7 +704,7 @@ services:
     networks:
       - cti-net
     ports:
-      - "8082:8080" # If you change the host port (the left one) do not forget to update OPENAEV_BASE-URL in you .env
+      - 8081:8080 # If you change the host port (the left one) do not forget to update OPENAEV_BASE-URL in you .env
     depends_on:
       # pgsql: REMOVED (Shared Infra)
       #   condition: service_healthy
@@ -709,11 +717,14 @@ services:
       #   condition: service_healthy
     restart: always
     healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://openaev:8080/api/health?health_access_key=${OPENAEV_HEALTHCHECK_KEY}" ]
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://openaev:8080/api/health?health_access_key=${OPENAEV_HEALTHCHECK_KEY}
       interval: 10s
       timeout: 5s
       retries: 20
-
   ###########################
   # OPENAEV COLLECTORS      #
   ###########################
@@ -724,7 +735,7 @@ services:
       - OPENAEV_URL=http://openaev:8080
       - OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       - COLLECTOR_ID=${COLLECTOR_MITRE_ATTACK_ID} # Valid UUIDv4
-      - "COLLECTOR_NAME=MITRE ATT&CK"
+      - COLLECTOR_NAME=MITRE ATT&CK
     depends_on:
       openaev:
         condition: service_healthy # Wait for healthcheck
@@ -737,7 +748,7 @@ services:
       - OPENAEV_URL=http://openaev:8080
       - OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       - COLLECTOR_ID=${COLLECTOR_OPENAEV_ID} # Valid UUIDv4
-      - "COLLECTOR_NAME=OpenAEV Datasets"
+      - COLLECTOR_NAME=OpenAEV Datasets
     depends_on:
       openaev:
         condition: service_healthy # Wait for healthcheck
@@ -750,7 +761,7 @@ services:
       - OPENAEV_URL=http://openaev:8080
       - OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       - COLLECTOR_ID=${COLLECTOR_ATOMIC_RED_TEAM_ID} # Valid UUIDv4
-      - "COLLECTOR_NAME=Atomic Red Team"
+      - COLLECTOR_NAME=Atomic Red Team
     depends_on:
       openaev:
         condition: service_healthy # Wait for healthcheck
@@ -764,14 +775,13 @@ services:
       - OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       - COLLECTOR_ID=${COLLECTOR_NVD_NIST_CVE_ID} # Valid UUIDv4
       - NVD_NIST_CVE_API_KEY=${COLLECTOR_NVD_NIST_CVE_API_KEY}
-      - "COLLECTOR_NAME=CVE by NVD NIST"
+      - COLLECTOR_NAME=CVE by NVD NIST
     depends_on:
       openaev:
         condition: service_healthy # Wait for healthcheck
     networks:
       - cti-net
     restart: always
-
   ###########################
   # OPENAEV INJECTORS       #
   ###########################
@@ -782,7 +792,7 @@ services:
       - OPENAEV_URL=http://openaev:8080
       - OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       - INJECTOR_ID=${INJECTOR_NMAP_ID} # Valid UUIDv4
-      - "INJECTOR_NAME=Nmap"
+      - INJECTOR_NAME=Nmap
     depends_on:
       openaev:
         condition: service_healthy
@@ -795,23 +805,20 @@ services:
       - OPENAEV_URL=http://openaev:8080
       - OPENAEV_TOKEN=${OPENAEV_ADMIN_TOKEN}
       - INJECTOR_ID=${INJECTOR_NUCLEI_ID} # Valid UUIDv4
-      - "INJECTOR_NAME=Nuclei"
+      - INJECTOR_NAME=Nuclei
     depends_on:
       openaev:
         condition: service_healthy
     restart: always
     networks:
       - cti-net
-
 volumes:
   # esdata: # no local ES in this stack anymore
-  pgsqldata:
-  s3data:
-  redisdata:
-  amqpdata:
-  rsakeys:
-
-
+  pgsqldata: null
+  s3data: null
+  redisdata: null
+  amqpdata: null
+  rsakeys: null
 networks:
   cti-net:
     external: true
