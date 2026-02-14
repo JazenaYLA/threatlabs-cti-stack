@@ -110,15 +110,6 @@ sudo chown -R 1000:1000 misp-modules/.vol || echo "[-] Warning: Failed to chown 
 # 5. Generate Default Configurations (if missing)
 echo "[*] Checking for default configurations..."
 
-}
-responder {
-  urls = ["https://catalogs.download.strangebee.com/latest/json/responders.json"]
-}
-EOF
-fi
-
-# Ensure CORTEX_SECRET exists in .env
-if [ -f cortex/.env ]; then
 # TheHive Default Config
 if [ ! -f thehive/vol/thehive/application.conf ]; then
     echo "[+] Generating default TheHive application.conf..."
@@ -243,4 +234,4 @@ else
 fi
 
 echo "[+] Setup completed. You can now deploy stacks with Docker Compose or Dockge."
-echo "    Order: 1. infra, 2. xtm, 3. cortex/n8n/flowise."
+echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. n8n/flowise/lacus."
