@@ -3,4 +3,8 @@
 source/
 **/vol/
 misp/ssl/
+misp/configs/
+misp/files/
+misp/gnupg/
+misp/logs/
 forgejo-runner/data/
