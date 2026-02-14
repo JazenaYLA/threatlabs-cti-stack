@@ -147,6 +147,14 @@ services:
       - ELASTICSEARCH__NUMBER_OF_REPLICAS=0
     ports:
       - ${OPENCTI_PORT}:8080
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.opencti.rule=Host(`opencti.threatresearcher.com`) || Host(`opencti.lan`)
+    #   - traefik.http.routers.opencti.entrypoints=web
+    #   - traefik.http.routers.opencti-secure.rule=Host(`opencti.threatresearcher.com`) || Host(`opencti.lan`)
+    #   - traefik.http.routers.opencti-secure.entrypoints=websecure
+    #   - traefik.http.routers.opencti-secure.tls=true
+    #   - traefik.http.services.opencti.loadbalancer.server.port=8080
     depends_on:
       # redis: REMOVED (Shared Infra)
       #   condition: service_healthy
@@ -191,7 +199,7 @@ services:
     image: opencti/connector-export-file-stix:latest
     environment:
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN} # Must be admin (bypass) — impersonates requesting user
       - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_STIX_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
       - CONNECTOR_NAME=ExportFileStix2
@@ -206,7 +214,7 @@ services:
     image: opencti/connector-export-file-csv:latest
     environment:
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN} # Must be admin (bypass) — impersonates requesting user
       - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_CSV_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
       - CONNECTOR_NAME=ExportFileCsv
@@ -221,7 +229,7 @@ services:
     image: opencti/connector-export-file-txt:latest
     environment:
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN} # Must be admin (bypass) — impersonates requesting user
       - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_TXT_ID} # Valid UUIDv4
       - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
       - CONNECTOR_NAME=ExportFileTxt
@@ -243,6 +251,8 @@ services:
       - CONNECTOR_VALIDATE_BEFORE_IMPORT=true # Validate any bundle before import
       - CONNECTOR_SCOPE=application/json,text/xml
       - CONNECTOR_AUTO=true # Enable/disable auto-import of file
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
     restart: always
     depends_on:
       opencti:
@@ -262,6 +272,8 @@ services:
       - CONNECTOR_AUTO=true # Enable/disable auto-import of file
       - CONNECTOR_ONLY_CONTEXTUAL=false # Only extract data related to an entity (a report, a threat actor, etc.)
       - IMPORT_DOCUMENT_CREATE_INDICATOR=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
     restart: always
     depends_on:
       opencti:
@@ -280,6 +292,8 @@ services:
       - CONNECTOR_AUTO=false # Enable/disable auto-import of file
       - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE # JAMZ ADDED THIS LINE
       - YARA_IMPORT_FILE_SPLIT_RULES=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
     restart: always
     depends_on:
       opencti:
@@ -298,6 +312,8 @@ services:
       - CONNECTOR_SCOPE=application/pdf,text/plain,text/html
       - CONNECTOR_AUTO=true # Enable/disable auto-import of file
       - CONNECTOR_ONLY_CONTEXTUAL=false # Only extract data related to an entity (a report, a threat actor, etc.)
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
     restart: always
     depends_on:
       opencti:
@@ -312,6 +328,8 @@ services:
       - CONNECTOR_ID=${CONNECTOR_IMPORT_EXTERNAL_REFERENCE_ID}
       - CONNECTOR_NAME=ImportExternalReference
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
     restart: always
     depends_on:
       opencti:
@@ -329,6 +347,8 @@ services:
       - CONNECTOR_LOG_LEVEL=info
       - CONNECTOR_DURATION_PERIOD=PT5M
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - MISP_URL=${CONNECTOR_MISP_URL} # http://example.com
       - MISP_KEY=${CONNECTOR_MISP_KEY}
       - MISP_SSL_VERIFY=false
@@ -381,6 +401,8 @@ services:
       - CONNECTOR_SCOPE=thehive
       - CONNECTOR_LOG_LEVEL=error
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - THEHIVE_URL=${CONNECTOR_THEHIVE_URL}
       - THEHIVE_API_KEY=${CONNECTOR_THEHIVE_KEY}
       - THEHIVE_CHECK_SSL=true
@@ -412,6 +434,8 @@ services:
       - CONNECTOR_LOG_LEVEL=error # Optional (default: error)
       - CONNECTOR_DURATION_PERIOD=PT30M # Optional (default: PT30M) - ISO8601 Format starting with "P" for Period ex: "PT30M" = Period time of 30 minutes
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - ALIENVAULT_BASE_URL=${CONNECTOR_OTX_URL} # Optional (default: https://otx.alienvault.com)
       - ALIENVAULT_API_KEY=${CONNECTOR_OTX_KEY} # Required
       - ALIENVAULT_TLP=White # Optional (default: White)
@@ -447,6 +471,8 @@ services:
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
     restart: always
     depends_on:
       opencti:
@@ -489,6 +515,8 @@ services:
       - CONNECTOR_LOG_LEVEL=info # Optional (default: 'error')
       - CONNECTOR_DURATION_PERIOD=PT24H # Optional (default: 24 hours)
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - MALPEDIA_AUTH_KEY=${CONNECTOR_MALPEDIA_KEY} # Optional (default: none)
       - MALPEDIA_IMPORT_INTRUSION_SETS=true # Optional (default: true)
       - MALPEDIA_IMPORT_YARA=true # Optional (default: true)
@@ -511,6 +539,8 @@ services:
       - CONNECTOR_LOG_LEVEL=info
       - CONNECTOR_DURATION_PERIOD=PT50M
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - MALWAREBAZAAR_API_BASE_URL=https://mb-api.abuse.ch/api/v1/
       - MALWAREBAZAAR_API_KEY=${CONNECTOR_MALWAREBAZAAR_KEY}
       - MALWAREBAZAAR_TLP_LEVEL=clear
@@ -533,6 +563,8 @@ services:
       - CONNECTOR_NAME=MalwareBazaar Recent Additions
       - CONNECTOR_LOG_LEVEL=error
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - MALWAREBAZAAR_RECENT_ADDITIONS_API_URL=https://mb-api.abuse.ch/api/v1/
       - MALWAREBAZAAR_RECENT_ADDITIONS_API_KEY=${CONNECTOR_MALWAREBAZAAR_RECENT_KEY} # Required, issued for free by MalwareBazaar - https://bazaar.abuse.ch/api/#auth_key
       - MALWAREBAZAAR_RECENT_ADDITIONS_COOLDOWN_SECONDS=300 # Time to wait in seconds between subsequent requests
@@ -557,6 +589,8 @@ services:
       - CONNECTOR_AUTO=true # Optional (default: false)
       - CONNECTOR_LOG_LEVEL=info # Optional (default: error)
       - CONNECTOR_TYPE=INTERNAL_ENRICHMENT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - SHODAN_TOKEN=${CONNECTOR_SHODAN_KEY}
       - SHODAN_MAX_TLP=TLP:AMBER # Optional (default: 'TLP:AMBER')
       - SHODAN_DEFAULT_SCORE=50 # Optional (default: 50)
@@ -580,6 +614,8 @@ services:
       - CONNECTOR_SCOPE=IPv4-Addr,IPv6-Addr,Domain-Name
       - CONNECTOR_LOG_LEVEL=error
       - CONNECTOR_TYPE=INTERNAL_ENRICHMENT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - MALBEACON_API_KEY=${CONNECTOR_MALBEACON_KEY} # Required
       - MALBEACON_API_BASE_URL=https://api.malbeacon.com/v1/ # Required
       - MALBEACON_INDICATOR_SCORE_LEVEL=50 # Optional
@@ -602,6 +638,8 @@ services:
       - CONNECTOR_CONFIDENCE_LEVEL=75 # From 0 (Unknown) to 100 (Fully trusted)
       - CONNECTOR_LOG_LEVEL=error
       - CONNECTOR_TYPE=INTERNAL_ENRICHMENT
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=75
       - IPINFO_TOKEN=${CONNECTOR_IPINFO_KEY}
       - IPINFO_MAX_TLP=TLP:AMBER # "TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED"
       - IPINFO_USE_ASN_NAME=true # Set false if you want ASN name to be just the number e.g. AS8075
@@ -696,14 +734,23 @@ services:
       # OpenCTI
       - OPENAEV_XTM_OPENCTI_ENABLE=true
       - OPENAEV_XTM_OPENCTI_URL=${OPENCTI_EXTERNAL_SCHEME}://${OPENCTI_HOST}:${OPENCTI_PORT}
-      - OPENAEV_XTM_OPENCTI_API_URL=http://opencti:8080
+      - OPENAEV_XTM_OPENCTI_API_URL=http://opencti:8080/graphql
       - OPENAEV_XTM_OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - OPENAEV_XTM_OPENCTI_ID=${OPENAEV_XTM_OPENCTI_ID}
       # ES CTI infra
       - ENGINE_URL=http://es8-cti:9200
     networks:
       - cti-net
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.openaev.rule=Host(`openaev.threatresearcher.com`) || Host(`openaev.lan`)
+    #   - traefik.http.routers.openaev.entrypoints=web
+    #   - traefik.http.routers.openaev-secure.rule=Host(`openaev.threatresearcher.com`) || Host(`openaev.lan`)
+    #   - traefik.http.routers.openaev-secure.entrypoints=websecure
+    #   - traefik.http.routers.openaev-secure.tls=true
+    #   - traefik.http.services.openaev.loadbalancer.server.port=8080
     ports:
-      - 8081:8080 # If you change the host port (the left one) do not forget to update OPENAEV_BASE-URL in you .env
+      - 8081:8080
     depends_on:
       # pgsql: REMOVED (Shared Infra)
       #   condition: service_healthy
