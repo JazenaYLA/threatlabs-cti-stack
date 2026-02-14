@@ -174,6 +174,8 @@ The services must be started in a specific order to ensure database availability
 
 ## FlowIntel
 
+See [flowintel/README.md](flowintel/README.md) for full documentation.
+
 ### Initial Login Credentials
 By default, the stack is configured to create an initial admin user:
 * **Email**: `admin@admin.admin`
@@ -191,10 +193,24 @@ INIT_ADMIN_PASSWORD=securepassword
 > 2. Reset the database (see TROUBLESHOOTING.md)
 > 3. Restart: `docker compose up -d`
 
+### MISP Modules (Analyzers)
+
+FlowinTel uses [MISP modules](https://www.misp-project.org/2024/03/12/Introducing.standalone.MISP.modules.html/) as its analyzer engine for enrichment. It **bundles its own `misp-modules` process** internally, so enrichment works out of the box.
+
+To share API keys and custom modules with the rest of the stack, you can optionally point it to the shared `misp-modules-shared` instance — see [flowintel/README.md](flowintel/README.md#pointing-to-shared-instance-optional).
+
+## MISP Modules
+
+See [misp-modules/README.md](misp-modules/README.md) for full documentation.
+
+Provides 200+ enrichment, expansion, import, and export modules as a shared service:
+- **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
+- **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
+
 ## Notes
 
-```markdown
-* **Networks**: Ensure the `cti-net` network exists or let the `infra` stack create it (if configured to do so, otherwise create manually: `docker network create cti-net`).
+* **Networks**: All stacks communicate via the `cti-net` Docker network. Create it with `docker network create cti-net` or let `setup.sh` handle it.
+* **Stack READMEs**: Each stack directory has its own `README.md` with detailed configuration and troubleshooting.
+* **Shared Infrastructure**: `infra/` provides PostgreSQL, Valkey, and ElasticSearch shared by multiple stacks. Always start it first.
+* **Enrichment API Keys**: Configure enrichment API keys (VirusTotal, Shodan, etc.) in `misp-modules/.env` for centralized access.
 
-Jamz is cool.
-```
