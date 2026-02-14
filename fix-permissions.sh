@@ -2,51 +2,73 @@
 # fix-permissions.sh
 # Automated permission fix for ThreatLabs CTI Stack
 
-echo "🔧 Restoring Service Permissions..."
+echo "🔧 Ensuring Volumes and Permissions..."
+
+# Helper to create and chown
+ensure_vol() {
+    local DIR_PATH="$1"
+    local PERM_PATH="$2" # Directory to apply chown to (usually parent)
+    local UID_GID="$3"
+    
+    if [ ! -d "$DIR_PATH" ]; then
+        echo "  - Creating $DIR_PATH..."
+        mkdir -p "$DIR_PATH"
+    fi
+    
+    echo "  - Fixing permissions for $PERM_PATH ($UID_GID)..."
+    chown -R "$UID_GID" "$PERM_PATH"
+}
 
 # --- 1. Infrastructure (Databases) ---
 # ElasticSearch (UID 1000)
-if [ -d "infra/vol/esdata7" ]; then echo "  - Fixing ES7..."; chown -R 1000:1000 infra/vol/esdata7; fi
-if [ -d "infra/vol/esdata8" ]; then echo "  - Fixing ES8..."; chown -R 1000:1000 infra/vol/esdata8; fi
+ensure_vol "infra/vol/esdata7/data" "infra/vol/esdata7" "1000:1000"
+ensure_vol "infra/vol/esdata8/data" "infra/vol/esdata8" "1000:1000"
 
 # Postgres (Alpine Image uses UID 70)
-if [ -d "infra/vol/postgres" ]; then echo "  - Fixing Postgres..."; chown -R 70:70 infra/vol/postgres; fi
+ensure_vol "infra/vol/postgres/data" "infra/vol/postgres" "70:70"
 
 # Valkey/Redis (UID 999)
-if [ -d "infra/vol/valkey" ]; then echo "  - Fixing Valkey..."; chown -R 999:999 infra/vol/valkey; fi
+ensure_vol "infra/vol/valkey/data" "infra/vol/valkey" "999:999"
 
 # Init Scripts (UID 1000)
-if [ -d "infra/vol/postgres-init" ]; then chown -R 1000:1000 infra/vol/postgres-init; fi
+ensure_vol "infra/vol/postgres-init" "infra/vol/postgres-init" "1000:1000"
 
 
 # --- 2. Application Stacks (UID 1000) ---
 # XTM (OpenCTI)
-if [ -d "xtm/volumes" ]; then echo "  - Fixing XTM..."; chown -R 1000:1000 xtm/volumes; fi
+ensure_vol "xtm/volumes/pgsqldata" "xtm/volumes" "1000:1000"
+ensure_vol "xtm/volumes/s3data" "xtm/volumes" "1000:1000"
+ensure_vol "xtm/volumes/redisdata" "xtm/volumes" "1000:1000"
+ensure_vol "xtm/volumes/amqpdata" "xtm/volumes" "1000:1000"
+ensure_vol "xtm/volumes/rsakeys" "xtm/volumes" "1000:1000"
 
 # Cortex
-if [ -d "cortex/vol" ]; then echo "  - Fixing Cortex..."; chown -R 1000:1000 cortex/vol; fi
+ensure_vol "cortex/vol/cortex" "cortex/vol" "1000:1000"
 
 # n8n
-if [ -d "n8n/vol" ]; then echo "  - Fixing n8n..."; chown -R 1000:1000 n8n/vol; fi
+ensure_vol "n8n/vol/n8n/.n8n" "n8n/vol" "1000:1000"
 
 # Flowise
-if [ -d "flowise/vol" ]; then echo "  - Fixing Flowise..."; chown -R 1000:1000 flowise/vol; fi
+ensure_vol "flowise/vol/flowise" "flowise/vol" "1000:1000"
 
 # FlowIntel
-if [ -d "flowintel/vol" ]; then echo "  - Fixing FlowIntel..."; chown -R 1000:1000 flowintel/vol; fi
+ensure_vol "flowintel/vol/flowintel/data" "flowintel/vol" "1000:1000"
 
 # Lacus
-if [ -d "lacus/vol" ]; then echo "  - Fixing Lacus..."; chown -R 1000:1000 lacus/vol; fi
+ensure_vol "lacus/vol/lacus-data" "lacus/vol" "1000:1000"
+ensure_vol "lacus/vol/lacus-cache" "lacus/vol" "1000:1000"
 
-# TheHive
-if [ -d "thehive/vol" ]; then echo "  - Fixing TheHive..."; chown -R 1000:1000 thehive/vol; fi
+# TheHive (Legacy/Archive)
+ensure_vol "thehive/vol/cassandra/data" "thehive/vol" "1000:1000"
+ensure_vol "thehive/vol/thehive" "thehive/vol" "1000:1000"
 
-# OpenClaw
-if [ -d "openclaw/vol" ]; then echo "  - Fixing OpenClaw..."; chown -R 1000:1000 openclaw/vol; fi
+# OpenClaw (AI Agent)
+ensure_vol "openclaw/vol/config" "openclaw/vol" "1000:1000"
+ensure_vol "openclaw/vol/workspace" "openclaw/vol" "1000:1000"
 
 # --- 3. Executable Permissions ---
 echo "  - Making scripts executable..."
 find . -name "*.sh" -exec chmod +x {} +
 if [ -f "infra/vol/postgres-init/init-dbs.sh" ]; then chmod +x infra/vol/postgres-init/init-dbs.sh; fi
 
-echo "✅ Permissions Restored."
+echo "✅ Volumes and Permissions Restored."
