@@ -69,6 +69,12 @@ jobs:
               fi
           done
 
+      - name: Restore Workspace Ownership
+        run: |
+          echo "🔧 Resetting all files to gravity (1000:1000)..."
+          DOCKGE_ROOT="/opt/stacks"
+          docker run --rm -v ${DOCKGE_ROOT}:/target alpine chown -R 1000:1000 /target
+
       - name: Restore Service Permissions
         run: |
           echo "🔧 Re-applying special service permissions..."
