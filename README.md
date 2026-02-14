@@ -8,54 +8,70 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 This repository is organized into modular stacks that share common infrastructure.
 
+    graph TD
+
     subgraph "Gateway (Optional)"
-        Proxy[Reverse Proxy<br/>Traefik / Nginx / Other]
+        Proxy[Reverse Proxy<br/>Traefik]
     end
 
     subgraph "Infrastructure (infra/)"
-        ES8[(Shared ElasticSearch 8)]
-        ES7[(Shared ElasticSearch 7)]
-    end
-
-    subgraph "Extended Threat Management (xtm/)"
-        OpenCTI[OpenCTI Platform]
-        OpenAEV[OpenAEV Platform]
-        XTMPersist[(Redis / MinIO / RabbitMQ / PgSQL)]
+        ES8[(ElasticSearch 8)]
+        ES7[(ElasticSearch 7)]
+        Postgres[(Postgres 17)]
+        Valkey[(Valkey / Redis)]
     end
 
     subgraph "MISP Stack (misp/)"
         MISP[MISP Core]
         MISPDB[(MariaDB)]
+        MISPCache[(Local Valkey)]
     end
 
-    subgraph "Legacy & Analysis"
+    subgraph "MISP Modules (misp-modules/)"
+        Modules[Modules API]
+        ModulesWeb[Modules Web UI]
+    end
+
+    subgraph "Extended Threat Management (xtm/)"
+        OpenCTI[OpenCTI Platform]
+        OpenAEV[OpenAEV Platform]
+        XTMMinIO[(MinIO)]
+        XTMRabbit[(RabbitMQ)]
+    end
+
+    subgraph "Analysis & Case Management"
+        FlowIntel[FlowIntel]
         TheHive[TheHive 4]
         Cassandra[(Cassandra)]
     end
 
-    subgraph "Automation & Feeds"
+    subgraph "Automation & Collection"
         n8n[n8n Automation]
         Flowise[Flowise AI]
-        AIL[AIL Framework LXC]
         Lacus[Lacus Crawler]
+        AIL[AIL Framework LXC]
     end
 
-    %% Network Flow
-    Proxy -.->|Route| OpenCTI & OpenAEV & MISP & n8n & Flowise & AIL & TheHive
-    
     %% Infrastructure Dependencies
-    OpenCTI & OpenAEV --> ES8
+    OpenCTI --> ES8
     TheHive --> ES7
     
+    OpenAEV & FlowIntel & n8n --> Postgres
+    OpenCTI & FlowIntel & Lacus --> Valkey
+
     %% Local Stack Dependencies
-    OpenCTI & OpenAEV --> XTMPersist
+    MISP --> MISPDB & MISPCache
     TheHive --> Cassandra
-    MISP --> MISPDB
-    
+    OpenCTI & OpenAEV --> XTMMinIO & XTMRabbit
+
     %% Integrations
+    MISP & FlowIntel --> Modules
     AIL --> Lacus
     AIL -.->|Push| MISP
     n8n -->|API| MISP & OpenCTI & Flowise
+    
+    %% Gateway Routing
+    Proxy -.-> MISP & ModulesWeb & OpenCTI & OpenAEV & FlowIntel & n8n & Flowise & TheHive
 ```
 
 ### Directory Structure
