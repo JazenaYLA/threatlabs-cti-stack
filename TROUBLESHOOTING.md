@@ -63,7 +63,7 @@ echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
 ```bash
 cd /opt/stacks
 ln -s /path/to/repo/xtm/docker-compose.yml xtm
-ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
+ln -s /path/to/repo/thehive/docker-compose.yml thehive
 ```
 
 ### MISP feed fetch is stuck / Queue full
@@ -99,48 +99,16 @@ ln -s /path/to/repo/thehive4-cortex4-n8n/docker-compose.yml thehive
 
 ## Specific Stack Issues
 
-### Cortex
-
-* **Issue**: Cortex cannot connect to ElasticSearch or fails to start.
-* **Check**:
-    1. Does `infra` have `es8-cti` running?
-    2. **Did you run `./create-cortex-index.sh`?** Cortex 4 requires a specific index mapping when using ES8.
-* **Fix**: Run `cd cortex && ./create-cortex-index.sh`.
-
-### "Secret Key" Errors (Cortex/TheHive)
+### "Secret Key" Errors (TheHive)
 
 **Issue**: Service logs show errors about `play.http.secret.key` or fails to start with configuration errors.
 
-**Cause**: The application secret key is missing or invalid. We now use environment variables (`CORTEX_SECRET` / `THEHIVE_SECRET`) instead of hardcoding them in `application.conf`.
+**Cause**: The application secret key is missing or invalid. We now use environment variables (`THEHIVE_SECRET`) instead of hardcoding them in `application.conf`.
 
 **Fix**:
 
-1. Check `cortex/.env` or `thehive/.env` for `CORTEX_SECRET` / `THEHIVE_SECRET`.
+1. Check `thehive/.env` for `THEHIVE_SECRET`.
 2. Ensure `docker-compose.yml` passes this variable to the container.
-
-### Cortex Initial Setup & Maintenance
-
-#### initial Setup
-
-When you first access Cortex (`http://localhost:9001` or via proxy):
-
-1. **"Database schema is not up to date"**: This is normal. Click the **Update Database** button.
-2. **Create Administrator**: You will be prompted to create the first user (Superadmin).
-    * **Note**: There is no default "admin/admin". You define the credentials here.
-
-#### Resetting Access / Factory Reset
-
-If you lose the admin password and cannot recover it via email (SMTP not configured):
-
-* **Method**: Wipe the Cortex index in ElasticSearch to trigger a fresh setup.
-* **Command**:
-
-    ```bash
-    # WARNING: This deletes ALL Cortex data (users, organizations, analysis results)
-    docker exec -it es8-cti curl -X DELETE "http://localhost:9200/cortex"
-    ```
-
-* **Restart**: Restart the Cortex container. You will be presented with the "Update Database" screen again.
 
 ### AIL Project
 
