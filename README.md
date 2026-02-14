@@ -171,6 +171,25 @@ The services must be started in a specific order to ensure database availability
     * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
 
+## FlowIntel
+
+### Initial Login Credentials
+By default, the stack is configured to create an initial admin user:
+* **Email**: `admin@admin.admin`
+* **Password**: `admin`
+
+You can change these **before the first run** by editing `flowintel/.env`:
+```bash
+INIT_ADMIN_EMAIL=your@email.com
+INIT_ADMIN_PASSWORD=securepassword
+```
+
+> [!NOTE]
+> If you have already started FlowIntel and want to change the initial admin:
+> 1. Stop the container: `docker compose down`
+> 2. Reset the database (see TROUBLESHOOTING.md)
+> 3. Restart: `docker compose up -d`
+
 ## Notes
 
 ```markdown

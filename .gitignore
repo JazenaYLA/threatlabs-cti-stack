@@ -7,3 +7,6 @@ misp/files/
 misp/gnupg/
 misp/logs/
 forgejo-runner/data/
+
+# FlowIntel
+flowintel/.env
