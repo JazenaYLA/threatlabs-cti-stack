@@ -4,16 +4,14 @@ services:
     container_name: misp-modules-shared
     restart: unless-stopped
     ports:
-      - "6666:6666"
+      - 6666:6666
     environment:
       # Basic configuration
       - MISP_MODULES_DEBUG=${MISP_MODULES_DEBUG:-false}
-
       # ── Threat Intelligence Platforms ──
       - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY:-}
       - OTX_API_KEY=${OTX_API_KEY:-}
       - RECORDED_FUTURE_API_KEY=${RECORDED_FUTURE_API_KEY:-}
-
       # ── Network Intelligence & Passive DNS ──
       - SHODAN_API_KEY=${SHODAN_API_KEY:-}
       - CENSYS_API_ID=${CENSYS_API_ID:-}
@@ -25,17 +23,14 @@ services:
       - PASSIVETOTAL_USERNAME=${PASSIVETOTAL_USERNAME:-}
       - CIRCL_PASSIVE_DNS_API_KEY=${CIRCL_PASSIVE_DNS_API_KEY:-}
       - CIRCL_PASSIVE_SSL_API_KEY=${CIRCL_PASSIVE_SSL_API_KEY:-}
-
       # ── IP & Domain Reputation ──
       - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY:-}
       - IPINFO_TOKEN=${IPINFO_TOKEN:-}
       - IPQUALITYSCORE_API_KEY=${IPQUALITYSCORE_API_KEY:-}
       - CROWDSEC_API_KEY=${CROWDSEC_API_KEY:-}
-
       # ── URL & Web Analysis ──
       - URLSCAN_API_KEY=${URLSCAN_API_KEY:-}
       - GOOGLE_SAFE_BROWSING_API_KEY=${GOOGLE_SAFE_BROWSING_API_KEY:-}
-
       # ── Malware / Sample Analysis ──
       - HIBP_API_KEY=${HIBP_API_KEY:-}
       - MALWAREBAZAAR_AUTH_KEY=${MALWAREBAZAAR_AUTH_KEY:-}
@@ -47,17 +42,18 @@ services:
       - ./.vol/custom/expansion:/custom/expansion:Z
       - ./.vol/custom/export_mod:/custom/export_mod:Z
       - ./.vol/custom/import_mod:/custom/import_mod:Z
-      
     networks:
       - cti-net
-      
     healthcheck:
-      test: ["CMD", "/bin/bash", "-c", "< /dev/tcp/localhost/6666"]
+      test:
+        - CMD
+        - /bin/bash
+        - -c
+        - < /dev/tcp/localhost/6666
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
-
   misp-modules-web:
     build:
       context: .
@@ -65,7 +61,7 @@ services:
     container_name: misp-modules-web
     restart: unless-stopped
     ports:
-      - "7008:7008"
+      - 7008:7008
     environment:
       - SECRET_KEY=${SECRET_KEY:-change-me-to-a-random-string}
       - FLASK_URL=0.0.0.0
@@ -79,7 +75,6 @@ services:
         condition: service_healthy
     networks:
       - cti-net
-
 networks:
   cti-net:
     external: true

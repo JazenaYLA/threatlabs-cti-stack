@@ -1,0 +1,30 @@
+# Runtime data/volumes
+vol/
+volumes/
+data/
+mysql/
+redis/
+es/
+minio/
+
+# Specific app dirs (e.g. MISP)
+custom/
+files/
+gnupg/
+logs/
+ssl/
+guard/
+
+# Environment
+.env
+*.env
+
+# Docker
+docker-compose.override.yml
+.vol/
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

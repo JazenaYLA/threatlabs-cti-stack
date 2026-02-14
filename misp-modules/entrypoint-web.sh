@@ -27,4 +27,4 @@ else
 fi
 
 echo "[+] Starting gunicorn on 0.0.0.0:${FLASK_PORT:-7008}..."
-exec gunicorn -w 2 -b "0.0.0.0:${FLASK_PORT:-7008}" "main:app"
+exec gunicorn -k gevent -w 4 -b "0.0.0.0:${FLASK_PORT:-7008}" "main:app"
