@@ -72,7 +72,7 @@ jobs:
           
           # Define the exact deployment order based on dependencies
           # Order: Infra -> Cortex -> MISP -> Consumers (XTM, TheHive, FlowIntel)
-          DEPLOY_ORDER="infra proxy cortex misp thehive xtm flowintel ail-project lacus n8n flowise openclaw"
+          DEPLOY_ORDER="infra cortex misp thehive xtm flowintel ail-project lacus n8n flowise openclaw"
 
           for stack_name in $DEPLOY_ORDER; do
               # Check if the stack directory exists
