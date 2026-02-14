@@ -1,0 +1,42 @@
+services:
+  misp-modules:
+    image: ghcr.io/misp/misp-docker/misp-modules:latest
+    container_name: misp-modules-shared
+    restart: unless-stopped
+    ports:
+      - "6666:6666"
+    environment:
+      # Basic configuration
+      - MISP_MODULES_DEBUG=${MISP_MODULES_DEBUG:-false}
+      
+      # Optional: API keys for enrichment modules
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY:-}
+      - SHODAN_API_KEY=${SHODAN_API_KEY:-}
+      - PASSIVETOTAL_API_KEY=${PASSIVETOTAL_API_KEY:-}
+      - CIRCL_PASSIVE_DNS_API_KEY=${CIRCL_PASSIVE_DNS_API_KEY:-}
+      - GREYNOISE_API_KEY=${GREYNOISE_API_KEY:-}
+      - CENSYS_API_ID=${CENSYS_API_ID:-}
+      - CENSYS_API_SECRET=${CENSYS_API_SECRET:-}
+      - CROWDSEC_API_KEY=${CROWDSEC_API_KEY:-}
+      - RECORDED_FUTURE_API_KEY=${RECORDED_FUTURE_API_KEY:-}
+      
+    volumes:
+      # Custom modules (optional)
+      - ./.vol/custom/action_mod:/custom/action_mod:Z
+      - ./.vol/custom/expansion:/custom/expansion:Z
+      - ./.vol/custom/export_mod:/custom/export_mod:Z
+      - ./.vol/custom/import_mod:/custom/import_mod:Z
+      
+    networks:
+      - cti-net
+      
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "< /dev/tcp/localhost/6666"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cti-net:
+    external: true

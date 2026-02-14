@@ -100,6 +100,13 @@ create_vol "thehive/vol/cassandra/data"
 create_vol "thehive/vol/thehive"
 sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
 
+# MISP Modules (Shared)
+create_vol "misp-modules/.vol/custom/action_mod"
+create_vol "misp-modules/.vol/custom/expansion"
+create_vol "misp-modules/.vol/custom/export_mod"
+create_vol "misp-modules/.vol/custom/import_mod"
+sudo chown -R 1000:1000 misp-modules/.vol || echo "[-] Warning: Failed to chown misp-modules/.vol."
+
 # 5. Generate Default Configurations (if missing)
 echo "[*] Checking for default configurations..."
 
@@ -158,7 +165,7 @@ generate_uuid() {
     fi
 }
 
-STACKS=("infra" "xtm" "misp" "n8n" "flowise" "flowintel" "thehive" "lacus" "ail-project")
+STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "thehive" "lacus" "ail-project")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then

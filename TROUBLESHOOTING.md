@@ -152,3 +152,8 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 * **Check**: Is the shared RabbitMQ in `xtm` healthy?
 * **Fix**: Check `xtm` logs: `docker compose logs -f rabbitmq`.
 
+### MISP Modules
+* **Issue**: Enrichment fails in MISP or FlowIntel.
+* **Check**: ensure `misp-modules` stack is running and healthy: `curl http://localhost:6666/modules`.
+* **Fix**: Check logs `docker logs misp-modules-shared`. Ensure `MISP_MODULES_URL` is set correctly in dependent stacks.
+
