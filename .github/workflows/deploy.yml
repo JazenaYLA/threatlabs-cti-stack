@@ -42,27 +42,44 @@ jobs:
           echo "🔧 Fixing workspace permissions..."
           chmod -R u+rwX,go+rX .
 
-      - name: Deploy Stacks
+      - name: Sync Files to Server
+        run: |
+          DOCKGE_ROOT="/opt/stacks"
+          echo "🚀 Syncing files to $DOCKGE_ROOT..."
+          tar --exclude='.git' --exclude='forgejo-runner' -c . | \
+          docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
+
+      - name: Reset Workspace Ownership
+        run: |
+          echo "🔧 Resetting all files to gravity (1000:1000)..."
+          DOCKGE_ROOT="/opt/stacks"
+          docker run --rm -v ${DOCKGE_ROOT}:/target alpine chown -R 1000:1000 /target
+
+      - name: Apply Service Permissions
+        run: |
+          echo "🔧 Applying special service permissions..."
+          DOCKGE_ROOT="/opt/stacks"
+          # Run fix-permissions.sh BEFORE containers start
+          # Using alpine image to run the script inside container
+          docker run --rm \
+            -v ${DOCKGE_ROOT}:/target \
+            -w /target \
+            alpine sh ./fix-permissions.sh
+
+      - name: Start Stacks
         run: |
           DOCKGE_ROOT="/opt/stacks"
           
-          echo "🚀 Starting Deployment to $DOCKGE_ROOT..."
-          
-          # 1. Overwrite files on the server using Docker (bypasses permission issues)
-          tar --exclude='.git' --exclude='forgejo-runner' -c . | \
-          docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
-          
-          # 2. Define the exact deployment order based on dependencies
-          #    Order: Infra -> Cortex -> MISP -> Consumers (XTM, TheHive, FlowIntel)
+          # Define the exact deployment order based on dependencies
+          # Order: Infra -> Cortex -> MISP -> Consumers (XTM, TheHive, FlowIntel)
           DEPLOY_ORDER="infra proxy cortex misp thehive xtm flowintel ail-project lacus n8n flowise openclaw"
 
-          # 3. Deploy stacks in sequence
           for stack_name in $DEPLOY_ORDER; do
               # Check if the stack directory exists
               if [ -d "$DOCKGE_ROOT/$stack_name" ]; then
                   # Check for valid compose file
                   if [ -f "$DOCKGE_ROOT/$stack_name/compose.yaml" ] || [ -f "$DOCKGE_ROOT/$stack_name/docker-compose.yml" ]; then
-                      echo "✅ Updating $stack_name..."
+                      echo "✅ Starting $stack_name..."
                       cd "$DOCKGE_ROOT/$stack_name"
                       
                       docker compose pull
@@ -76,22 +93,6 @@ jobs:
               fi
           done
 
-      - name: Restore Workspace Ownership
+      - name: Cleanup
         run: |
-          echo "🔧 Resetting all files to gravity (1000:1000)..."
-          DOCKGE_ROOT="/opt/stacks"
-          docker run --rm -v ${DOCKGE_ROOT}:/target alpine chown -R 1000:1000 /target
-
-      - name: Restore Service Permissions
-        run: |
-          echo "🔧 Re-applying special service permissions..."
-          DOCKGE_ROOT="/opt/stacks"
-          
-          # Run the fix script using a temporary Alpine container (as Root)
-          # This works around the runner's lack of sudo privileges
-          docker run --rm \
-            -v ${DOCKGE_ROOT}:/target \
-            -w /target \
-            alpine sh ./fix-permissions.sh
-          
           echo "🎉 Deployment Complete!"
