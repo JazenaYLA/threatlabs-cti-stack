@@ -46,7 +46,7 @@ link_stack() {
 
 # Link all known stacks
 link_stack "infra"
-link_stack "proxy"
+
 link_stack "xtm"
 link_stack "misp"
 link_stack "cortex"
