@@ -111,7 +111,6 @@ services:
       - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
       - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
       - APP__APP_LOGS__LOGS_LEVEL=error
-      - APP__APP_LOGS__LOGS_LEVEL=error
       - REDIS__HOSTNAME=infra-valkey
       - REDIS__PORT=6379
       - MINIO__ENDPOINT=minio
@@ -659,15 +658,14 @@ services:
       - OPENAEV_ADMIN_ENCRYPTION_KEY=${OPENAEV_ADMIN_ENCRYPTION_PASSWORD}
       - OPENAEV_HEALTHCHECK_KEY=${OPENAEV_HEALTHCHECK_KEY}
       - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
-      - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
       - SPRING_DATASOURCE_URL=jdbc:postgresql://infra-postgres:5432/openaev
       # Using shared credentials defined in infra/init-dbs.sh
       # Defaults: openaev / changeme
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-openaev}
       - SPRING_DATASOURCE_PASSWORD=${OPENAEV_DB_PASSWORD}
       - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS-KEY=${MINIO_ROOT_USER}
-      - MINIO_ACCESS-SECRET=${MINIO_ROOT_PASSWORD}
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
       - OPENAEV_RABBITMQ_HOSTNAME=rabbitmq
       - OPENAEV_RABBITMQ_USER=${RABBITMQ_DEFAULT_USER}
       - OPENAEV_RABBITMQ_PASS=${RABBITMQ_DEFAULT_PASS}
@@ -698,7 +696,7 @@ services:
     networks:
       - cti-net
     ports:
-      - "8081:8080" # If you change the host port (the left one) do not forget to update OPENAEV_BASE-URL in you .env
+      - "8082:8080" # If you change the host port (the left one) do not forget to update OPENAEV_BASE-URL in you .env
     depends_on:
       # pgsql: REMOVED (Shared Infra)
       #   condition: service_healthy
