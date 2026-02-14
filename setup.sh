@@ -267,4 +267,4 @@ else
 fi
 
 echo "[+] Setup completed. You can now deploy stacks with Docker Compose or Dockge."
-echo "    Order: 1. infra, 2. proxy & xtm, 3. cortex/n8n/flowise."
+echo "    Order: 1. infra, 2. xtm, 3. cortex/n8n/flowise."
