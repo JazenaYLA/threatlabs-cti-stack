@@ -8,18 +8,39 @@ services:
     environment:
       # Basic configuration
       - MISP_MODULES_DEBUG=${MISP_MODULES_DEBUG:-false}
-      
-      # Optional: API keys for enrichment modules
+
+      # ── Threat Intelligence Platforms ──
       - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY:-}
+      - OTX_API_KEY=${OTX_API_KEY:-}
+      - RECORDED_FUTURE_API_KEY=${RECORDED_FUTURE_API_KEY:-}
+
+      # ── Network Intelligence & Passive DNS ──
       - SHODAN_API_KEY=${SHODAN_API_KEY:-}
-      - PASSIVETOTAL_API_KEY=${PASSIVETOTAL_API_KEY:-}
-      - CIRCL_PASSIVE_DNS_API_KEY=${CIRCL_PASSIVE_DNS_API_KEY:-}
-      - GREYNOISE_API_KEY=${GREYNOISE_API_KEY:-}
       - CENSYS_API_ID=${CENSYS_API_ID:-}
       - CENSYS_API_SECRET=${CENSYS_API_SECRET:-}
+      - GREYNOISE_API_KEY=${GREYNOISE_API_KEY:-}
+      - ONYPHE_API_KEY=${ONYPHE_API_KEY:-}
+      - SECURITYTRAILS_API_KEY=${SECURITYTRAILS_API_KEY:-}
+      - PASSIVETOTAL_API_KEY=${PASSIVETOTAL_API_KEY:-}
+      - PASSIVETOTAL_USERNAME=${PASSIVETOTAL_USERNAME:-}
+      - CIRCL_PASSIVE_DNS_API_KEY=${CIRCL_PASSIVE_DNS_API_KEY:-}
+      - CIRCL_PASSIVE_SSL_API_KEY=${CIRCL_PASSIVE_SSL_API_KEY:-}
+
+      # ── IP & Domain Reputation ──
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY:-}
+      - IPINFO_TOKEN=${IPINFO_TOKEN:-}
+      - IPQUALITYSCORE_API_KEY=${IPQUALITYSCORE_API_KEY:-}
       - CROWDSEC_API_KEY=${CROWDSEC_API_KEY:-}
-      - RECORDED_FUTURE_API_KEY=${RECORDED_FUTURE_API_KEY:-}
-      
+
+      # ── URL & Web Analysis ──
+      - URLSCAN_API_KEY=${URLSCAN_API_KEY:-}
+      - GOOGLE_SAFE_BROWSING_API_KEY=${GOOGLE_SAFE_BROWSING_API_KEY:-}
+
+      # ── Malware / Sample Analysis ──
+      - HIBP_API_KEY=${HIBP_API_KEY:-}
+      - MALWAREBAZAAR_AUTH_KEY=${MALWAREBAZAAR_AUTH_KEY:-}
+      - ANYRUN_API_KEY=${ANYRUN_API_KEY:-}
+      - JOESANDBOX_API_KEY=${JOESANDBOX_API_KEY:-}
     volumes:
       # Custom modules (optional)
       - ./.vol/custom/action_mod:/custom/action_mod:Z
@@ -36,6 +57,28 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  misp-modules-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: misp-modules-web
+    restart: unless-stopped
+    ports:
+      - "7008:7008"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-to-a-random-string}
+      - FLASK_URL=0.0.0.0
+      - FLASK_PORT=7008
+      - MISP_MODULE=misp-modules-shared:6666
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - DATABASE_URI=sqlite:///misp-module.sqlite
+      - QUERIES_LIMIT=100
+    depends_on:
+      misp-modules:
+        condition: service_healthy
+    networks:
+      - cti-net
 
 networks:
   cti-net:

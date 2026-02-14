@@ -1,0 +1,44 @@
+FROM python:3.10-slim
+
+# Disable Poetry virtualenvs so everything installs into system Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl build-essential libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="$POETRY_HOME/bin:$PATH"
+
+WORKDIR /app
+
+# Copy dependency manifests first (Docker layer caching)
+COPY source/website/pyproject.toml source/website/poetry.lock ./
+COPY source/website/README.md ./
+
+# Regenerate lock file (pyproject.toml was modified to remove misp-modules dep)
+RUN poetry lock --no-update || poetry lock
+
+# Install Python dependencies into system Python (no venv)
+RUN poetry install --no-root --only main
+
+# Copy application code
+COPY source/website/ .
+
+# Create a .env stub so dotenv.load_dotenv() doesn't fail
+# Actual values come from Docker environment variables
+RUN touch /app/.env
+
+# Copy entrypoint script
+COPY entrypoint-web.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 7008
+
+ENTRYPOINT ["/entrypoint.sh"]

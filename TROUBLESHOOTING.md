@@ -189,3 +189,14 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 * **Check**: ensure `misp-modules` stack is running and healthy: `curl http://localhost:6666/modules`.
 * **Fix**: Check logs `docker logs misp-modules-shared`. Ensure `MISP_MODULES_URL` is set correctly in dependent stacks.
 
+* **Issue**: Web UI shows "Instance of misp-modules is unreachable".
+* **Cause**: The `misp-modules-web` container started before the API was healthy, or the API crashed.
+* **Fix**: Restart the web UI: `docker compose restart misp-modules-web` (in `misp-modules/`). The `depends_on: service_healthy` should prevent this normally.
+
+* **Issue**: Web UI returns `ValueError: SECRET_KEY must be set in .env`.
+* **Fix**: Set `SECRET_KEY` in `misp-modules/.env`. Generate with: `openssl rand -hex 16`.
+
+* **Issue**: FlowIntel enrichment fails but `misp-modules-shared` is healthy.
+* **Cause**: FlowIntel bundles its own `misp-modules` process on `127.0.0.1:6666`. If the internal process dies, enrichment fails even though the shared instance is fine.
+* **Check**: `docker exec flowintel-cti curl -s http://127.0.0.1:6666/modules | head -c 50`
+* **Fix**: Restart flowintel: `docker compose restart flowintel` (in `flowintel/`).
