@@ -19,6 +19,8 @@ services:
       - JWT_SECRET=${JWT_SECRET:-changeme}
       - INIT_ADMIN_EMAIL=${INIT_ADMIN_EMAIL:-admin@admin.admin}
       - INIT_ADMIN_PASSWORD=${INIT_ADMIN_PASSWORD:-admin}
+      # MISP Modules for enrichment (shared)
+      - MISP_MODULES_URL=${MISP_MODULES_URL:-http://misp-modules-shared:6666}
     volumes:
       - ./vol/flowintel/data:/var/lib/flowintel
       - ./entrypoint.sh:/home/flowintel/app/bin/entrypoint.sh

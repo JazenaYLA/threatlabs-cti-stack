@@ -106,8 +106,6 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
-      misp-modules:
-        condition: service_healthy
     healthcheck:
       test: curl -ks https://localhost/users/heartbeat > /dev/null || exit 1
       interval: 2s
@@ -309,29 +307,8 @@ services:
       - CONTENT_SECURITY_POLICY=${CONTENT_SECURITY_POLICY}
       # compose profiles
       - COMPOSE_PROFILES=${COMPOSE_PROFILES}
-  misp-modules:
-    image: ${REGISTRY_MIRROR_URL:-}ghcr.io/misp/misp-docker/misp-modules:${MODULES_RUNNING_TAG:-latest}
-    restart: always
-    build:
-      context: modules/.
-      args:
-        - MODULES_TAG=${MODULES_TAG:?Missing or outdated .env file, see
-          README.md for instructions}
-        - MODULES_COMMIT=${MODULES_COMMIT}
-        - MODULES_FLAVOR=${MODULES_FLAVOR:-standard}
-    healthcheck:
-      test: /bin/bash -c '</dev/tcp/localhost/6666'
-      interval: 2s
-      timeout: 1s
-      retries: 3
-      start_period: 5s
-      start_interval: 5s
-    volumes:
-      # custom MISP modules are loaded at startup time
-      - ./custom/action_mod/:/custom/action_mod/:Z
-      - ./custom/expansion/:/custom/expansion/:Z
-      - ./custom/export_mod/:/custom/export_mod/:Z
-      - ./custom/import_mod/:/custom/import_mod/:Z
+      # Modules
+      - MISP_MODULES_URL=http://misp-modules-shared:6666
   misp-guard:
     profiles:
       - misp-guard

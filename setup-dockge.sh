@@ -49,6 +49,7 @@ STACKS=(
     "infra"
     "xtm"
     "misp"
+    "misp-modules"
     "n8n"
     "flowise"
     "flowintel"
