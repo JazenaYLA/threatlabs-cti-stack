@@ -48,24 +48,31 @@ jobs:
           
           echo "🚀 Starting Deployment to $DOCKGE_ROOT..."
           
-          # Use Docker to write files (Bypasses Host/LXC permission issues)
+          # 1. Overwrite files on the server using Docker (bypasses permission issues)
           tar --exclude='.git' --exclude='forgejo-runner' -c . | \
           docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
           
-          # Update Stacks
-          cd "$DOCKGE_ROOT"
-          
-          for d in */ ; do
-              stack_name=${d%/}
-              
-              if [ "$stack_name" == "forgejo-runner" ]; then continue; fi
-              
-              if [ -f "$stack_name/compose.yaml" ] || [ -f "$stack_name/docker-compose.yml" ]; then
-                  echo "✅ Updating $stack_name..."
-                  cd "$DOCKGE_ROOT/$stack_name"
-                  docker compose pull
-                  docker compose up -d --remove-orphans
-                  cd "$DOCKGE_ROOT"
+          # 2. Define the exact deployment order based on dependencies
+          #    Order: Infra -> Cortex -> MISP -> Consumers (XTM, TheHive, FlowIntel)
+          DEPLOY_ORDER="infra proxy cortex misp thehive xtm flowintel ail-project lacus n8n flowise openclaw"
+
+          # 3. Deploy stacks in sequence
+          for stack_name in $DEPLOY_ORDER; do
+              # Check if the stack directory exists
+              if [ -d "$DOCKGE_ROOT/$stack_name" ]; then
+                  # Check for valid compose file
+                  if [ -f "$DOCKGE_ROOT/$stack_name/compose.yaml" ] || [ -f "$DOCKGE_ROOT/$stack_name/docker-compose.yml" ]; then
+                      echo "✅ Updating $stack_name..."
+                      cd "$DOCKGE_ROOT/$stack_name"
+                      
+                      docker compose pull
+                      # 'up -d' ensures the container is started before moving to the next one
+                      docker compose up -d --remove-orphans
+                  else
+                      echo "⚠️  Skipping $stack_name (No compose file found)"
+                  fi
+              else
+                   echo "⚠️  Skipping $stack_name (Directory not found)"
               fi
           done
 
