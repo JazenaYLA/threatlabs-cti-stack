@@ -13,7 +13,7 @@ services:
       - thread_pool.search.queue_size=5000
       - ES_JAVA_OPTS=-Xms${ES7_HEAP_SIZE_GB} -Xmx${ES7_HEAP_SIZE_GB}
     ports:
-      - "${INFRA7_ES_PORT}:9200"
+      - ${INFRA7_ES_PORT}:9200
     volumes:
       - ./vol/esdata7:/usr/share/elasticsearch/data
     ulimits:
@@ -26,7 +26,6 @@ services:
     restart: unless-stopped
     networks:
       - cti-net
-
   kibana7:
     image: docker.elastic.co/kibana/kibana:7.17.18
     container_name: kibana7-cti
@@ -35,12 +34,11 @@ services:
       - SERVER_NAME=kibana7-cti
       - SERVER_PUBLICBASEURL=http://${INFRA_HOST}:${INFRA7_KIBANA_PORT}
     ports:
-      - "${INFRA7_KIBANA_PORT}:5601"
+      - ${INFRA7_KIBANA_PORT}:5601
     depends_on:
       - elasticsearch7
     networks:
       - cti-net
-
   elasticsearch8:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.8
     container_name: es8-cti
@@ -53,7 +51,7 @@ services:
       - thread_pool.search.queue_size=5000
       - ES_JAVA_OPTS=-Xms${ES8_HEAP_SIZE_GB} -Xmx${ES8_HEAP_SIZE_GB}
     ports:
-      - "${INFRA8_ES_PORT}:9200"
+      - ${INFRA8_ES_PORT}:9200
     volumes:
       - ./vol/esdata8:/usr/share/elasticsearch/data
     ulimits:
@@ -66,7 +64,6 @@ services:
     restart: unless-stopped
     networks:
       - cti-net
-
   kibana8:
     image: docker.elastic.co/kibana/kibana:8.19.2
     container_name: kibana8-cti
@@ -75,12 +72,11 @@ services:
       - SERVER_NAME=kibana8-cti
       - SERVER_PUBLICBASEURL=http://${INFRA_HOST}:${INFRA8_KIBANA_PORT}
     ports:
-      - "${INFRA8_KIBANA_PORT}:5601"
+      - ${INFRA8_KIBANA_PORT}:5601
     depends_on:
       - elasticsearch8
     networks:
       - cti-net
-
   # Shared Database (Postgres 17)
   postgres:
     image: postgres:17-alpine
@@ -93,17 +89,21 @@ services:
       - OPENAEV_DB_PASSWORD=${OPENAEV_DB_PASSWORD:-changeme}
       - N8N_DB_PASSWORD=${N8N_DB_PASSWORD:-n8npass123!}
       - FLOWINTEL_DB_PASSWORD=${FLOWINTEL_DB_PASSWORD:-changeme}
+      - OPENCLAW_DB_PASSWORD=${OPENCLAW_DB_PASSWORD:-changeme}
     volumes:
       - ./vol/postgres/data:/var/lib/postgresql/data
       - ./vol/postgres-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
     networks:
       - cti-net
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_ROOT_USER:-postgres}" ]
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_ROOT_USER:-postgres}
       interval: 10s
       timeout: 5s
       retries: 5
-
   # Shared Cache (Valkey - Redis compatible)
   valkey:
     image: valkey/valkey:latest
@@ -111,14 +111,18 @@ services:
     restart: unless-stopped
     volumes:
       - ./vol/valkey/data:/data
+    ports:
+      - "6379:6379"
     networks:
       - cti-net
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test:
+        - CMD
+        - redis-cli
+        - ping
       interval: 10s
       timeout: 5s
       retries: 3
-
 networks:
   # Shared network for all CTI stack components (xtm, misp, etc.) to communicate
   cti-net:
