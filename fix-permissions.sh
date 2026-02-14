@@ -56,6 +56,9 @@ ensure_vol "flowintel/vol/flowintel/data" "flowintel/vol" "1000:1000"
 ensure_vol "lacus/vol/lacus-data" "lacus/vol" "1000:1000"
 ensure_vol "lacus/vol/lacus-cache" "lacus/vol" "1000:1000"
 
+# MISP Modules
+ensure_vol "misp-modules/.vol" "misp-modules/.vol" "1000:1000"
+
 # TheHive (Legacy/Archive)
 ensure_vol "thehive/vol/cassandra/data" "thehive/vol" "1000:1000"
 ensure_vol "thehive/vol/thehive" "thehive/vol" "1000:1000"

@@ -62,6 +62,7 @@ This repository is organized into modular stacks that share common infrastructur
 
 * **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
 * **`proxy/`**: **Traefik Proxy**. Shared reverse proxy for accessing services via subdomains.
+* **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
 * **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
