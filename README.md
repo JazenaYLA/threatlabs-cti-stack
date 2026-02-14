@@ -1,5 +1,3 @@
-# Pipeline Operational!
-
 # ThreatLabs Homelab CTI Stack
 
 A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designed for homelab usage.
@@ -8,6 +6,7 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 This repository is organized into modular stacks that share common infrastructure.
 
+```mermaid
     graph TD
 
     subgraph "Gateway (Optional)"
