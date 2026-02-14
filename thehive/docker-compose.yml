@@ -4,7 +4,7 @@ services:
     container_name: thehive-cassandra
     restart: unless-stopped
     ports:
-      - "9042:9042" # CQL port
+      - 9042:9042 # CQL port
     environment:
       - CASSANDRA_CLUSTER_NAME=TheHive
       - CASSANDRA_DC=dc1
@@ -15,11 +15,14 @@ services:
     networks:
       - cti-net
     healthcheck:
-      test: [ "CMD", "cqlsh", "-e", "describe keyspaces;" ]
+      test:
+        - CMD
+        - cqlsh
+        - -e
+        - describe keyspaces;
       interval: 30s
       timeout: 10s
       retries: 5
-
   thehive:
     image: thehiveproject/thehive4:4.1.15
     container_name: thehive-cti
@@ -27,12 +30,13 @@ services:
     volumes:
       - ./vol/thehive/application.conf:/etc/thehive/application.conf:ro
     ports:
-      - "${THEHIVE_PORT:-9000}:9000"
+      - ${THEHIVE_PORT:-9000}:9000
     environment:
       - CQL_HOSTNAMES=cassandra
       # TheHive 4 requires ES 7.x (ES 8.x not supported for TH4)
       - ES_HOSTS=es7-cti:9200
       - THEHIVE_SECRET=${THEHIVE_SECRET}
+      - CORTEX_KEY=${CORTEX_KEY}
     depends_on:
       cassandra:
         condition: service_healthy
@@ -41,10 +45,9 @@ services:
     labels:
       # Optional: Traefik Reverse Proxy (Auto-Discovery)
       # Can be ignored if using Nginx/Caddy/etc via port 9000
-      - "traefik.enable=true"
-      - "traefik.http.routers.thehive.rule=Host(`thehive.local`)"
-      - "traefik.http.services.thehive.loadbalancer.server.port=9000"
-
+      - traefik.enable=true
+      - traefik.http.routers.thehive.rule=Host(`thehive.local`)
+      - traefik.http.services.thehive.loadbalancer.server.port=9000
 networks:
   cti-net:
     external: true
