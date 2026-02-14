@@ -307,8 +307,8 @@ services:
       - CONTENT_SECURITY_POLICY=${CONTENT_SECURITY_POLICY}
       # compose profiles
       - COMPOSE_PROFILES=${COMPOSE_PROFILES}
-      # Modules
-      - MISP_MODULES_URL=http://misp-modules-shared:6666
+      # Modules – entrypoint reads MISP_MODULES_FQDN (not _URL)
+      - MISP_MODULES_FQDN=http://misp-modules-shared:6666
   misp-guard:
     profiles:
       - misp-guard

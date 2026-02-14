@@ -23,7 +23,7 @@ Standalone shared [MISP enrichment modules](https://www.misp-project.org/2024/03
 
 | Consumer | Connection | How |
 |----------|-----------|-----|
-| **MISP Core** | `http://misp-modules-shared:6666` | `MISP_MODULES_URL` env var in `misp/docker-compose.yml` |
+| **MISP Core** | `http://misp-modules-shared:6666` | `MISP_MODULES_FQDN` env var in `misp/docker-compose.yml` |
 | **FlowIntel** (Analyzer) | `127.0.0.1:6666` (built-in) | Runs its own `misp-modules` process internally via `screen` |
 | **Web UI** | `misp-modules-shared:6666` | `MISP_MODULE` env var in this stack's compose |
 | **Direct API** | `http://localhost:6666` | `curl http://localhost:6666/modules` |
@@ -117,10 +117,10 @@ Place your `.py` module files in the appropriate directory and restart the conta
 
 ### MISP
 
-MISP Core connects to the shared modules via `MISP_MODULES_URL` in `misp/docker-compose.yml`:
+MISP Core connects to the shared modules via `MISP_MODULES_FQDN` in `misp/docker-compose.yml` (note: the MISP Docker entrypoint reads `MISP_MODULES_FQDN`, not `_URL`):
 
 ```yaml
-- MISP_MODULES_URL=http://misp-modules-shared:6666
+- MISP_MODULES_FQDN=http://misp-modules-shared:6666
 ```
 
 This overrides MISP's default `http://misp-modules` hostname. MISP auto-discovers available modules. The following MISP config keys are automatically populated:
