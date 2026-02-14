@@ -22,7 +22,7 @@ fi
 echo "[*] Stopping and removing containers..."
 # We try to use docker compose down if possible, but a blanket kill is more effective for a "nuke"
 # Iterate through known stacks
-STACKS=("infra" "xtm" "cortex" "misp" "n8n" "flowise" "flowintel" "lacus" "thehive" "proxy" "ail-project" "openclaw")
+STACKS=("infra" "xtm" "misp" "n8n" "flowise" "flowintel" "lacus" "thehive" "proxy" "ail-project")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then
@@ -47,15 +47,12 @@ echo "[*] Phase 1: Cleaning Git Repository Storage (Relative)..."
 # Explicitly delete the volume directories we created in setup.sh (Local Git Repo)
 sudo rm -rf infra/vol
 sudo rm -rf xtm/volumes
-sudo rm -rf cortex/vol
-# sudo rm -rf misp/vol # MISP uses named volumes (cleaned by prune) + bind-mount configs (persist)
 sudo rm -rf n8n/vol
 sudo rm -rf flowise/vol
 sudo rm -rf flowintel/vol
 sudo rm -rf lacus/vol
 sudo rm -rf thehive/vol
 sudo rm -rf ail-project/vol
-sudo rm -rf openclaw/vol
 
 # Explicitly delete /opt/stacks volume directories (Dockge)
 if [ -d "/opt/stacks" ]; then
@@ -63,12 +60,12 @@ if [ -d "/opt/stacks" ]; then
     sudo rm -rf /opt/stacks/*/vol
     sudo rm -rf /opt/stacks/xtm/volumes
     # Also remove generated configs in /opt/stacks if they were linked/copied
-    sudo rm -f /opt/stacks/cortex/vol/cortex/application.conf
+
     sudo rm -f /opt/stacks/thehive/vol/thehive/application.conf
 fi
 
 echo "[*] Removing generated configuration files..."
-rm -f cortex/vol/cortex/application.conf
+
 rm -f thehive/vol/thehive/application.conf
 
 echo "[+] Nuke complete. The codebase is clean (configuration files preserved, data gone)."

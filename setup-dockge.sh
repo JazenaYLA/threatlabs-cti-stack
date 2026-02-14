@@ -45,16 +45,20 @@ link_stack() {
 }
 
 # Link all known stacks
-link_stack "infra"
+STACKS=(
+    "infra"
+    "xtm"
+    "misp"
+    "n8n"
+    "flowise"
+    "flowintel"
+    "thehive"
+    "lacus"
+    "ail-project"
+)
 
-link_stack "xtm"
-link_stack "misp"
-link_stack "cortex"
-link_stack "n8n"
-link_stack "flowise"
-link_stack "flowintel"
-link_stack "thehive"
-link_stack "lacus"
-link_stack "ail-project"
+for STACK_NAME in "${STACKS[@]}"; do
+    link_stack "$STACK_NAME"
+done
 
 echo "[*] Done. Refresh Dockge to see your stacks."
