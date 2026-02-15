@@ -9,6 +9,8 @@ minio/
 
 # Specific app dirs (e.g. MISP)
 custom/
+!custom/files/
+!custom/files/customize_misp.sh
 files/
 gnupg/
 logs/
