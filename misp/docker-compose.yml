@@ -123,10 +123,10 @@ services:
       - ./ssl/:/etc/nginx/certs/:Z
       - ./gnupg/:/var/www/MISP/.gnupg/:Z
       - misp_guard_ca:/usr/local/share/ca-certificates/misp_guard:Z
-    # customize by replacing ${CUSTOM_PATH} with a path containing 'files/customize_misp.sh'
-    # - "${CUSTOM_PATH}/:/custom/:Z"
-    # mount custom ca root certificates
-    # - "./rootca.pem:/usr/local/share/ca-certificates/rootca.crt:Z"
+      # customize_misp.sh hook – patches nginx redirect to include CORE_HTTPS_PORT
+      - "./custom/:/custom/:Z"
+      # mount custom ca root certificates
+      # - "./rootca.pem:/usr/local/share/ca-certificates/rootca.crt:Z"
     environment:
       - BASE_URL=${BASE_URL}
       - CRON_USER_ID=${CRON_USER_ID}
@@ -134,6 +134,7 @@ services:
       - CRON_PUSHALL=${CRON_PUSHALL}
       - DISABLE_IPV6=${DISABLE_IPV6}
       - DISABLE_SSL_REDIRECT=${DISABLE_SSL_REDIRECT}
+      - CORE_HTTPS_PORT=${CORE_HTTPS_PORT:-443}
       - ENABLE_DB_SETTINGS=${ENABLE_DB_SETTINGS}
       - ENABLE_BACKGROUND_UPDATES=${ENABLE_BACKGROUND_UPDATES}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
