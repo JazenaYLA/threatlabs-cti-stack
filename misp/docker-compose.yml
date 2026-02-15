@@ -124,7 +124,7 @@ services:
       - ./gnupg/:/var/www/MISP/.gnupg/:Z
       - misp_guard_ca:/usr/local/share/ca-certificates/misp_guard:Z
       # customize_misp.sh hook – patches nginx redirect to include CORE_HTTPS_PORT
-      - "./custom/:/custom/:Z"
+      - ./custom/:/custom/:Z
       # mount custom ca root certificates
       # - "./rootca.pem:/usr/local/share/ca-certificates/rootca.crt:Z"
     environment:

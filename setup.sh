@@ -98,6 +98,7 @@ sudo chown -R 1000:1000 lacus/vol || echo "[-] Warning: Failed to chown lacus/vo
 # TheHive (Legacy/Archive)
 create_vol "thehive/vol/cassandra/data"
 create_vol "thehive/vol/thehive"
+create_vol "thehive/vol/thehive/data"
 sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
 
 # MISP Modules (Shared)
@@ -106,6 +107,13 @@ create_vol "misp-modules/.vol/custom/expansion"
 create_vol "misp-modules/.vol/custom/export_mod"
 create_vol "misp-modules/.vol/custom/import_mod"
 sudo chown -R 1000:1000 misp-modules/.vol || echo "[-] Warning: Failed to chown misp-modules/.vol."
+
+# DFIR-IRIS
+create_vol "dfir-iris/vol/db_data"
+create_vol "dfir-iris/vol/iris-downloads"
+create_vol "dfir-iris/vol/user_templates"
+create_vol "dfir-iris/vol/server_data"
+sudo chown -R 1000:1000 dfir-iris/vol || echo "[-] Warning: Failed to chown dfir-iris/vol."
 
 # 5. Generate Default Configurations (if missing)
 echo "[*] Checking for default configurations..."
@@ -133,7 +141,7 @@ db.janusgraph {
 }
 storage {
   provider = localfs
-  localfs.location = /var/lib/thehive/data
+  localfs.location = /opt/thp/thehive/data
 EOF
 fi
 
@@ -141,6 +149,30 @@ fi
 if [ -f thehive/.env ]; then
     if ! grep -q "THEHIVE_SECRET" thehive/.env; then
         echo "THEHIVE_SECRET=$(date +%s | sha256sum | base64 | head -c 64)" >> thehive/.env
+    fi
+fi
+
+# DFIR-IRIS Certificates
+if [ -d dfir-iris ] && [ ! -f dfir-iris/certificates/web_certificates/iris_dev_cert.pem ]; then
+    echo "[+] Generating self-signed certificates for DFIR-IRIS..."
+    mkdir -p dfir-iris/certificates/{rootCA,web_certificates,ldap}
+    openssl req -x509 -nodes -days 3650 \
+      -newkey rsa:2048 \
+      -keyout dfir-iris/certificates/rootCA/irisRootCAKey.pem \
+      -out dfir-iris/certificates/rootCA/irisRootCACert.pem \
+      -subj "/C=US/ST=Local/L=Homelab/O=ThreatLabs/CN=IRIS Root CA" 2>/dev/null
+    openssl req -x509 -nodes -days 3650 \
+      -newkey rsa:2048 \
+      -keyout dfir-iris/certificates/web_certificates/iris_dev_key.pem \
+      -out dfir-iris/certificates/web_certificates/iris_dev_cert.pem \
+      -subj "/C=US/ST=Local/L=Homelab/O=ThreatLabs/CN=iris.local" 2>/dev/null
+fi
+
+# DFIR-IRIS Secrets
+if [ -f dfir-iris/.env ]; then
+    if grep -q "changeme" dfir-iris/.env 2>/dev/null; then
+        echo "[!] WARNING: dfir-iris/.env still contains default 'changeme' values."
+        echo "    Generate production secrets with: openssl rand -hex 30"
     fi
 fi
 
@@ -156,7 +188,7 @@ generate_uuid() {
     fi
 }
 
-STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "thehive" "lacus" "ail-project")
+STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "thehive" "lacus" "dfir-iris" "ail-project")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then

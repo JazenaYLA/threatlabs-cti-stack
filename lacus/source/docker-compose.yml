@@ -1,0 +1,8 @@
+services:
+  lacus:
+    build: .
+    container_name: lacus
+    ports:
+      - "7100:7100"
+    volumes:
+      - ./config:/app/lacus/config

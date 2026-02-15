@@ -122,6 +122,38 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 * **Check**: TheHive 4 requires **ElasticSearch 7**.
 * **Fix**: Ensure `es7-cti` service in `infra` is healthy and env `ES_HOSTS` points to `es7-cti:9200`.
 
+* **Issue**: TheHive crash-loops with `NoSuchFileException: /opt/thp/thehive/data`.
+* **Cause**: Missing volume mount for local file storage.
+* **Fix**: Ensure `docker-compose.yml` mounts the data directory:
+    ```yaml
+    volumes:
+      - ./vol/thehive/application.conf:/etc/thehive/application.conf:ro
+      - ./vol/thehive/data:/opt/thp/thehive/data
+    ```
+    Then create the directory: `sudo mkdir -p thehive/vol/thehive/data && sudo chown -R 1000:1000 thehive/vol`
+
+### DFIR-IRIS
+
+* **Issue**: Cannot find the administrator password.
+* **Cause**: The admin password is randomly generated and printed in the `iris-app` logs only on the very first boot.
+* **Fix**: Search the logs:
+    ```bash
+    sudo docker logs iris-app 2>&1 | grep "create_safe_admin"
+    ```
+    To set a specific password, configure `IRIS_ADM_PASSWORD` in `dfir-iris/.env` **before** first boot.
+
+* **Issue**: IRIS shows certificate errors or nginx won't start.
+* **Cause**: Self-signed certificates are missing from `certificates/web_certificates/`.
+* **Fix**: Run `./setup.sh` to auto-generate certificates, or manually:
+    ```bash
+    cd dfir-iris
+    mkdir -p certificates/{rootCA,web_certificates,ldap}
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+      -keyout certificates/web_certificates/iris_dev_key.pem \
+      -out certificates/web_certificates/iris_dev_cert.pem \
+      -subj "/CN=iris.local"
+    ```
+
 ### FlowIntel
  
 * **Issue**: Initial admin credentials not working or want to change them.

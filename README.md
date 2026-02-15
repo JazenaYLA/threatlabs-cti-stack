@@ -42,6 +42,7 @@ This repository is organized into modular stacks that share common infrastructur
         FlowIntel[FlowIntel]
         TheHive[TheHive 4]
         Cassandra[(Cassandra)]
+        IRIS[DFIR-IRIS]
     end
 
     subgraph "Automation & Collection"
@@ -70,7 +71,7 @@ This repository is organized into modular stacks that share common infrastructur
     n8n -->|API| MISP & OpenCTI & Flowise
     
     %% Gateway Routing
-    Proxy -.-> MISP & ModulesWeb & OpenCTI & OpenAEV & FlowIntel & n8n & Flowise & TheHive
+    Proxy -.-> MISP & ModulesWeb & OpenCTI & OpenAEV & FlowIntel & n8n & Flowise & TheHive & IRIS
 ```
 
 ### Directory Structure
@@ -84,6 +85,7 @@ This repository is organized into modular stacks that share common infrastructur
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
+* **`dfir-iris/`**: **Incident Response**. DFIR-IRIS collaborative IR platform (self-contained Postgres 12 + RabbitMQ).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 
 ### Shared Network
@@ -184,8 +186,33 @@ The services must be started in a specific order to ensure database availability
     * **n8n**: `cd n8n && docker compose up -d`
     * **Flowise**: `cd flowise && docker compose up -d`
     * **FlowIntel**: `cd flowintel && docker compose up -d`
+    * **TheHive**: `cd thehive && docker compose up -d`
+    * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
+
+## TheHive
+
+### Initial Login Credentials
+* **Username**: `admin@thehive.local`
+* **Password**: `secret`
+
+> [!IMPORTANT]
+> Change the default password immediately after first login.
+
+## DFIR-IRIS
+
+Collaborative Incident Response platform. Accessible via **HTTPS** on port `4433` (configurable via `IRIS_HTTPS_PORT`).
+
+### Initial Login Credentials
+The administrator password is **randomly generated on first boot** and printed in the app container logs:
+```bash
+sudo docker logs iris-app 2>&1 | grep "create_safe_admin"
+```
+
+> [!IMPORTANT]
+> The password is only printed once. Change it immediately and store it securely.
+> To set a specific initial password, configure `IRIS_ADM_PASSWORD` in `.env` **before** first boot.
 
 ## FlowIntel
 

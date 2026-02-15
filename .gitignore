@@ -10,3 +10,4 @@ forgejo-runner/data/
 
 # FlowIntel
 flowintel/.env
+HOMELAB_STORY.md

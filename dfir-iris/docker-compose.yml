@@ -1,0 +1,132 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: iris-rabbitmq
+    restart: unless-stopped
+    networks:
+      - iris_backend
+
+  db:
+    image: ghcr.io/dfir-iris/iriswebapp_db:v2.4.20
+    container_name: iris-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_ADMIN_USER=${POSTGRES_ADMIN_USER:-raptor}
+      - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-iris_db}
+    volumes:
+      - ./vol/db_data:/var/lib/postgresql/data
+    networks:
+      - iris_backend
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-postgres}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: iris-app-custom:v2.4.20
+    container_name: iris-app
+    command: ['nohup', './iris-entrypoint.sh', 'iriswebapp']
+    restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_ADMIN_USER=${POSTGRES_ADMIN_USER:-raptor}
+      - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_SERVER=iris-db
+      - POSTGRES_PORT=5432
+      - IRIS_SECRET_KEY=${IRIS_SECRET_KEY}
+      - IRIS_SECURITY_PASSWORD_SALT=${IRIS_SECURITY_PASSWORD_SALT}
+    volumes:
+      - ./certificates/rootCA/irisRootCACert.pem:/etc/irisRootCACert.pem:ro
+      - ./certificates:/home/iris/certificates:ro
+      - ./vol/iris-downloads:/home/iris/downloads
+      - ./vol/user_templates:/home/iris/user_templates
+      - ./vol/server_data:/home/iris/server_data
+    networks:
+      - iris_backend
+      - iris_frontend
+      - cti-net
+
+  worker:
+    image: iris-app-custom:v2.4.20
+    container_name: iris-worker
+    command: ['./wait-for-iriswebapp.sh', 'app:8000', './iris-entrypoint.sh', 'iris-worker']
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+      - db
+      - app
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_ADMIN_USER=${POSTGRES_ADMIN_USER:-raptor}
+      - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_SERVER=iris-db
+      - POSTGRES_PORT=5432
+      - IRIS_SECRET_KEY=${IRIS_SECRET_KEY}
+      - IRIS_SECURITY_PASSWORD_SALT=${IRIS_SECURITY_PASSWORD_SALT}
+      - IRIS_WORKER=1
+    volumes:
+      - ./certificates/rootCA/irisRootCACert.pem:/etc/irisRootCACert.pem:ro
+      - ./certificates:/home/iris/certificates:ro
+      - ./vol/iris-downloads:/home/iris/downloads
+      - ./vol/user_templates:/home/iris/user_templates
+      - ./vol/server_data:/home/iris/server_data
+    networks:
+      - iris_backend
+
+  nginx:
+    image: ghcr.io/dfir-iris/iriswebapp_nginx:v2.4.20
+    container_name: iris-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      - IRIS_UPSTREAM_SERVER=app
+      - IRIS_UPSTREAM_PORT=8000
+      - INTERFACE_HTTPS_PORT=${IRIS_HTTPS_PORT:-4433}
+      - SERVER_NAME=${SERVER_NAME:-iris.local}
+      - CERT_FILENAME=${CERT_FILENAME:-iris_dev_cert.pem}
+      - KEY_FILENAME=${KEY_FILENAME:-iris_dev_key.pem}
+      - IRIS_AUTHENTICATION_TYPE=${IRIS_AUTHENTICATION_TYPE:-local}
+    ports:
+      - "${IRIS_HTTPS_PORT:-4433}:${IRIS_HTTPS_PORT:-4433}"
+    volumes:
+      - ./certificates/web_certificates:/www/certs:ro
+    networks:
+      - iris_frontend
+      - cti-net
+    labels:
+      # Optional: Traefik Reverse Proxy (Auto-Discovery)
+      - traefik.enable=true
+      - traefik.http.routers.iris.rule=Host(`iris.local`)
+      - traefik.http.routers.iris.tls=true
+      - traefik.http.services.iris.loadbalancer.server.port=${IRIS_HTTPS_PORT:-4433}
+      - traefik.http.services.iris.loadbalancer.server.scheme=https
+
+networks:
+  iris_backend:
+    name: iris_backend
+  iris_frontend:
+    name: iris_frontend
+  cti-net:
+    external: true
+    name: cti-net
