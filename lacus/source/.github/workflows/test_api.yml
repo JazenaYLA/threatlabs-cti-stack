@@ -1,0 +1,82 @@
+name: Python application - API Test
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build:
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    name: Python ${{ matrix.python-version }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install poetry
+      run: pipx install poetry
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{matrix.python-version}}
+        cache: 'poetry'
+
+    - name: Clone Valkey
+      uses: actions/checkout@v4
+      with:
+        repository: valkey-io/valkey
+        path: valkey-tmp
+        ref: "8.0"
+
+    - name: Install valkey
+      run: |
+        mv valkey-tmp ../valkey
+        pushd ..
+        pushd valkey
+        make
+        popd
+        popd
+
+    - name: Install with poetry (default config)
+      run: |
+        echo LACUS_HOME=`pwd` > .env
+        poetry install
+        poetry run playwright install-deps
+        poetry run playwright install
+        poetry run start
+        sleep 30
+        poetry run stop
+
+    - name: Run update with init switch
+      run: |
+        poetry run update --init
+        poetry run start
+
+    - name: Clone PyLacus
+      uses: actions/checkout@v4
+      with:
+        repository: ail-project/PyLacus
+        path: PyLacus
+
+    - name: Run API tests
+      run: |
+        pushd PyLacus
+        poetry install
+        poetry run pytest tests/test_web.py
+        popd
+        poetry run stop
+
+    - name: Test update script with restart
+      run: |
+        poetry run update --yes
+        sleep 30
+        poetry run stop

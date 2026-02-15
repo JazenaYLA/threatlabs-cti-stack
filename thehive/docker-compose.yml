@@ -29,6 +29,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./vol/thehive/application.conf:/etc/thehive/application.conf:ro
+      - ./vol/thehive/data:/opt/thp/thehive/data
     ports:
       - ${THEHIVE_PORT:-9000}:9000
     environment:

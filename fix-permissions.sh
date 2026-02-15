@@ -62,7 +62,13 @@ ensure_vol "misp-modules/.vol" "misp-modules/.vol" "1000:1000"
 # TheHive (Legacy/Archive)
 ensure_vol "thehive/vol/cassandra/data" "thehive/vol" "1000:1000"
 ensure_vol "thehive/vol/thehive" "thehive/vol" "1000:1000"
+ensure_vol "thehive/vol/thehive/data" "thehive/vol" "1000:1000"
 
+# DFIR-IRIS
+ensure_vol "dfir-iris/vol/db_data" "dfir-iris/vol/db_data" "999:999"
+ensure_vol "dfir-iris/vol/iris-downloads" "dfir-iris/vol" "1000:1000"
+ensure_vol "dfir-iris/vol/user_templates" "dfir-iris/vol" "1000:1000"
+ensure_vol "dfir-iris/vol/server_data" "dfir-iris/vol" "1000:1000"
 
 # --- 3. Executable Permissions ---
 echo "  - Making scripts executable..."
