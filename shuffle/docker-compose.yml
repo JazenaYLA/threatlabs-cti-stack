@@ -1,0 +1,94 @@
+services:
+  frontend:
+    image: ghcr.io/shuffle/shuffle-frontend:latest
+    container_name: shuffle-frontend
+    hostname: shuffle-frontend
+    ports:
+      - "${SHUFFLE_APP_PORT:-3001}:80"
+    networks:
+      - cti-net
+    environment:
+      - BACKEND_HOSTNAME=${BACKEND_HOSTNAME:-shuffle-backend}
+    command: >
+      /bin/sh -c "find /usr/share/nginx/html/assets -name '*.js' -exec sed -i 's/:5001/:'\"$${SHUFFLE_BACKEND_PORT:-5001}\"'/g' {} + && nginx -g 'daemon off;'"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  backend:
+    image: ghcr.io/shuffle/shuffle-backend:latest
+    container_name: shuffle-backend
+    hostname: ${BACKEND_HOSTNAME:-shuffle-backend}
+    ports:
+      - "${SHUFFLE_BACKEND_PORT:-5001}:5001"
+    networks:
+      - cti-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./vol/shuffle-apps:/shuffle-apps:z
+      - ./vol/shuffle-files:/shuffle-files:z
+    env_file: .env
+    environment:
+      - SHUFFLE_APP_HOTLOAD_FOLDER=/shuffle-apps
+      - SHUFFLE_FILE_LOCATION=/shuffle-files
+      - ORG_ID=Shuffle
+      - BASE_URL=http://${BACKEND_HOSTNAME:-shuffle-backend}:5001
+      - DOCKER_API_VERSION=1.40
+    restart: unless-stopped
+
+  orborus:
+    image: ghcr.io/shuffle/shuffle-orborus:latest
+    container_name: shuffle-orborus
+    hostname: shuffle-orborus
+    networks:
+      - cti-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - SHUFFLE_APP_SDK_TIMEOUT=300
+      - ENVIRONMENT_NAME=Shuffle
+      - ORG_ID=Shuffle
+      - BASE_URL=http://${BACKEND_HOSTNAME:-shuffle-backend}:5001
+      - DOCKER_API_VERSION=1.40
+      - SHUFFLE_stats_DISABLED=true
+      - SHUFFLE_LOGS_DISABLED=true
+      - SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker:latest
+    env_file: .env
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined
+
+  opensearch:
+    image: opensearchproject/opensearch:3.2.0
+    hostname: shuffle-opensearch
+    container_name: shuffle-opensearch
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - bootstrap.memory_lock=true
+      - DISABLE_PERFORMANCE_ANALYZER_AGENT_CLI=true
+      - cluster.initial_master_nodes=shuffle-opensearch
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - cluster.name=shuffle-cluster
+      - node.name=shuffle-opensearch
+      - node.store.allow_mmap=false
+      - discovery.seed_hosts=shuffle-opensearch
+      - plugins.security.ssl.http.enabled=false
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${SHUFFLE_OPENSEARCH_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./vol/opensearch-data:/usr/share/opensearch/data:z
+    networks:
+      cti-net:
+        aliases:
+          - node-0.example.com
+    restart: unless-stopped
+
+networks:
+  cti-net:
+    external: true
