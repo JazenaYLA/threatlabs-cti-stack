@@ -231,6 +231,22 @@ docker compose down
 docker compose down -v
 ```
 
+## Monitoring
+
+XTM stack indices are stored in the shared **ES8** cluster (Port 9201).
+
+### OpenCTI
+- **Index Pattern**: `opencti_*`
+- **Dashboards**: [Kibana 8 (Port 5602)](http://localhost:5602)
+
+### OpenAEV
+- **Index Pattern**: `openaev_*`
+- **Dashboards**: [Kibana 8 (Port 5602)](http://localhost:5602)
+
+### Cortex
+- **Index Pattern**: `cortex*`
+- **Dashboards**: [Kibana 8 (Port 5602)](http://localhost:5602)
+
 ## Troubleshooting
 
 ### Services not starting

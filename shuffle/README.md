@@ -41,6 +41,13 @@ docker compose down
 
 For common issues and fixes, please refer to the global [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) file in the parent directory.
 
+## Monitoring
+
+Shuffle indices are stored in the shared **ES8** cluster (Port 9201).
+
+- **Index Pattern**: `shuffle__*`
+- **Dashboards**: [Kibana 8 (Port 5602)](http://localhost:5602)
+
 ## Optional Services
 
 ### Tenzir (Disabled by Default)

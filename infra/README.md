@@ -27,4 +27,16 @@ cd /opt/stacks/infra
 docker compose up -d
 ```
 
-> **Note**: Allow time for ElasticSearch to initialize (green status) before starting dependent stacks like XTM or TheHive.
+## Kibana Monitoring
+
+Monitor project indices using the following Data View patterns:
+
+| Project | ES Cluster | Index Pattern | Kibana Endpoint |
+| :--- | :--- | :--- | :--- |
+| **TheHive 4** | ES7 (Port 9200) | `scalligraph_global*` | [Kibana7](http://localhost:5601) |
+| **Cortex 3** | ES8 (Port 9201) | `cortex*` | [Kibana8](http://localhost:5602) |
+| **OpenCTI** | ES8 (Port 9201) | `opencti_*` | [Kibana8](http://localhost:5602) |
+| **OpenAEV** | ES8 (Port 9201) | `openaev_*` | [Kibana8](http://localhost:5602) |
+| **Shuffle** | ES8 (Port 9201) | `shuffle__*` | [Kibana8](http://localhost:5602) |
+
+> **Note**: For ES8 connectivity, ensure projects use the `shuffle_` or respective service prefix to avoid collisions.
