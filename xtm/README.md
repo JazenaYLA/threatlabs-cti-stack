@@ -116,7 +116,7 @@ These connectors are part of the **official XTM default install** and each requi
 
 ### OpenCTI Connectors (Optional — Require API Keys)
 
-These are **not** part of the default install. To enable one, uncomment both its `.env` variables **and** its service definition in `docker-compose.yml`:
+These connectors are **disabled by default** to conserve resources. To enable one, uncomment both its `.env` variables **and** its service definition in `docker-compose.yml`:
 
 | Connector | Requires |
 |-----------|----------|
@@ -128,6 +128,12 @@ These are **not** part of the default install. To enable one, uncomment both its
 | Shodan | Shodan API key |
 | Malbeacon | Malbeacon API key |
 | IPInfo | ipinfo.io API key |
+
+### Resource Optimization
+
+To prevent disk exhaustion and reduce noise:
+- **Unused Connectors:** Are commented out in `docker-compose.yml` by default.
+- **Log Rotation:** Key services (`opencti`, `openaev`, `worker`, `minio`, `rabbitmq`) are configured with `json-file` logging (`max-size: 10m`, `max-file: 3`).
 
 ### OpenAEV Collectors (Required — Default Install)
 
