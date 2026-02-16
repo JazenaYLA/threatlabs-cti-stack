@@ -53,6 +53,7 @@ services:
       - SHUFFLE_stats_DISABLED=true
       - SHUFFLE_LOGS_DISABLED=true
       - SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker:latest
+      - SHUFFLE_TENZIR_IMAGE=tenzir/tenzir:v4.18.0
     env_file: .env
     restart: unless-stopped
     security_opt:
@@ -87,6 +88,24 @@ services:
       cti-net:
         aliases:
           - node-0.example.com
+    restart: unless-stopped
+
+  tenzir-node:
+    image: tenzir/tenzir:v4.18.0
+    container_name: tenzir-node
+    hostname: tenzir-node
+    entrypoint: []
+    command: /opt/tenzir/bin/tenzir-node --endpoint=0.0.0.0:5160
+    ports:
+      - "1514:1514"
+      - "5160:5160"
+      - "1514:1514/udp"
+    volumes:
+      - /tmp:/tmp
+      - ./vol/tenzir-cache:/var/cache/tenzir
+      - ./vol/tenzir-lib:/var/lib/tenzir
+    networks:
+      - cti-net
     restart: unless-stopped
 
 networks:
