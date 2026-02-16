@@ -1,4 +1,4 @@
-# CTI Stack Troubleshooting Guide
+# Troubleshooting Guide
 
 This guide addresses common issues encountered when deploying the ThreatLabs CTI stack on Proxmox/Dockge.
 

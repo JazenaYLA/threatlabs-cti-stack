@@ -92,8 +92,16 @@ This repository is organized into modular stacks that share common infrastructur
 
 All stacks communicate via an external Docker network named `cti-net`.
 
+### Documentation & Troubleshooting
+
+For detailed architecture decisions, trade-offs, and troubleshooting steps, please refer to the **[Project Wiki](docs/Home.md)**:
+
+*   **[Architecture & Decisions](docs/Architecture.md)**
+*   **[Troubleshooting Guide](docs/Troubleshooting.md)**
+*   **[Project Timeline](docs/Project-Timeline.md)**
+
 > [!TIP]
-> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for network, permission, and common boot issues.
+> See [docs/Troubleshooting.md](docs/Troubleshooting.md) for network, permission, and common boot issues.
 
 ## Factory Reset
 

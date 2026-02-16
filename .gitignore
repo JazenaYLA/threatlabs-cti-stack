@@ -10,8 +10,6 @@ forgejo-runner/data/
 
 # FlowIntel
 flowintel/.env
-HOMELAB_STORY.md
-docs/
 
 # Wazuh generated files
 wazuh/wazuh-certificates/
