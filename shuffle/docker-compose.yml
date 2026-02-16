@@ -171,29 +171,29 @@ services:
           memory: 1024M
           cpus: '0.50'
 
-  tenzir-node:
-    image: tenzir/tenzir:v4.18.0
-    container_name: tenzir-node
-    hostname: tenzir-node
-    entrypoint: []
-    command: /opt/tenzir/bin/tenzir-node --endpoint=0.0.0.0:5160
-    ports:
-      - "1514:1514"
-      - "5160:5160"
-      - "1514:1514/udp"
-    volumes:
-      - /tmp:/tmp
-      - ./vol/tenzir-cache:/var/cache/tenzir
-      - ./vol/tenzir-lib:/var/lib/tenzir
-    networks:
-      - cti-net
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
-          cpus: '1.0'
-
-networks:
-  cti-net:
-    external: true
+#  tenzir-node:
+#    image: tenzir/tenzir:v4.18.0
+#    container_name: tenzir-node
+#    hostname: tenzir-node
+#    entrypoint: []
+#    command: /opt/tenzir/bin/tenzir-node --endpoint=0.0.0.0:5160
+#    ports:
+#      - "1514:1514"
+#      - "5160:5160"
+#      - "1514:1514/udp"
+#    volumes:
+#      - /tmp:/tmp
+#      - ./vol/tenzir-cache:/var/cache/tenzir
+#      - ./vol/tenzir-lib:/var/lib/tenzir
+#    networks:
+#      - cti-net
+#    restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 2048M
+#          cpus: '1.0'
+#
+#networks:
+#  cti-net:
+#    external: true
