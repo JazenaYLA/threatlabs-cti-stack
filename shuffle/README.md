@@ -45,7 +45,8 @@ For common issues and fixes, please refer to the global [TROUBLESHOOTING.md](../
 
 Shuffle indices are stored in the shared **ES8** cluster (Port 9201).
 
-- **Index Pattern**: `shuffle__*`
+- **Precise Pattern**: `shuffle__*`
+- **Suggested Timestamp**: `created`
 - **Dashboards**: [Kibana 8 (Port 5602)](http://localhost:5602)
 
 ## Optional Services
