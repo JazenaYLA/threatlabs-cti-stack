@@ -15,3 +15,4 @@ flowintel/.env
 wazuh/wazuh-certificates/
 wazuh/wazuh-certs-tool/
 *.tar.gz
+docs/LXC-Integration-Guide.md
