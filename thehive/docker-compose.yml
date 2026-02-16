@@ -22,7 +22,7 @@ services:
         - describe keyspaces;
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 15
   thehive:
     image: thehiveproject/thehive4:4.1.15
     container_name: thehive-cti
