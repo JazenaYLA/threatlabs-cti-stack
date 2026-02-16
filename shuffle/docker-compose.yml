@@ -1,22 +1,28 @@
 services:
   frontend:
-    image: ghcr.io/shuffle/shuffle-frontend:latest
+    image: ghcr.io/shuffle/shuffle-frontend:1.4.0
     container_name: shuffle-frontend
     hostname: shuffle-frontend
     ports:
       - "${SHUFFLE_APP_PORT:-3001}:80"
+      - "${FRONTEND_PORT_HTTPS:-3443}:443"
     networks:
       - cti-net
     environment:
       - BACKEND_HOSTNAME=${BACKEND_HOSTNAME:-shuffle-backend}
     command: >
-      /bin/sh -c "find /usr/share/nginx/html/assets -name '*.js' -exec sed -i 's/:5001/:'\"$${SHUFFLE_BACKEND_PORT:-5001}\"'/g' {} + && nginx -g 'daemon off;'"
+      /bin/sh -c "find /usr/share/nginx/html -name '*.js' -exec sed -i 's/:5001/:'\"$${SHUFFLE_BACKEND_PORT:-5001}\"'/g' {} + && nginx -g 'daemon off;'"
     restart: unless-stopped
     depends_on:
       - backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.50'
 
   backend:
-    image: ghcr.io/shuffle/shuffle-backend:latest
+    image: ghcr.io/shuffle/shuffle-backend:1.4.0
     container_name: shuffle-backend
     hostname: ${BACKEND_HOSTNAME:-shuffle-backend}
     ports:
@@ -24,47 +30,98 @@ services:
     networks:
       - cti-net
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./vol/shuffle-apps:/shuffle-apps:z
       - ./vol/shuffle-files:/shuffle-files:z
     env_file: .env
     environment:
       - SHUFFLE_APP_HOTLOAD_FOLDER=/shuffle-apps
       - SHUFFLE_FILE_LOCATION=/shuffle-files
-      - ORG_ID=Shuffle
+      - ORG_ID=${ORG_ID}
       - BASE_URL=http://${BACKEND_HOSTNAME:-shuffle-backend}:5001
-      - DOCKER_API_VERSION=1.40
+      - DOCKER_API_VERSION=${DOCKER_API_VERSION}
+      - SHUFFLE_MEMCACHED=memcached
+      - DOCKER_HOST=tcp://docker-socket-proxy:2375
     restart: unless-stopped
+    depends_on:
+      - opensearch
+      - memcached
+      - docker-socket-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+          cpus: '1.0'
 
   orborus:
-    image: ghcr.io/shuffle/shuffle-orborus:latest
+    image: ghcr.io/shuffle/shuffle-orborus:1.4.0
     container_name: shuffle-orborus
     hostname: shuffle-orborus
+    networks:
+      - cti-net
+    environment:
+      - SHUFFLE_APP_SDK_TIMEOUT=${SHUFFLE_APP_SDK_TIMEOUT}
+      - ENVIRONMENT_NAME=${ENVIRONMENT_NAME}
+      - ORG_ID=${ORG_ID}
+      - BASE_URL=http://${BACKEND_HOSTNAME:-shuffle-backend}:5001
+      - DOCKER_API_VERSION=${DOCKER_API_VERSION}
+      - SHUFFLE_STATS_DISABLED=${SHUFFLE_STATS_DISABLED}
+      - SHUFFLE_LOGS_DISABLED=${SHUFFLE_LOGS_DISABLED}
+      - SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker:1.4.0
+      - SHUFFLE_TENZIR_IMAGE=tenzir/tenzir:v4.18.0
+      - CLEANUP=${CLEANUP}
+      - DOCKER_HOST=tcp://docker-socket-proxy:2375
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      - docker-socket-proxy
+    security_opt:
+      - seccomp:unconfined
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.50'
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: docker-socket-proxy
+    hostname: docker-socket-proxy
+    privileged: true
     networks:
       - cti-net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - SHUFFLE_APP_SDK_TIMEOUT=300
-      - ENVIRONMENT_NAME=Shuffle
-      - ORG_ID=Shuffle
-      - BASE_URL=http://${BACKEND_HOSTNAME:-shuffle-backend}:5001
-      - DOCKER_API_VERSION=1.40
-      - SHUFFLE_stats_DISABLED=true
-      - SHUFFLE_LOGS_DISABLED=true
-      - SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker:latest
-      - SHUFFLE_TENZIR_IMAGE=tenzir/tenzir:v4.18.0
-    env_file: .env
+      - SERVICES=1
+      - TASKS=1
+      - NETWORKS=1
+      - NODES=1
+      - BUILD=1
+      - IMAGES=1
+      - GRPC=1
+      - CONTAINERS=1
+      - PLUGINS=1
+      - SYSTEM=1
+      - VOLUMES=1
+      - INFO=1
+      - DISTRIBUTION=1
+      - POST=1
+      - AUTH=1
+      - SECRETS=1
+      - SWARM=1
     restart: unless-stopped
-    security_opt:
-      - seccomp:unconfined
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
 
   opensearch:
-    image: opensearchproject/opensearch:3.2.0
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION}
     hostname: shuffle-opensearch
     container_name: shuffle-opensearch
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - "OPENSEARCH_JAVA_OPTS=${SHUFFLE_OPENSEARCH_JAVA_OPTS}"
       - bootstrap.memory_lock=true
       - DISABLE_PERFORMANCE_ANALYZER_AGENT_CLI=true
       - cluster.initial_master_nodes=shuffle-opensearch
@@ -89,6 +146,30 @@ services:
         aliases:
           - node-0.example.com
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+          cpus: '2.0'
+
+  memcached:
+    image: memcached:latest
+    container_name: shuffle-cache
+    hostname: shuffle-cache
+    command: memcached -m 1024 -c 2048
+    environment:
+      - MEMCACHED_MEMORY=1024
+      - MEMCACHED_MAX_CONNECTIONS=2048
+    ports:
+       - 11211:11211
+    networks:
+      - cti-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: '0.50'
 
   tenzir-node:
     image: tenzir/tenzir:v4.18.0
@@ -107,6 +188,11 @@ services:
     networks:
       - cti-net
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+          cpus: '1.0'
 
 networks:
   cti-net:
