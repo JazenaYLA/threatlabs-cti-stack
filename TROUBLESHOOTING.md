@@ -116,3 +116,55 @@
 **Solution:**
 1. Verify `SimpleBackgroundJobs` is enabled in `app/Config/config.php`.
 2. Ensure environment variables in `docker-compose.yml` are not overriding critical settings with empty values.
+
+## Shuffle Connectivity & Version Issues
+
+### OpenSearch Startup Failure: `AccessDeniedException`
+
+**Symptoms:**
+- `shuffle-opensearch` container restarts repeatedly.
+- Logs show `java.nio.file.AccessDeniedException: /usr/share/opensearch/data/nodes`.
+- `shuffle-backend` fails to connect to OpenSearch.
+
+**Cause:**
+- Incorrect ownership of the mounted data directory (`vol/opensearch-data`).
+- OpenSearch runs as UID 1000, but the directory might be owned by root due to Docker creation, preventing write access.
+
+**Solution:**
+1. Stop the stack: `docker compose down`.
+2. Fix ownership: `chown -R 1000:1000 vol/opensearch-data`.
+3. (Optional) Force permissions: `chmod -R 777 vol/opensearch-data`.
+4. Restart the stack: `docker compose up -d`.
+
+### OpenSearch Connection Refused (HTTP vs HTTPS)
+
+**Symptoms:**
+- `shuffle-backend` logs show `dial tcp 172.x.x.x:9200: connect: connection refused`.
+- Connection fails even when OpenSearch is running.
+
+**Cause:**
+- Protocol mismatch: Shuffle might default to `https://` but OpenSearch listens on `http://`.
+- `SHUFFLE_OPENSEARCH_URL` missing or incorrect.
+
+**Solution:**
+1. Update `.env`:
+   ```bash
+   SHUFFLE_OPENSEARCH_URL=http://shuffle-opensearch:9200
+   ```
+2. Recreate `shuffle-backend`: `docker compose up -d --force-recreate shuffle-backend`.
+
+### Orborus Docker Client Error: `client version 1.40 is too old`
+
+**Symptoms:**
+- `shuffle-orborus` logs: `Error response from daemon: client version 1.40 is too old. Minimum supported API version is 1.44`.
+
+**Cause:**
+- Shuffle v2.2.0 uses a client library that tries to negotiate an API version older than what the Docker Daemon supports.
+- `DOCKER_API_VERSION` env var is missing or set to an old value (e.g., 1.40).
+
+**Solution:**
+1. Update `.env` and `.env.example`:
+   ```bash
+   DOCKER_API_VERSION=1.44
+   ```
+2. Restart: `docker compose up -d shuffle-orborus`.
