@@ -40,3 +40,15 @@ docker compose down
 ## Troubleshooting
 
 For common issues and fixes, please refer to the global [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) file in the parent directory.
+
+## Integrated Services
+
+### Tenzir (Optional)
+
+The stack includes a [Tenzir](https://tenzir.com/) node (`tenzir-node`) which serves as a high-performance data pipeline and storage engine.
+
+-   **Purpose**: Handles high-volume event logs and telemetry data that might overwhelm standard databases. It allows for ingest, storage, and querying of security event data.
+-   **Ports**:
+    -   `5160`: Tenzir API/Communication port.
+    -   `1514`: Syslog ingestion (TCP/UDP).
+-   **Divergence**: This service is explicitly defined with version `v4.18.0` to ensure compatibility with Shuffle's query engine, resolving potential version mismatch issues found in default configurations.
