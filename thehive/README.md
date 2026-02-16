@@ -6,7 +6,8 @@ This project contains the configuration for TheHive 4.
 
 TheHive 4 indices are stored in the legacy **ES7** cluster (Port 9200). 
 
-- **Index Pattern**: `scalligraph_global*`
+- **Precise Pattern**: `scalligraph_global*`
+- **Suggested Timestamp**: `_createdAt`
 - **Dashboards**: [Kibana 7 (Port 5601)](http://localhost:5601)
 
 Refer to the [Infrastructure README](../infra/README.md) for shared service details.

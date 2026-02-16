@@ -31,12 +31,12 @@ docker compose up -d
 
 Monitor project indices using the following Data View patterns:
 
-| Project | ES Cluster | Index Pattern | Kibana Endpoint |
-| :--- | :--- | :--- | :--- |
-| **TheHive 4** | ES7 (Port 9200) | `scalligraph_global*` | [Kibana7](http://localhost:5601) |
-| **Cortex 3** | ES8 (Port 9201) | `cortex*` | [Kibana8](http://localhost:5602) |
-| **OpenCTI** | ES8 (Port 9201) | `opencti_*` | [Kibana8](http://localhost:5602) |
-| **OpenAEV** | ES8 (Port 9201) | `openaev_*` | [Kibana8](http://localhost:5602) |
-| **Shuffle** | ES8 (Port 9201) | `shuffle__*` | [Kibana8](http://localhost:5602) |
+| Project | ES Cluster | Precise Index Pattern | Suggested Timestamp | Kibana Endpoint |
+| :--- | :--- | :--- | :--- | :--- |
+| **TheHive 4** | ES7 (Port 9200) | `scalligraph_global*` | `_createdAt` | [Kibana7](http://localhost:5601) |
+| **Cortex 3** | ES8 (Port 9201) | `cortex*` | `createdAt` | [Kibana8](http://localhost:5602) |
+| **OpenCTI** | ES8 (Port 9201) | `opencti_*` | `created_at` | [Kibana8](http://localhost:5602) |
+| **OpenAEV** | ES8 (Port 9201) | `openaev_*` | `base_created_at` | [Kibana8](http://localhost:5602) |
+| **Shuffle** | ES8 (Port 9201) | `shuffle__*` | `created` | [Kibana8](http://localhost:5602) |
 
-> **Note**: For ES8 connectivity, ensure projects use the `shuffle_` or respective service prefix to avoid collisions.
+> **Note**: Using these specific patterns ensures Kibana only queries relevant indices, saving cluster resources.
