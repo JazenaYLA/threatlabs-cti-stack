@@ -13,5 +13,8 @@
   - Uses external network `cti-net`.
   - Connects to shared `infra-valkey` (Redis).
 
+
 ### Fixes
 - **Build Failure**: Resolved missing system dependencies for Playwright browsers by using a modern base image and explicit dependency installation.
+- **Standardization**:
+  - Added `.env.example` to the repository.

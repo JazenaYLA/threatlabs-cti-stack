@@ -15,4 +15,9 @@
 - **Environment**: Added `CORTEX_KEY` to `.env`.
 
 ### Fixes
+
+### Fixes
 - **Crash Loop**: Resolved `NoSuchFileException` by ensuring the data directory exists and is mounted.
+- **Cortex**: Resolved restart loop caused by Elasticsearch connection and indexing issues (`index.max_result_window` limits).
+- **Standardization**:
+  - Added `.env.example` to the repository.
