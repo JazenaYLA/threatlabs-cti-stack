@@ -13,4 +13,7 @@
 
 ### Fixes
 - **HTTPS Redirect Loop**:
+
   - Patched nginx to be aware of the custom external port (`CORE_HTTPS_PORT`) to prevent infinite redirects when accessed via non-standard ports.
+- **Standardization**:
+  - Added `.env.example` to the repository.
