@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 -   **OpenSearch**: Updated `OPENSEARCH_VERSION` from `2.11.0` to `3.2.0` to resolve index format compatibility issues.
 -   **Shuffle**: Updated `SHUFFLE_VERSION` to `2.2.0`.
 -   **backend**: Changed `SHUFFLE_OPENSEARCH_URL` to use `http://` instead of `https://` to match the internal OpenSearch configuration.
+-   **Tenzir**: Disabled `tenzir-node` by default (commented out in `docker-compose.yml`) to align with the standard Shuffle configuration. It remains documented as an optional service.
 
 ### Fixed
 -   **Connectivity**: Resolved `connection refused` errors between Backend and OpenSearch by correcting the protocol.
