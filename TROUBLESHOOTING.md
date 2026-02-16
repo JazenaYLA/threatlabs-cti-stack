@@ -62,3 +62,57 @@
 **Solution:**
 - The stack is now configured with log rotation (10MB x 3 files) for core services.
 - To prune old logs/containers: `docker system prune -f`
+
+# Shuffle Stack Errors
+
+## Tenzir Load_TCP Error
+
+**Symptoms:**
+- `shuffle-orborus` logs show errors when loading workflows.
+- `tenzir-node` crashes or restarts repeatedly.
+- Error related to `load_tcp` operator.
+
+**Cause:**
+- Incompatibility between Tenzir version and Shuffle's generated queries.
+- Incorrect command launch for Tenzir v4+.
+
+**Solution:**
+1. Use `tenzir/tenzir:v4.18.0` image.
+2. Set command in `docker-compose.yml`: `command: /opt/tenzir/bin/tenzir-node --endpoint=0.0.0.0:5160`.
+3. Set entrypoint to empty array: `entrypoint: []`.
+4. Ensure volume permissions are correct: `chown -R 1000:1000 ./vol/tenzir-lib`.
+
+## OpenSearch Mapping Error: `No mapping found for [updated_at]`
+
+**Symptoms:**
+- `shuffle-backend` logs show `search_phase_execution_exception`.
+- Error message: `No mapping found for [updated_at] in order to sort`.
+- Notifications or other sorted queries fail.
+
+**Cause:**
+- The `notifications` index was created without the correct schema mapping for the `updated_at` field (likely treated as text/keyword instead of date).
+
+**Solution:**
+1. Manually apply the correct mapping to the index:
+   ```bash
+   curl -X PUT "http://localhost:9200/notifications-000001/_mapping" \
+     -u admin:<password> \
+     -H 'Content-Type: application/json' \
+     -d '{"properties": {"updated_at": {"type": "date"}}}'
+   ```
+
+# MISP Stack Errors
+
+## Worker Fatal Error: `blpop() on null`
+
+**Symptoms:**
+- `misp-workers-errors.log` shows `Error: Call to a member function blpop() on null`.
+- Workers exit with FATAL state in Supervisord.
+
+**Cause:**
+- `SimpleBackgroundJobs` plugin is not initializing the Redis connection correctly.
+- Usually due to the `enabled` setting evaluating to `false` in `BackgroundJobsTool`.
+
+**Solution:**
+1. Verify `SimpleBackgroundJobs` is enabled in `app/Config/config.php`.
+2. Ensure environment variables in `docker-compose.yml` are not overriding critical settings with empty values.
