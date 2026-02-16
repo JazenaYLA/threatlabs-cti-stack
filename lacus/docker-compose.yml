@@ -1,21 +1,20 @@
 services:
   lacus:
-    build: https://github.com/ail-project/lacus.git#main
+    build: ./source
     image: lacus:local
     container_name: lacus
     restart: unless-stopped
     ports:
-      - "${LACUS_PORT:-7100}:7100" # Lacus API/Web UI
+      - "${LACUS_PORT:-7100}:7100"
     volumes:
       - ./vol/lacus-data:/lacus/data
-      - ./vol/lacus-cache:/lacus/cache
+      - ./source/config:/app/lacus/config
     environment:
-      - LACUS_HOME=/lacus
+      - LACUS_HOME=/app/lacus
       - REDIS_HOST=infra-valkey
       - REDIS_PORT=6379
       - PW_TEST_SCREENSHOT_NO_FONTS_READY=1
       - PLAYWRIGHT_CHROMIUM_USE_HEADLESS_NEW=1
-
     networks:
       - cti-net
     healthcheck:
@@ -23,9 +22,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s # Playwright installation takes time
-  # valkey: REMOVED - Using shared infra-valkey
-
 networks:
   cti-net:
     external: true
