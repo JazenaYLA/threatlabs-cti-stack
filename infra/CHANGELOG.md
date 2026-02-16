@@ -13,3 +13,13 @@
 - **`fix-permissions.sh`**:
   - Centralized permission management.
   - Handles UID/GID mapping for different services (Postgres=999, Elastic=1000, etc.).
+
+  - Handles UID/GID mapping for different services (Postgres=999, Elastic=1000, etc.).
+
+### Components
+- **Vaultwarden**:
+  - Deployed Vaultwarden for password management, integrated with Traefik using file provider.
+- **OpenClaw**:
+  - Configured Traefik proxy with `openclaw-headers` and `openclaw-ipwhitelist` middlewares.
+- **Standardization**:
+  - Added `.env.example` to the repository.
