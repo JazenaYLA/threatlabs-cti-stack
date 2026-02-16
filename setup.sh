@@ -267,3 +267,4 @@ fi
 
 echo "[+] Setup completed. You can now deploy stacks with Docker Compose or Dockge."
 echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. n8n/flowise/lacus."
+echo "    * Wazuh is now hosted on LXC (ID 105)."

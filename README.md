@@ -198,6 +198,7 @@ The services must be started in a specific order to ensure database availability
     * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
+    * **Wazuh**: Deployed on Proxmox LXC 105 (IP: <WAZUH_IP>).
 
 ## TheHive
 
