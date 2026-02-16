@@ -25,13 +25,13 @@ echo "XXX Creating Additional Databases XXX"
 
 # OpenAEV / OpenCTI
 # Note: OpenCTI often uses Elastic, but OpenAEV needs Postgres.
-create_db_and_user "openaev" "openaev" "${OPENAEV_DB_PASSWORD:-changeme}"
+create_db_and_user "${OPENAEV_DB_NAME:-openaev}" "openaev" "${OPENAEV_DB_PASSWORD:-changeme}"
 
 # n8n
-create_db_and_user "n8n" "n8n" "${N8N_DB_PASSWORD:-n8npass123!}"
+create_db_and_user "${N8N_DB_NAME:-n8n}" "n8n" "${N8N_DB_PASSWORD:-n8npass123!}"
 
 # FlowIntel
-create_db_and_user "flowintel" "flowintel" "${FLOWINTEL_DB_PASSWORD:-changeme}"
+create_db_and_user "${FLOWINTEL_DB_NAME:-flowintel}" "flowintel" "${FLOWINTEL_DB_PASSWORD:-changeme}"
 
 
 echo "XXX Databases created XXX"

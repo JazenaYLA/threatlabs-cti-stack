@@ -1,7 +1,7 @@
 services:
   flowise:
     image: flowiseai/flowise:latest
-    container_name: flowise-cti
+    # container_name: flowise-cti
     restart: unless-stopped
     ports:
       - "${FLOWISE_PORT:-3000}:3000"

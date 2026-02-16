@@ -233,7 +233,11 @@ for stack in "${STACKS[@]}"; do
                 echo "    [-] Warning: Template $TEMPLATE not found for $stack"
             fi
         else
-            echo "    [$stack] .env exists. Skipping."
+            echo "    [$stack] .env exists. Checking for production safeguard..."
+            if grep -q "COMPOSE_PROJECT_NAME=cti-prod" "$stack/.env" 2>/dev/null; then
+                echo "    [!] Stack '$stack' appears to BE IN PRODUCTION (COMPOSE_PROJECT_NAME=cti-prod). Skipping safeguard."
+            fi
+            echo "    [$stack] Skipping .env generation (File exists)."
         fi
     fi
 done
@@ -266,5 +270,6 @@ else
 fi
 
 echo "[+] Setup completed. You can now deploy stacks with Docker Compose or Dockge."
+echo "    PRO-TIP: Use 'COMPOSE_PROJECT_NAME=cti-prod' in your .env files to isolate production stacks."
 echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. n8n/flowise/lacus."
 echo "    * Wazuh is now hosted on LXC (ID 105)."

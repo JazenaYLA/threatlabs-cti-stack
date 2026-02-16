@@ -96,12 +96,12 @@ services:
       - OPENCTI__URL=http://opencti:8080
       - OPENCTI__TOKEN=${OPENCTI_ADMIN_TOKEN}
       - OPENCTI__DAEMON__SELECTOR=docker
-      - OPENCTI__DAEMON__DOCKER__NETWORK_MODE=${COMPOSE_PROJECT_NAME}_default
+      - OPENCTI__DAEMON__DOCKER__NETWORK_MODE=cti-net
       - OPENAEV__ENABLE=true
       - OPENAEV__URL=http://openaev:8080
       - OPENAEV__TOKEN=${OPENAEV_ADMIN_TOKEN}
       - OPENAEV__DAEMON__SELECTOR=docker
-      - OPENAEV__DAEMON__DOCKER__NETWORK_MODE=${COMPOSE_PROJECT_NAME}_default
+      - OPENAEV__DAEMON__DOCKER__NETWORK_MODE=cti-net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - rsakeys:/keys:ro # RSA key mounted as read-only
@@ -728,7 +728,7 @@ services:
       - OPENAEV_HEALTHCHECK_KEY=${OPENAEV_HEALTHCHECK_KEY}
       - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
       - OPENAEV_EXTRA-TRUSTED-CERTS-DIR=/opt/openaev/additional_certs
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://infra-postgres:5432/openaev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://infra-postgres:5432/${OPENAEV_DB_NAME:-openaev}
       # Using shared credentials defined in infra/init-dbs.sh
       # Defaults: openaev / changeme
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-openaev}
@@ -890,11 +890,16 @@ services:
       - cti-net
 volumes:
   # esdata: # no local ES in this stack anymore
-  pgsqldata: null
-  s3data: null
-  redisdata: null
-  amqpdata: null
-  rsakeys: null
+  pgsqldata:
+    name: xtm_pgsqldata
+  s3data:
+    name: xtm_s3data
+  redisdata:
+    name: xtm_redisdata
+  amqpdata:
+    name: xtm_amqpdata
+  rsakeys:
+    name: xtm_rsakeys
 networks:
   cti-net:
     external: true

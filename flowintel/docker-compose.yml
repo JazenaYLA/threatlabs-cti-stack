@@ -4,7 +4,7 @@ services:
 
   flowintel:
     image: ghcr.io/flowintel/flowintel:latest
-    container_name: flowintel-cti
+    # container_name: flowintel-cti
     command: bash -i ./launch.sh -ld
     restart: unless-stopped
     ports:
@@ -14,7 +14,7 @@ services:
       - DB_PORT=5432
       - DB_USER=${POSTGRES_USER:-flowintel} # infra/init-dbs.sh default
       - DB_PASSWORD=${POSTGRES_PASSWORD:-changeme} # infra/init-dbs.sh default
-      - DB_NAME=${POSTGRES_DB:-flowintel}
+      - DB_NAME=${FLOWINTEL_DB_NAME:-flowintel}
       - VALKEY_IP=${VALKEY_IP:-infra-valkey}
       - JWT_SECRET=${JWT_SECRET:-changeme}
       - INIT_ADMIN_EMAIL=${INIT_ADMIN_EMAIL:-admin@admin.admin}

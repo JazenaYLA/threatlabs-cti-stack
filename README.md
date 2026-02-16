@@ -86,6 +86,7 @@ This repository is organized into modular stacks that share common infrastructur
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 * **`dfir-iris/`**: **Incident Response**. DFIR-IRIS collaborative IR platform (self-contained Postgres 12 + RabbitMQ).
+* **`shuffle/`**: **SOAR**. Shuffle Automation Platform for security orchestration.
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 
 ### Shared Network
@@ -151,26 +152,25 @@ Run the setup script to prepare networks, volumes, and generate environment file
 ./setup.sh
 ```
 
-**What the script does:**
+### 4. Production vs Development
 
-1. Creates the shared network `cti-net`.
-2. Creates necessary docker volumes.
-3. **Generates `.env` files** for all stacks from templates.
-    * For **OpenCTI (xtm)**, it automatically generates unique UUIDv4 tokens for all connectors.
-4. **Pauses** to allow you to review and edit the generated `.env` files.
+This stack supports isolated "Production" and "Development" environments on the same host. In production, we use a custom project name (`cti-prod`) and isolated database names (e.g., `prod_openaev`) to protect your data.
 
-**Action Required:**
-When the script pauses, open the `.env` files in each directory (e.g., `infra/.env`, `xtm/.env`) and set your specific secrets (passwords, API keys, domains).
+**Environment Management Utility:**
+Use the included utility script to switch modes or manage the lifecycle of all stacks:
 
-> [!IMPORTANT]
->
-> * **infra/.env**: Verify `ES_HEAP_SIZE_GB` fits your host's RAM.
->
-* **xtm/.env**: Review generated UUIDs. If you are migrating an existing OpenCTI instance, you may need to replace these with your potential existing connector IDs.
+```bash
+chmod +x manage-env.sh
+./manage-env.sh prod up      # Switch to Production and start everything
+./manage-env.sh dev status   # Check current active environment
+```
 
-1. Startup Order
+> [!TIP]
+> See **[docs/Development.md](docs/Development.md)** for a full guide on running local dev instances next to production.
 
-The services must be started in a specific order to ensure database availability.
+## Startup Order
+
+While you can use `./manage-env.sh prod up` to start everything, you can also manage them manually following this order:
 
 1. **Start Infrastructure Stack (REQUIRED FIRST)**
 
@@ -196,9 +196,21 @@ The services must be started in a specific order to ensure database availability
     * **FlowIntel**: `cd flowintel && docker compose up -d`
     * **TheHive**: `cd thehive && docker compose up -d`
     * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
+    * **Shuffle**: `cd shuffle && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
     * **Wazuh**: Deployed on Proxmox LXC 105 (IP: 192.168.3.195).
+
+### External LXC Services
+
+Some components are deployed as standalone LXC (Linux Container) instances for better isolation and performance.
+
+* **Wazuh**: Main SIEM/XDR manager.
+* **OpenClaw**: Specialized collection/analysis service.
+* **AIL Project**: Analysis Information Leak framework.
+
+> [!NOTE]
+> These services are managed outside of the Docker lifecycle. Refer to `internal_ips.md` for their network locations.
 
 ## TheHive
 

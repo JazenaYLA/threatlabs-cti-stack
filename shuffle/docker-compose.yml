@@ -1,7 +1,7 @@
 services:
   frontend:
     image: ghcr.io/shuffle/shuffle-frontend:${SHUFFLE_VERSION:-latest}
-    container_name: shuffle-frontend
+    # container_name: shuffle-frontend
     hostname: shuffle-frontend
     ports:
       - ${SHUFFLE_APP_PORT:-3001}:80
@@ -24,7 +24,7 @@ services:
           cpus: "0.50"
   backend:
     image: ghcr.io/shuffle/shuffle-backend:${SHUFFLE_VERSION:-latest}
-    container_name: shuffle-backend
+    # container_name: shuffle-backend
     hostname: ${BACKEND_HOSTNAME:-shuffle-backend}
     ports:
       - ${SHUFFLE_BACKEND_PORT:-5001}:5001
@@ -52,7 +52,7 @@ services:
           cpus: "1.0"
   orborus:
     image: ghcr.io/shuffle/shuffle-orborus:${SHUFFLE_VERSION:-latest}
-    container_name: shuffle-orborus
+    # container_name: shuffle-orborus
     hostname: shuffle-orborus
     networks:
       - cti-net
@@ -81,7 +81,7 @@ services:
           cpus: "0.50"
   docker-socket-proxy:
     image: tecnativa/docker-socket-proxy:latest
-    container_name: docker-socket-proxy
+    # container_name: docker-socket-proxy
     hostname: docker-socket-proxy
     privileged: true
     networks:

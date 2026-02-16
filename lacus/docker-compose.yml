@@ -2,7 +2,7 @@ services:
   lacus:
     build: ./source
     image: lacus:local
-    container_name: lacus
+    # container_name: lacus
     restart: unless-stopped
     ports:
       - "${LACUS_PORT:-7100}:7100"

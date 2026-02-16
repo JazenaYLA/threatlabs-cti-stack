@@ -59,6 +59,10 @@ ensure_vol "lacus/vol/lacus-cache" "lacus/vol" "1000:1000"
 # MISP Modules
 ensure_vol "misp-modules/.vol" "misp-modules/.vol" "1000:1000"
 
+# Shuffle
+ensure_vol "shuffle/vol/shuffle-apps" "shuffle/vol" "1000:1000"
+ensure_vol "shuffle/vol/shuffle-files" "shuffle/vol" "1000:1000"
+
 # TheHive (Legacy/Archive)
 ensure_vol "thehive/vol/cassandra/data" "thehive/vol" "1000:1000"
 ensure_vol "thehive/vol/thehive" "thehive/vol" "1000:1000"

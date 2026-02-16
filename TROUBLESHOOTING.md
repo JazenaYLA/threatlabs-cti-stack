@@ -48,6 +48,42 @@
 - Access OpenAEV at `http://<host>:8081`.
 - Or update `docker-compose.yml` ports mapping if 9081 is required: `"9081:8080"`.
 
+## Common Stability Issues
+
+### Production Naming Migration
+If you have transitioned from Development (default names) to Production (cti-prod), your databases will be EMPTY because they point to new names (e.g., `prod_openaev`). 
+To migrate your data, use `pg_dump` and `psql` to copy from the old database name to the new one:
+`docker exec infra-postgres pg_dump -U postgres openaev > openaev.sql`
+`docker exec infra-postgres psql -U postgres -d prod_openaev < openaev.sql`
+
+### LXC Service Connectivity
+**Symptoms:**
+- Applications (e.g., n8n, Flowise) cannot reach Wazuh or OpenClaw.
+- "Connection Refused" or "No route to host".
+
+**Solution:**
+1. Verify the LXC service IP in `internal_ips.md`.
+2. Check if the LXC container is running on the target host.
+3. Ensure the `cti-net` gateway allows routing to the external LXC network (usually via the host IP).
+
+### Production Naming Migration
+If you have transitioned from Development (default names) to Production (cti-prod), your databases will be EMPTY because they point to new names (e.g., `prod_openaev`). 
+
+To migrate your data from the legacy databases to the production ones:
+1.  **Stop the stacks**: `cd /opt/stacks/<stack> && sudo docker compose down`
+2.  **Dump legacy data**: 
+    `sudo docker exec infra-postgres pg_dump -U postgres openaev > openaev.sql`
+3.  **Restore to production**:
+    `sudo docker exec infra-postgres psql -U postgres -d prod_openaev < openaev.sql`
+4.  **Restart the stacks**: `sudo docker compose up -d`
+
+### Permission Errors after Update
+**Symptoms:**
+- Containers fail to start with `EACCES` or `Permission Denied` in logs.
+
+**Solution:**
+- Run the automated fix script: `sudo ./fix-permissions.sh`. This handles UID/GID mapping for shared volumes (Elastic, Postgres, etc.).
+
 ## General Errors
 
 ### Disk Exhaustion (Logs)

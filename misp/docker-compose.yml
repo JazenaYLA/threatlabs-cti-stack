@@ -339,9 +339,12 @@ services:
       retries: 3
       start_period: 10s
 volumes:
-  mysql_data: null
-  cache_data: null
-  misp_guard_ca: null
+  mysql_data:
+    name: misp_mysql_data
+  cache_data:
+    name: misp_cache_data
+  misp_guard_ca:
+    name: misp_misp_guard_ca
 networks:
   default:
     name: cti-net

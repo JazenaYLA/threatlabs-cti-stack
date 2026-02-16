@@ -1,14 +1,14 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: iris-rabbitmq
+    # container_name: iris-rabbitmq
     restart: unless-stopped
     networks:
       - iris_backend
 
   db:
     image: ghcr.io/dfir-iris/iriswebapp_db:v2.4.20
-    container_name: iris-db
+    # container_name: iris-db
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: iris-app-custom:v2.4.20
-    container_name: iris-app
+    # container_name: iris-app
     command: ['nohup', './iris-entrypoint.sh', 'iriswebapp']
     restart: unless-stopped
     depends_on:
@@ -65,7 +65,7 @@ services:
 
   worker:
     image: iris-app-custom:v2.4.20
-    container_name: iris-worker
+    # container_name: iris-worker
     command: ['./wait-for-iriswebapp.sh', 'app:8000', './iris-entrypoint.sh', 'iris-worker']
     restart: unless-stopped
     depends_on:
@@ -95,7 +95,7 @@ services:
 
   nginx:
     image: ghcr.io/dfir-iris/iriswebapp_nginx:v2.4.20
-    container_name: iris-nginx
+    # container_name: iris-nginx
     restart: unless-stopped
     depends_on:
       - app

@@ -5,7 +5,9 @@ This wiki documents the journey, architecture, and orchestration of our self-hos
 ## 📚 Key Documents
 
 - **[Project Story & Timeline](Project-Timeline.md)**: A chronological account of our build process, challenges, and orchestration decisions.
-- **[Architecture & Decisions](Architecture.md)**: Design choices, tradeoffs (networking, permissions), and shared infrastructure details.
+- [Architecture](Architecture.md) - Design decisions and network topology.
+- [Development Guide](Development.md) - Local setup, testing, and environment isolation.
+- [External LXC Services](../internal_ips.md) - Connectivity details for Wazuh/OpenClaw.
 - **[Troubleshooting Guide](Troubleshooting.md)**: Common issues and fixes for the stack.
 - **[Changelog](Changelog.md)**: A high-level track of modifications across all stacks.
 

@@ -1,7 +1,7 @@
 services:
   cassandra:
     image: cassandra:4.1
-    container_name: thehive-cassandra
+    # container_name: thehive-cassandra
     restart: unless-stopped
     ports:
       - 9042:9042 # CQL port
@@ -25,7 +25,7 @@ services:
       retries: 15
   thehive:
     image: thehiveproject/thehive4:4.1.15
-    container_name: thehive-cti
+    # container_name: thehive-cti
     restart: unless-stopped
     volumes:
       - ./vol/thehive/application.conf:/etc/thehive/application.conf:ro
