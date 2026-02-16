@@ -37,6 +37,6 @@ Monitor project indices using the following Data View patterns:
 | **Cortex 3** | ES8 (Port 9201) | `cortex*` | `createdAt` | [Kibana8](http://localhost:5602) |
 | **OpenCTI** | ES8 (Port 9201) | `opencti_*` | `created_at` | [Kibana8](http://localhost:5602) |
 | **OpenAEV** | ES8 (Port 9201) | `openaev_*` | `base_created_at` | [Kibana8](http://localhost:5602) |
-| **Shuffle** | ES8 (Port 9201) | `shuffle__*` | `created` | [Kibana8](http://localhost:5602) |
+| **Shuffle** | ES8 (Port 9201) | `shuffle__workflowexecution*`<br>`shuffle__org_statistics*`<br>`shuffle__notifications*` | `created`<br>`timestamp`<br>`updated_at` | [Kibana8](http://localhost:5602) |
 
 > **Note**: Using these specific patterns ensures Kibana only queries relevant indices, saving cluster resources.

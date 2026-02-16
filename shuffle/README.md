@@ -45,9 +45,12 @@ For common issues and fixes, please refer to the global [TROUBLESHOOTING.md](../
 
 Shuffle indices are stored in the shared **ES8** cluster (Port 9201).
 
-- **Precise Pattern**: `shuffle__*`
-- **Suggested Timestamp**: `created`
+- **Execution Logs**: `shuffle__workflowexecution*` (Timestamp: `created`)
+- **System Metrics**: `shuffle__org_statistics*` (Timestamp: `timestamp`)
+- **System Alerts**: `shuffle__notifications*` (Timestamp: `updated_at`)
 - **Dashboards**: [Kibana 8 (Port 5602)](http://localhost:5602)
+
+> **Note**: The `created` field is stored as a Unix timestamp (Long). Kibana will automatically detect this as a date field during Data View creation.
 
 ## Optional Services
 
