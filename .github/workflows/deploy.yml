@@ -1,13 +1,32 @@
-name: Deploy (Version Fix)
+name: Deploy (Development Only)
 
 on:
   push:
-    branches: ["main"]
+    branches: 
+      - auto-swapper  # ← CHANGED from "main"
+  # Explicitly block main
+  workflow_dispatch:
+    inputs:
+      confirm_branch:
+        description: 'Only runs on auto-swapper'
+        required: true
 
 jobs:
   deploy:
     runs-on: local-shell
+    # Safety check
+    if: github.ref == 'refs/heads/auto-swapper'
+    
     steps:
+      - name: Branch Safety Check
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "❌ ERROR: This workflow cannot run on main branch"
+            echo "Production deployments must be manual"
+            exit 1
+          fi
+          echo "✅ Running on development branch: ${{ github.ref_name }}"
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
