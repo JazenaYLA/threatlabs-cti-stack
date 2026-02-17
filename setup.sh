@@ -188,7 +188,7 @@ generate_uuid() {
     fi
 }
 
-STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "thehive" "lacus" "dfir-iris" "ail-project")
+STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "thehive" "lacus" "dfir-iris" "shuffle" "ail-project" "forgejo-runner")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then
@@ -266,5 +266,23 @@ else
 fi
 
 echo "[+] Setup completed. You can now deploy stacks with Docker Compose or Dockge."
-echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. n8n/flowise/lacus."
+echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. n8n/flowise/lacus/dfir-iris/shuffle."
 echo "    * Wazuh is now hosted on LXC (ID 105)."
+
+echo ""
+echo "[*] Finalizing environment..."
+
+# 8. Apply Permissions
+if [ -f "./fix-permissions.sh" ]; then
+    echo "[+] Running automated permission fixes..."
+    sudo ./fix-permissions.sh
+fi
+
+# 9. Setup Dockge
+if [ -f "./setup-dockge.sh" ]; then
+    echo "[+] Refreshing Dockge stack links..."
+    sudo ./setup-dockge.sh
+fi
+
+echo ""
+echo "✅ ALL DONE. Your ThreatLabs CTI Stack is ready for deployment."

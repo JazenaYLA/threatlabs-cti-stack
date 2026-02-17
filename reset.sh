@@ -22,12 +22,15 @@ fi
 echo "[*] Stopping and removing containers..."
 # We try to use docker compose down if possible, but a blanket kill is more effective for a "nuke"
 # Iterate through known stacks
-STACKS=("infra" "xtm" "misp" "n8n" "flowise" "flowintel" "lacus" "thehive" "proxy" "ail-project")
+STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "lacus" "thehive" "dfir-iris" "shuffle" "ail-project" "forgejo-runner")
 
 for stack in "${STACKS[@]}"; do
     if [ -d "$stack" ]; then
         echo "    Stopping and removing volumes for $stack..."
-        (cd "$stack" && docker compose down -v --remove-orphans 2>/dev/null || true)
+        # Down the standard project
+        (cd "$stack" && sudo docker compose down -v --remove-orphans 2>/dev/null || true)
+        # Also attempt to down the cti- prefixed project if it exists
+        (cd "$stack" && sudo docker compose -p "cti-$stack" down -v --remove-orphans 2>/dev/null || true)
     fi
 done
 
@@ -62,6 +65,19 @@ if [ -d "/opt/stacks" ]; then
     # Also remove generated configs in /opt/stacks if they were linked/copied
 
     sudo rm -f /opt/stacks/thehive/vol/thehive/application.conf
+fi
+
+echo "[*] Cleaning up environment files (Optional)..."
+# We keep .env by default but let's offer to wipe them for a true reset
+read -p "Do you want to PERMANENTLY DELETE all .env files and start over? (y/N) " wipe_envs
+if [[ "$wipe_envs" =~ ^[Yy]$ ]]; then
+    echo "[!] Wiping all .env files..."
+    find . -name ".env" -exec rm -f {} +
+fi
+
+echo "[*] Refreshing Dockge symlinks..."
+if [ -f "setup-dockge.sh" ]; then
+    sudo ./setup-dockge.sh
 fi
 
 echo "[*] Removing generated configuration files..."
