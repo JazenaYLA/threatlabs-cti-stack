@@ -70,6 +70,10 @@ ensure_vol "dfir-iris/vol/iris-downloads" "dfir-iris/vol" "1000:1000"
 ensure_vol "dfir-iris/vol/user_templates" "dfir-iris/vol" "1000:1000"
 ensure_vol "dfir-iris/vol/server_data" "dfir-iris/vol" "1000:1000"
 
+# Shuffle
+ensure_vol "shuffle/vol/shuffle-apps" "shuffle/vol" "1000:1000"
+ensure_vol "shuffle/vol/shuffle-files" "shuffle/vol" "1000:1000"
+
 
 # --- 3. Executable Permissions ---
 echo "  - Making scripts executable..."

@@ -72,7 +72,7 @@ jobs:
           
           # Define the exact deployment order based on dependencies
           # Order: Infra -> MISP Modules -> MISP -> Consumers (XTM, TheHive, FlowIntel, etc.)
-          DEPLOY_ORDER="infra misp-modules misp thehive xtm flowintel ail-project lacus n8n flowise"
+          DEPLOY_ORDER="infra misp-modules misp thehive xtm flowintel dfir-iris shuffle ail-project lacus n8n flowise"
 
           for stack_name in $DEPLOY_ORDER; do
               # Check if the stack directory exists
