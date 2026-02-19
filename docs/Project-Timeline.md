@@ -4,6 +4,12 @@ This document chronicles the timeline of our **ThreatLabs CTI** project, detaili
 
 ## Timeline
 
+### 📅 Feb 19, 2026: Environment Isolation & Stabilization
+- **Action Runner**: Isolate runner environments. Implemented branch-aware logic to separate Production (/opt/stacks) from Development (/opt/cti-dev).
+- **Stability**: Disabled automatic production deployments to prevent destructive synchronization and unnecessary restarts.
+- **Restoration**: Successfully restored full stack health across MISP, TheHive, and XTM after deep database/volume recovery.
+- **Documentation**: Finalized Wiki and root documentation to capture technical lessons on permissions and healthchecks.
+
 ### 📅 Feb 15, 2026: Wazuh Deployment & Standardization
 - **Wazuh Stack**: Deployed Wazuh for SIEM/XDR capabilities. Addressed certificate generation and port mapping issues.
 - **Standardization**: Standardized `.env.example` naming across all stacks to ensure consistency.

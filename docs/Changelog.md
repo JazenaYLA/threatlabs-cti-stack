@@ -13,3 +13,19 @@ Tracking high-level modifications and standardization efforts across the ThreatL
 ### Changed
 - **Wazuh**: Standardized environment variables.
 - **MISP**: Standardized environment variables.
+
+### [2026-02-19]
+
+#### Added
+- **Environment Isolation**: Implemented a dual-root strategy (/opt/stacks for PROD, /opt/cti-dev for DEV) to prevent environment cross-contamination.
+- **Action Runner**: Implemented branch-aware deployment logic in `deploy.yml`:
+  - `auto-swapper` branch -> Automatic deployment to `/opt/cti-dev`.
+  - `main` branch -> Automatic production deployment **DISABLED** for safety.
+- **Runner Configuration**: Added volume mount for `/opt/cti-dev` to the Forgejo Runner.
+- **Documentation**: Formalized technical lessons on MISP healthchecks, Cassandra permissions, and ElasticSearch schema recovery.
+
+#### Fixed
+- **MISP**: Resolved internal healthcheck 403 failures by aligning application and database credentials.
+- **TheHive**: Fixed Cassandra startup loop via recursive UID 999 ownership fix on data volumes.
+- **XTM**: Resolved OpenCTI schema conflicts via deep ElasticSearch 8 data wipe and re-initialization.
+- **Infrastructure**: Fixed shared database initialization by wiping legacy Postgres volumes.

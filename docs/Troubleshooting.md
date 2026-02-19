@@ -14,7 +14,13 @@ If something isn't working, check these in order:
 
     *Fix*: Run `./setup.sh` or `docker network create cti-net`.
 
-2. **Infrastructure Health**: Are ElasticSearch nodes ready?
+2. **Persistence Permissions**:
+    * **ElasticSearch**: Requires UID `1000`.
+    * **PostgreSQL**: Alpine-based version 17 requires UID `70` (not `999`).
+    * **Cassandra**: Requires UID `999`.
+    * *Fix*: `sudo chown -R <UID>:<UID> vol/<service-data>`.
+
+3. **Infrastructure Health**: Are ElasticSearch nodes ready?
 
     ```bash
     curl http://localhost:9200/_cluster/health?pretty  # ES7
@@ -73,6 +79,11 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 
 1. Increase workers in **Administration > Server Settings > Workers**.
 2. Restart workers: `sudo supervisorctl restart all` (inside container).
+
+### Healthcheck Access Denied (Internal DB)
+
+**Cause**: The `misp-core` healthcheck uses `.env` credentials. If they mismatch the `infra` DB settings, the container stays "Unhealthy".
+**Fix**: Ensure `MYSQL_USER`/`PASS` in `misp/.env` matches `infra/.env`.
 
 ### Database Connection Failures (Shared Infra)
 
@@ -201,6 +212,12 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
     # CORRECT:
     - OPENAEV_XTM_OPENCTI_API_URL=http://opencti:8080/graphql
     ```
+
+### OpenCTI Schema Conflict (ElasticSearch 8)
+
+**Symptoms**: `opencti` container loop or mapping errors in ES8 logs.
+**Cause**: Legacy indices from failed installs preventing clean start.
+**Fix**: Stop XTM, wipe ES8 data (`sudo rm -rf infra/vol/es8/data/*`), and restart.
 
 * **Issue**: OpenAEV connector fails to register — `"input.id" is null` in OpenCTI logs but `OPENAEV_XTM_OPENCTI_ID` appears to be set.
 * **Cause**: `OPENAEV_XTM_OPENCTI_ID` is missing from `.env` or not passed through `docker-compose.yml`.
