@@ -231,6 +231,17 @@ docker compose down
 docker compose down -v
 ```
 
+## 🛡️ Environment Stability & Isolation
+
+This stack is managed under a dual-environment strategy to protect production stability.
+
+- **Production (`main` branch)**: Deployed to `/opt/stacks/xtm`. 
+    - **Stability**: Automated deployments are disabled. 
+    - **Updates**: Require manual `workflow_dispatch` trigger to prevent accidental overrides of working local configurations and database states.
+- **Development (`auto-swapper` branch)**: Deployed to `/opt/cti-dev/xtm`.
+    - **Automation**: Every push automatically syncs to the dev root for rapid testing.
+    - **Isolation**: Changes here do **not** affect the production stack or data volumes.
+
 ## Monitoring
 
 XTM stack indices are stored in the shared **ES8** cluster (Port 9201).
@@ -278,7 +289,8 @@ XTM stack indices are stored in the shared **ES8** cluster (Port 9201).
 
 If OpenCTI fails to start after a dirty `down -v` or cluster reset:
 1. Stop XTM.
-2. Wipe ES8 data: `sudo rm -rf /opt/stacks/infra/vol/es8/data/*`.
+2. Wipe ES8 data: `sudo rm -rf [BASE_PATH]/infra/vol/es8/data/*` 
+   - (Where `[BASE_PATH]` is `/opt/stacks` for PROD or `/opt/cti-dev` for DEV)
 3. Restart Infra and XTM.
 
 ### `VALIDATION_ERROR: input.id is null`
@@ -291,7 +303,8 @@ This means a connector service is running but its `CONNECTOR_*_ID` env var is bl
 
 Alpine-based Postgres 17 uses UID `70`. Fix with:
 ```bash
-sudo chown -R 70:70 /opt/stacks/infra/vol/postgres-data
+# Replace [BASE_PATH] with the appropriate root (/opt/stacks or /opt/cti-dev)
+sudo chown -R 70:70 [BASE_PATH]/infra/vol/postgres-data
 ```
 
 See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) for the full stack troubleshooting guide.
