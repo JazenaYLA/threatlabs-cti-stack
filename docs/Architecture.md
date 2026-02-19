@@ -20,7 +20,7 @@ Created `fix-permissions.sh`.
 - **Logic**: Iterates through known data directories and forcefully applies the correct UID/GID (`chown -R`).
 - **Automation**: Integrated into the setup process to ensure a clean start.
 
-## � Stack-Specific Chronicles
+## 🧱 Stack-Specific Chronicles
 
 For detailed technical changes, fixes, and version-specific modifications, refer to the individual changelogs:
 
@@ -29,6 +29,17 @@ For detailed technical changes, fixes, and version-specific modifications, refer
 - **[Lacus Changelog](lacus/CHANGELOG.md)**: Build system rewrite, Playwright dependencies, and Redis integration.
 - **[DFIR-IRIS Changelog](dfir-iris/CHANGELOG.md)**: Custom webhooks module build, database connectivity endurance, and certificate management.
 - **[Wazuh Changelog](wazuh/CHANGELOG.md)**: Manual certificate generation, port conflict resolution (9202/5603), and Opensearch config patching.
+
+## 🛡️ Stability & Isolation (Feb 2026 Update)
+
+### The Action Runner Risk
+**Challenge**: Automated deployments to the `main` branch were performing "destructive syncs," overwriting local `.env` fixes and causing unnecessary service restarts in production.
+
+**Solution**:  
+Implemented a **Branch-Aware Deployment Strategy**.
+- **Isolation**: Created a separate filesystem root (`/opt/cti-dev`) for experimental work.
+- **Logic**: Pushes to `auto-swapper` automatically sync to the dev root; pushes to `main` are decoupled from automatic automation.
+- **Safety**: Production updates now require a manual `workflow_dispatch` trigger, ensuring that manual hotfixes and database states are preserved during normal development cycles.
 
 ## 🚀 Summary of Tradeoffs
 

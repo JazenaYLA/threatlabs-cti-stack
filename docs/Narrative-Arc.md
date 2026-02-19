@@ -30,3 +30,9 @@
 **The Pitfall**: Wazuh is paranoid (rightfully so). It refuses to talk to anyone without strict TLS authentication.
 **The Drama**: The official cert tool failed. The default certs were for `localhost`. Our stack uses `wazuh.indexer` hostnames. Java threw `CertificateException` tantrums.
 **The Triumph**: Use the source. We abandoned the automated tools and wrote our own `openssl` script (`generate-certs.sh`), hand-crafting the Subject Alternative Names (SANs). Controlling the cryptography ourselves turned a "black box" failure into a reliable security feature.
+
+## 6. The Ghost in the Machine (Auto-Deployment)
+**The Expectation**: "CI/CD will make our lives easier. Every commit automatically deploys."
+**The Pitfall**: We forgot that the runner was blind. It pushed the `main` branch to the production root, but also pushed every experimental branch to the *same* root. 
+**The Drama**: We'd fix a database password locally, commit a minor change, and—*poof*—the Action Runner would overwrite the working configuration with a templated one, breaking the stack again. We were fighting ourselves.
+**The Discovery**: Environment Isolation. We had to build a second "staging" root and teach the runner to be branch-aware. Now, development happens in the sandbox, and production is guarded behind a manual trigger. CI/CD shouldn't just be *continuous*; it must be *context-aware*.
