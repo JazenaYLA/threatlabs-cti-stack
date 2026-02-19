@@ -122,7 +122,7 @@ This repository is organized into modular stacks that share common infrastructur
 ### Directory Structure
 
 * **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
-* **[LXC 125]**: **Traefik Proxy**. Standalone LXC serving as the entry point for accessing services via subdomains.
+* **[LXC 125]**: **Traefik Proxy**. Standalone LXC serving as the entry point for accessing services via subdomains. (IP: `192.168.3.165`, Port: `8080`)
 * **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
