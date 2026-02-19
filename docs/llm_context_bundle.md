@@ -92,6 +92,7 @@ This repository is organized into modular stacks that share common infrastructur
     subgraph "Automation & Collection"
         n8n[n8n Automation]
         Flowise[Flowise AI]
+        Shuffle[Shuffle SOAR]
         Lacus[Lacus Crawler]
         AIL[AIL Framework LXC]
     end
@@ -109,23 +110,24 @@ This repository is organized into modular stacks that share common infrastructur
     OpenCTI & OpenAEV --> XTMMinIO & XTMRabbit
 
     %% Integrations
-    MISP & FlowIntel --> Modules
+    MISP & FlowIntel & Shuffle --> Modules
     AIL --> Lacus
     AIL -.->|Push| MISP
-    n8n -->|API| MISP & OpenCTI & Flowise
+    n8n & Shuffle -->|API| MISP & OpenCTI & Flowise
     
     %% Gateway Routing
-    Proxy -.-> MISP & ModulesWeb & OpenCTI & OpenAEV & FlowIntel & n8n & Flowise & TheHive & IRIS
+    Proxy -.-> MISP & ModulesWeb & OpenCTI & OpenAEV & FlowIntel & n8n & Flowise & TheHive & IRIS & Shuffle
 ```
 
 ### Directory Structure
 
 * **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
-* **`proxy/`**: **Traefik Proxy**. Shared reverse proxy for accessing services via subdomains.
+* **[LXC 125]**: **Traefik Proxy**. Standalone LXC serving as the entry point for accessing services via subdomains.
 * **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
 * **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
+* **`shuffle/`**: **SOAR**. Security Orchestration, Automation, and Response.
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
