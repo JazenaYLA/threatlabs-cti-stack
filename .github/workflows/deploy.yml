@@ -2,13 +2,12 @@ name: Deploy (Development Only)
 
 on:
   push:
-    branches: 
-      - auto-swapper  # ← CHANGED from "main"
+    branches: ["main", "auto-swapper"]
   # Explicitly block main
   workflow_dispatch:
     inputs:
       confirm_branch:
-        description: 'Only runs on auto-swapper'
+        description: 'Only runs on auto-swapper' # ← CHANGED from "main"
         required: true
 
 jobs:
@@ -31,84 +30,52 @@ jobs:
         uses: actions/checkout@v4
 
       # --- CHANGED STEP: Install Latest Docker Manually ---
-      - name: Install Latest Docker Tools
+      - name: Set Environment Variables
         run: |
-          # 1. Install basics
-          apk add --no-cache curl tar
-
-          # 2. Download Latest Docker CLI (Static Binary)
-          echo "⬇️ Downloading Docker v26.1.3..."
-          curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-26.1.3.tgz -o docker.tgz
-          
-          # 3. Extract and Install
-          tar -xzf docker.tgz
-          mv docker/docker /usr/local/bin/docker
-          rm -rf docker docker.tgz
-          
-          # 4. Install Docker Compose Plugin (v2.27.0)
-          echo "⬇️ Downloading Docker Compose v2.27.0..."
-          mkdir -p /usr/local/lib/docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-          
-          # 5. Verify Versions
-          echo "✅ Versions Installed:"
-          docker --version
-          docker compose version
-
-      - name: Fix Source Permissions
-        run: |
-          echo "🔧 Fixing workspace permissions..."
-          chmod -R u+rwX,go+rX .
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "DOCKGE_ROOT=/opt/stacks" >> $GITHUB_ENV
+            echo "ENV_NAME=production" >> $GITHUB_ENV
+          else
+            echo "DOCKGE_ROOT=/opt/cti-dev" >> $GITHUB_ENV
+            echo "ENV_NAME=development" >> $GITHUB_ENV
+          fi
 
       - name: Sync Files to Server
         run: |
-          DOCKGE_ROOT="/opt/stacks"
-          echo "🚀 Syncing files to $DOCKGE_ROOT..."
+          echo "🚀 Syncing files to ${{ env.DOCKGE_ROOT }} (${{ env.ENV_NAME }})..."
           tar --exclude='.git' --exclude='forgejo-runner' -c . | \
-          docker run -i --rm -v ${DOCKGE_ROOT}:/target alpine tar x -C /target
+          docker run -i --rm -v ${{ env.DOCKGE_ROOT }}:/target alpine tar x -C /target
 
       - name: Reset Workspace Ownership
         run: |
           echo "🔧 Resetting all files to gravity (1000:1000)..."
-          DOCKGE_ROOT="/opt/stacks"
-          docker run --rm -v ${DOCKGE_ROOT}:/target alpine chown -R 1000:1000 /target
+          docker run --rm -v ${{ env.DOCKGE_ROOT }}:/target alpine chown -R 1000:1000 /target
 
       - name: Apply Service Permissions
         run: |
           echo "🔧 Applying special service permissions..."
-          DOCKGE_ROOT="/opt/stacks"
           # Run fix-permissions.sh BEFORE containers start
-          # Using alpine image to run the script inside container
           docker run --rm \
-            -v ${DOCKGE_ROOT}:/target \
+            -v ${{ env.DOCKGE_ROOT }}:/target \
             -w /target \
             alpine sh ./fix-permissions.sh
 
       - name: Start Stacks
         run: |
-          DOCKGE_ROOT="/opt/stacks"
-          
           # Define the exact deployment order based on dependencies
-          # Order: Infra -> MISP Modules -> MISP -> Consumers (XTM, TheHive, FlowIntel, etc.)
           DEPLOY_ORDER="infra misp-modules misp thehive xtm flowintel dfir-iris shuffle ail-project lacus n8n flowise"
 
           for stack_name in $DEPLOY_ORDER; do
-              # Check if the stack directory exists
-              if [ -d "$DOCKGE_ROOT/$stack_name" ]; then
-                  # Check for valid compose file
-                  if [ -f "$DOCKGE_ROOT/$stack_name/compose.yaml" ] || [ -f "$DOCKGE_ROOT/$stack_name/docker-compose.yml" ]; then
+              if [ -d "${{ env.DOCKGE_ROOT }}/$stack_name" ]; then
+                  if [ -f "${{ env.DOCKGE_ROOT }}/$stack_name/compose.yaml" ] || [ -f "${{ env.DOCKGE_ROOT }}/$stack_name/docker-compose.yml" ]; then
                       echo "✅ Starting $stack_name..."
-                      cd "$DOCKGE_ROOT/$stack_name"
+                      cd "${{ env.DOCKGE_ROOT }}/$stack_name"
                       
                       docker compose pull
-                      # 'up -d' ensures the container is started before moving to the next one
                       docker compose up -d --remove-orphans
                   else
                       echo "⚠️  Skipping $stack_name (No compose file found)"
                   fi
-              else
-                   echo "⚠️  Skipping $stack_name (Directory not found)"
               fi
           done
 
