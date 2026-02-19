@@ -88,7 +88,9 @@ New options are added on a regular basis.
 
 #### Environment variable behaviour
 
-Set environment variables in .env to configure settings instead of in docker-compose.yml where possible. Setting the variables in .env will allow you to pull updates from Github without issues caused by a modified docker-compose.yml file, should there be an update for it.
+Set environment variables in `.env` to configure settings instead of in `docker-compose.yml` where possible. Setting the variables in `.env` will allow you to pull updates from Github without issues caused by a modified `docker-compose.yml` file.
+
+**Important (Healthchecks)**: The internal container healthcheck uses `MYSQL_USER` and `MYSQL_PASSWORD` from your local `.env` to verify DB status. These **must** match the credentials set in the `infra` stack. If they are out of sync, the container will appear "Unhealthy" even if the application is running.
 
 Environment variable driven settings are enforced every time the misp-core container starts. This means that if you change the config.php file or database for a setting that has a set environment variable, it will be changed to the environment variable value upon next container start. Empty environment variables may have a safe default which is enforced instead.
 

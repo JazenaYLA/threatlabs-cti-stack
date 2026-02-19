@@ -11,3 +11,11 @@ TheHive 4 indices are stored in the legacy **ES7** cluster (Port 9200).
 - **Dashboards**: [Kibana 7 (Port 5601)](http://localhost:5601)
 
 Refer to the [Infrastructure README](../infra/README.md) for shared service details.
+
+## Troubleshooting
+
+### Persistence Permissions
+Cassandra requires UID `999` for data persistence. If the container fails to start with `AccessDeniedException`:
+```bash
+sudo chown -R 999:999 vol/cassandra/data
+```
