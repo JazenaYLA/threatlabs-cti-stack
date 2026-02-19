@@ -53,7 +53,9 @@ This repository is organized into modular stacks that share common infrastructur
 ```mermaid
     graph TD
 
+    subgraph "Gateway (Optional)"
         Proxy[Cloudflared Tunnel]
+    end
 
     subgraph "Infrastructure (infra/)"
         ES8[(ElasticSearch 8)]
