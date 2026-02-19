@@ -126,7 +126,6 @@ This repository is organized into modular stacks that share common infrastructur
 * **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
-* **`n8n/`** & **`flowise/`**: **Automation**. Workflow automation and LLM chains.
 * **`shuffle/`**: **SOAR**. Security Orchestration, Automation, and Response.
 * **`flowintel/`**: **Case Management**. Lightweight alternative to TheHive.
 * **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
@@ -237,8 +236,6 @@ The services must be started in a specific order to ensure database availability
 
     * **OpenCTI / OpenAEV**: `cd xtm && docker compose up -d`
     * **MISP**: `cd misp && docker compose up -d`
-    * **n8n**: `cd n8n && docker compose up -d`
-    * **Flowise**: `cd flowise && docker compose up -d`
     * **FlowIntel**: `cd flowintel && docker compose up -d`
     * **TheHive**: `cd thehive && docker compose up -d`
     * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
