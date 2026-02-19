@@ -17,6 +17,7 @@ services:
       - ./data:/data
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/stacks:/opt/stacks
+      - /opt/cti-dev:/opt/cti-dev
     # The "Node Fix" command
     command: sh -c "apk add --no-cache nodejs && forgejo-runner daemon"
 
