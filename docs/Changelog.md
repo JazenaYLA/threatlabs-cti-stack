@@ -26,6 +26,6 @@ Tracking high-level modifications and standardization efforts across the ThreatL
 
 #### Fixed
 - **MISP**: Resolved internal healthcheck 403 failures by aligning application and database credentials.
-- **TheHive**: Fixed Cassandra startup loop via recursive UID 999 ownership fix on data volumes.
+- **TheHive**: Fixed Cassandra startup loop via recursive UID <ID> ownership fix on data volumes.
 - **XTM**: Resolved OpenCTI schema conflicts via deep ElasticSearch 8 data wipe and re-initialization.
 - **Infrastructure**: Fixed shared database initialization by wiping legacy Postgres volumes.

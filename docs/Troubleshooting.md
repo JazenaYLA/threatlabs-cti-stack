@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This guide addresses common issues encountered when deploying the ThreatLabs CTI stack on Proxmox/Dockge.
+This guide addresses common issues encountered when deploying the ThreatLabs CTI stack on virtualization/Dockge.
 
 ## Quick Checks Sequence
 
@@ -123,7 +123,7 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 
 ### AIL Project
 
-* **Issue**: Redis continuously restarts/crashes in LXC.
+* **Issue**: Redis continuously restarts/crashes in independent instances.
 * **Cause**: ZFS file system incompatibility with Redis persistence.
 * **Fix**: Disable `use_direct_io_for_flush_and_compaction` in `redis.conf`. See `ail-project/README.md` for the full fix.
 

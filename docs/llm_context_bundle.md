@@ -13,7 +13,7 @@
 
 ## 2. The Permission Nightmare
 **The Challenge**: Docker makes running services easy. Docker makes file permissions *hell*.
-**The Pitfall**: Postgres runs as UID 999. ElasticSearch runs as UID 1000. Redis runs as... something else.
+**The Pitfall**: Postgres runs as UID <ID>. ElasticSearch runs as UID <ID>0. Redis runs as... something else.
 **The Struggle**: We experienced the classic "CrashLoopBackOff." Logs screamed `Permission denied`. We tried `chmod 777` (the shameful quick fix), but it felt wrong.
 **The Insight**: We needed automation, not manual hacks. The creation of `fix-permissions.sh` was a turning point—a "janitor script" that runs before deployment to ensure every container has exactly the keys to the castle it needs, and nothing more.
 
@@ -122,7 +122,7 @@ This repository is organized into modular stacks that share common infrastructur
 ### Directory Structure
 
 * **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
-* **[LXC 125]**: **Traefik Proxy**. Standalone LXC serving as the entry point for accessing services via subdomains. (IP: `192.168.3.165`, Port: `8080`)
+* **[Traefik Proxy]**: Standalone instance serving as the entry point for accessing services via subdomains. (IP: `192.168.x.165`, Port: `8080`)
 * **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
@@ -243,8 +243,8 @@ The services must be started in a specific order to ensure database availability
     * **TheHive**: `cd thehive && docker compose up -d`
     * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
-    * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for LXC deployment.
-    * **Wazuh**: Deployed on Proxmox LXC 105 (IP: 192.168.3.195).
+    * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for deployment.
+    * **Wazuh**: Deployed on independent instance (IP: 192.168.x.195).
 
 ## TheHive
 
@@ -408,7 +408,7 @@ Implemented a **Branch-Aware Deployment Strategy**.
 ## 5. Troubleshooting & Challenges
 # Troubleshooting Guide
 
-This guide addresses common issues encountered when deploying the ThreatLabs CTI stack on Proxmox/Dockge.
+This guide addresses common issues encountered when deploying the ThreatLabs CTI stack on virtualization/Dockge.
 
 ## Quick Checks Sequence
 
@@ -531,7 +531,7 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 
 ### AIL Project
 
-* **Issue**: Redis continuously restarts/crashes in LXC.
+* **Issue**: Redis continuously restarts/crashes in independent instances.
 * **Cause**: ZFS file system incompatibility with Redis persistence.
 * **Fix**: Disable `use_direct_io_for_flush_and_compaction` in `redis.conf`. See `ail-project/README.md` for the full fix.
 
@@ -688,7 +688,7 @@ Tracking high-level modifications and standardization efforts across the ThreatL
 
 #### Fixed
 - **MISP**: Resolved internal healthcheck 403 failures by aligning application and database credentials.
-- **TheHive**: Fixed Cassandra startup loop via recursive UID 999 ownership fix on data volumes.
+- **TheHive**: Fixed Cassandra startup loop via recursive UID <ID> ownership fix on data volumes.
 - **XTM**: Resolved OpenCTI schema conflicts via deep ElasticSearch 8 data wipe and re-initialization.
 - **Infrastructure**: Fixed shared database initialization by wiping legacy Postgres volumes.
 
