@@ -48,9 +48,9 @@ services:
       timeout: 5s
       retries: 3
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
     networks:
       - cti-net
@@ -75,9 +75,9 @@ services:
       timeout: 30s
       retries: 3
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
     networks:
       - cti-net
@@ -115,9 +115,9 @@ services:
       openaev:
         condition: service_healthy
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
     networks:
       - cti-net
@@ -191,9 +191,9 @@ services:
       timeout: 5s
       retries: 20
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
     networks:
       - cti-net
@@ -210,9 +210,9 @@ services:
       replicas: 3
     restart: always
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
     networks:
       - cti-net
@@ -765,9 +765,9 @@ services:
       # ES CTI infra
       - ENGINE_URL=http://es8-cti:9200
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "10m"
+        max-size: 10m
         max-file: "3"
     networks:
       - cti-net
