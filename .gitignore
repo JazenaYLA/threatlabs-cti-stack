@@ -17,3 +17,4 @@ wazuh/wazuh-certs-tool/
 *.tar.gz
 docs/LXC-Integration-Guide.md
 source/
+internal_ips.md
