@@ -23,15 +23,15 @@ This repository is organized into modular stacks that share common infrastructur
     end
 
     subgraph "Core Services"
-        Ghost[Ghost CMS<br/>127:2368]
+        Ghost[Ghost CMS]
         n8n[n8n Automation]
         Flowise[Flowise AI]
         Dockge[Dockge Management]
     end
 
     subgraph "Analysis & Stacks"
-        Cortex[Cortex<br/>198:9001]
-        Wazuh[Wazuh<br/>195:80]
+        Cortex[Cortex]
+        Wazuh[Wazuh]
         Stacks[Modular Docker Stacks]
     end
 
@@ -48,7 +48,7 @@ This repository is organized into modular stacks that share common infrastructur
 ### Directory Structure
 
 * **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
-* **[Cloudflared Tunnel]**: Secure entry point for accessing services using Cloudflare Tunnels (replaced Traefik). (IP: `192.168.x.171`)
+* **[Cloudflared Tunnel]**: Secure entry point for accessing services using Cloudflare Tunnels (replaced Traefik). (IP: `<INTERNAL_IP>`)
 * **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
@@ -167,7 +167,7 @@ The services must be started in a specific order to ensure database availability
     * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for deployment.
-    * **Wazuh**: Deployed on independent instance (IP: 192.168.x.195).
+    * **Wazuh**: Deployed on independent instance (IP: <INTERNAL_IP>).
 
 ## TheHive
 
