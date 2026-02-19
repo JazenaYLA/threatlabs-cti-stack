@@ -2,7 +2,7 @@ name: Deploy (Development Only)
 
 on:
   push:
-    branches: ["main", "auto-swapper"]
+    branches: ["auto-swapper"]
   # Explicitly block main
   workflow_dispatch:
     inputs:
