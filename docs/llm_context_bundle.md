@@ -53,70 +53,40 @@ This repository is organized into modular stacks that share common infrastructur
 ```mermaid
     graph TD
 
-    subgraph "Gateway (Optional)"
-        Proxy[Cloudflared Tunnel]
+    subgraph "Public Gateway"
+        CF[Cloudflare Edge]
     end
 
-    subgraph "Infrastructure (infra/)"
-        ES8[(ElasticSearch 8)]
-        ES7[(ElasticSearch 7)]
-        Postgres[(Postgres 17)]
-        Valkey[(Valkey / Redis)]
+    subgraph "Ingress Tunnels"
+        GT[Ghost Tunnel<br/>LXC 127]
+        CT[CTI Tunnel<br/>LXC 125]
     end
 
-    subgraph "MISP Stack (misp/)"
-        MISP[MISP Core]
-        MISPDB[(MariaDB)]
-        MISPCache[(Local Valkey)]
+    subgraph "Internal Routing"
+        Caddy[Caddy Proxy<br/>LXC 119]
     end
 
-    subgraph "MISP Modules (misp-modules/)"
-        Modules[Modules API]
-        ModulesWeb[Modules Web UI]
+    subgraph "Core Services"
+        Ghost[Ghost CMS<br/>127:2368]
+        n8n[n8n Automation<br/>LXC 168]
+        Flowise[Flowise AI<br/>LXC 109]
+        Dockge[Dockge Management<br/>169:5001]
     end
 
-    subgraph "Extended Threat Management (xtm/)"
-        OpenCTI[OpenCTI Platform]
-        OpenAEV[OpenAEV Platform]
-        XTMMinIO[(MinIO)]
-        XTMRabbit[(RabbitMQ)]
+    subgraph "Analysis & Stacks"
+        Cortex[Cortex<br/>198:9001]
+        Wazuh[Wazuh<br/>195:80]
+        Stacks[Modular Docker Stacks]
     end
 
-    subgraph "Analysis & Case Management"
-        FlowIntel[FlowIntel]
-        TheHive[TheHive 4]
-        Cassandra[(Cassandra)]
-        IRIS[DFIR-IRIS]
-    end
-
-    subgraph "Automation & Collection"
-        n8n[n8n Automation]
-        Flowise[Flowise AI]
-        Shuffle[Shuffle SOAR]
-        Lacus[Lacus Crawler]
-        AIL[AIL Framework LXC]
-    end
-
-    %% Infrastructure Dependencies
-    OpenCTI --> ES8
-    TheHive --> ES7
+    %% Routing
+    CF --> GT & CT
+    GT --> Ghost
+    CT --> Caddy
     
-    OpenAEV & FlowIntel & n8n --> Postgres
-    OpenCTI & FlowIntel & Lacus --> Valkey
-
-    %% Local Stack Dependencies
-    MISP --> MISPDB & MISPCache
-    TheHive --> Cassandra
-    OpenCTI & OpenAEV --> XTMMinIO & XTMRabbit
-
-    %% Integrations
-    MISP & FlowIntel & Shuffle --> Modules
-    AIL --> Lacus
-    AIL -.->|Push| MISP
-    n8n & Shuffle -->|API| MISP & OpenCTI & Flowise
+    Caddy --> n8n & Flowise & Dockge
     
-    %% Gateway Routing
-    Proxy -.-> MISP & ModulesWeb & OpenCTI & OpenAEV & FlowIntel & n8n & Flowise & TheHive & IRIS & Shuffle
+    Dockge --> Cortex & Wazuh & Stacks
 ```
 
 ### Directory Structure
