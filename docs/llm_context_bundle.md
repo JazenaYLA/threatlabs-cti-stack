@@ -58,19 +58,19 @@ This repository is organized into modular stacks that share common infrastructur
     end
 
     subgraph "Ingress Tunnels"
-        GT[Ghost Tunnel<br/>LXC 127]
-        CT[CTI Tunnel<br/>LXC 125]
+        GT[Ghost Tunnel]
+        CT[CTI Tunnel]
     end
 
     subgraph "Internal Routing"
-        Caddy[Caddy Proxy<br/>LXC 119]
+        Caddy[Caddy Proxy]
     end
 
     subgraph "Core Services"
         Ghost[Ghost CMS<br/>127:2368]
-        n8n[n8n Automation<br/>LXC 168]
-        Flowise[Flowise AI<br/>LXC 109]
-        Dockge[Dockge Management<br/>169:5001]
+        n8n[n8n Automation]
+        Flowise[Flowise AI]
+        Dockge[Dockge Management]
     end
 
     subgraph "Analysis & Stacks"

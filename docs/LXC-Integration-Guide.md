@@ -1,6 +1,6 @@
 # Wazuh Integration Guide
 
-Since Wazuh runs in a separate LXC container (ID <WAZUH_ID>), you must configure the integration manually inside the container.
+Since Wazuh runs in a separate instance (ID <WAZUH_ID>), you must configure the integration manually inside the container.
 
 ## 1. Access Wazuh Instance
 ```bash
