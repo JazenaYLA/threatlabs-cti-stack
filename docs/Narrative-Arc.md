@@ -10,7 +10,7 @@
 
 ## 2. The Permission Nightmare
 **The Challenge**: Docker makes running services easy. Docker makes file permissions *hell*.
-**The Pitfall**: Postgres runs as UID 999. ElasticSearch runs as UID 1000. Redis runs as... something else.
+**The Pitfall**: Postgres runs as UID <ID>. ElasticSearch runs as UID <ID>0. Redis runs as... something else.
 **The Struggle**: We experienced the classic "CrashLoopBackOff." Logs screamed `Permission denied`. We tried `chmod 777` (the shameful quick fix), but it felt wrong.
 **The Insight**: We needed automation, not manual hacks. The creation of `fix-permissions.sh` was a turning point—a "janitor script" that runs before deployment to ensure every container has exactly the keys to the castle it needs, and nothing more.
 
