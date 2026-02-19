@@ -10,7 +10,7 @@
 
 **Cause:**
 - The composer is using the wrong token to authenticate with OpenAEV.
-- often caused by copy-pasting configuration where `${OPENCTI_ADMIN_TOKEN}` is used instead of `${OPENAEV_ADMIN_TOKEN}`.
+- Often caused by copy-pasting configuration where `${OPENCTI_ADMIN_TOKEN}` is used instead of `${OPENAEV_ADMIN_TOKEN}`.
 
 **Solution:**
 1. Check `xtm/docker-compose.yml`.
@@ -21,6 +21,24 @@
        - OPENAEV__TOKEN=${OPENAEV_ADMIN_TOKEN}
    ```
 3. Redeploy the service: `docker compose up -d xtm-composer`
+
+### OpenCTI Schema Conflict (ElasticSearch 8)
+
+**Symptoms:**
+- `opencti` container stays in a loop or fails to initialize.
+- Logs show `[ERROR] Connection to the search engine failed` or index mapping conflicts.
+
+**Cause:**
+- Existing indices in ES8 from a previous partial or failed installation preventing clean schema generation.
+
+**Solution (Deep Reset):**
+1. Stop the stack: `docker compose down`.
+2. Clean ES8 data: `sudo rm -rf /opt/stacks/infra/vol/es8/data/*`.
+3. Restart infra first, then XTM:
+   ```bash
+   cd /opt/stacks/infra && docker compose up -d
+   cd /opt/stacks/xtm && docker compose up -d
+   ```
 
 ### 500 Internal Server Error: `Failed to fetch connector instances`
 
@@ -117,6 +135,20 @@
 1. Verify `SimpleBackgroundJobs` is enabled in `app/Config/config.php`.
 2. Ensure environment variables in `docker-compose.yml` are not overriding critical settings with empty values.
 
+## Healthcheck Access Denied (Internal Database Only)
+
+**Symptoms:**
+- `misp-core` container remains "Starting" or "Unhealthy" even when the UI works.
+- Logs show `Access denied for user 'misp'@'172.x.x.x'` during healthcheck commands.
+
+**Cause:**
+- The internal healthcheck script (inside `misp-core`) uses `MYSQL_USER` and `MYSQL_PASSWORD` from the `.env` file to verify DB connectivity. 
+- If credentials in the application's `.env` (misp) don't match the database's `.env` (infra), the healthcheck will fail.
+
+**Solution:**
+- Ensure `MYSQL_USER` and `MYSQL_PASSWORD` in `/opt/stacks/misp/.env` matches exactly the credentials used in `/opt/stacks/infra/.env`.
+- Restart the container: `docker compose up -d --force-recreate misp-core`.
+
 ## Shuffle Connectivity & Version Issues
 
 ### OpenSearch Startup Failure: `AccessDeniedException`
@@ -168,3 +200,35 @@
    DOCKER_API_VERSION=1.44
    ```
 2. Restart: `docker compose up -d shuffle-orborus`.
+
+# TheHive Stack Errors
+
+## Cassandra Permission Denied: `AccessDeniedException`
+
+**Symptoms:**
+- `thehive-cassandra` container restarts repeatedly.
+- Logs show `java.nio.file.AccessDeniedException: /var/lib/cassandra/data`.
+
+**Cause:**
+- Cassandra runs as UID `999`. If permissions on `thehive/vol/cassandra/data` are incorrect (e.g., owned by root), it cannot start.
+
+**Solution:**
+1. Reset ownership recursively:
+   ```bash
+   sudo chown -R 999:999 /opt/stacks/thehive/vol/cassandra/data
+   ```
+2. Restart the stack.
+
+# Global Infrastructure Reset
+
+## Deep Volume Wipe for Credential Sync
+
+If you significantly change database passwords or encounter corrupted search clusters:
+
+1. **Stop all stacks.**
+2. **Postgres Reset**: `sudo rm -rf /opt/stacks/infra/vol/postgres/data/*` (Forces re-initialization of all DBs/Users via `init-dbs.sh`).
+3. **Search Reset**: 
+   - ES7: `sudo rm -rf /opt/stacks/infra/vol/es7/data/*`
+   - ES8: `sudo rm -rf /opt/stacks/infra/vol/es8/data/*`
+4. **Valkey Reset**: `sudo rm -rf /opt/stacks/infra/vol/valkey/data/*`
+5. **Restart Infra**, then wait for healthy state before starting dependent stacks.

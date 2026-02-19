@@ -12,10 +12,10 @@ This stack provides the shared core services required by the CTI ecosystem. It M
 
 ## Initialization
 
-* **Database Init**: The `vol/postgres-init/init-dbs.sh` script runs on container startup to automatically create databases and users for dependent stacks:
-  * `openaev` (User: `openaev`)
-  * `n8n` (User: `n8n`)
   * `flowintel` (User: `flowintel`)
+
+> [!IMPORTANT]
+> **Deep Volume Wipe**: If you change `POSTGRES_ROOT_PASSWORD` or individual stack DB passwords, the `vol/postgres/data` directory **must** be wiped to force the `init-dbs.sh` script to re-create the users and databases with the new credentials. This also applies to clearing search clusters in `vol/es7/data` or `vol/es8/data`.
 
 ## Usage via Dockge
 

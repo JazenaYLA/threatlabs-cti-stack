@@ -271,8 +271,15 @@ XTM stack indices are stored in the shared **ES8** cluster (Port 9201).
 ### OpenAEV failing to connect to OpenCTI
 
 1. `OPENAEV_XTM_OPENCTI_API_URL` must end with `/graphql` — e.g., `http://opencti:8080/graphql`
-2. `OPENAEV_XTM_OPENCTI_ID` must be a valid UUIDv4 in `.env`
-3. `OPENAEV_XTM_OPENCTI_TOKEN` must match `OPENCTI_ADMIN_TOKEN`
+2. **Critical Link**: `OPENAEV_XTM_OPENCTI_ID` must be a valid, unique UUIDv4 in `.env`. This links the platforms.
+3. `OPENAEV_XTM_OPENCTI_TOKEN` must match `OPENCTI_ADMIN_TOKEN`.
+
+### OpenCTI Schema conflicts on re-install
+
+If OpenCTI fails to start after a dirty `down -v` or cluster reset:
+1. Stop XTM.
+2. Wipe ES8 data: `sudo rm -rf /opt/stacks/infra/vol/es8/data/*`.
+3. Restart Infra and XTM.
 
 ### `VALIDATION_ERROR: input.id is null`
 
