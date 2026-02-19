@@ -9,9 +9,7 @@ This repository is organized into modular stacks that share common infrastructur
 ```mermaid
     graph TD
 
-    subgraph "Gateway (Optional)"
-        Proxy[Reverse Proxy<br/>Traefik]
-    end
+        Proxy[Cloudflared Tunnel]
 
     subgraph "Infrastructure (infra/)"
         ES8[(ElasticSearch 8)]
@@ -78,7 +76,7 @@ This repository is organized into modular stacks that share common infrastructur
 ### Directory Structure
 
 * **`infra/`**: **Core Infrastructure**. Hosts shared **ElasticSearch** (v7 & v8), **PostgreSQL 17**, and **Valkey** (Redis).
-* **[Traefik Proxy]**: Standalone instance serving as the entry point for accessing services via subdomains. (IP: `192.168.x.165`, Port: `8080`)
+* **[Cloudflared Tunnel]**: Secure entry point for accessing services using Cloudflare Tunnels (replaced Traefik). (IP: `192.168.x.171`)
 * **`misp-modules/`**: **Shared Enrichment**. Standalone MISP modules service used by both MISP and FlowIntel.
 * **`xtm/`**: **Extended Threat Management**. Hosts OpenCTI, OpenAEV, and their connectors. Depends on `infra`.
 * **`misp/`**: **Malware Information Sharing Platform**. Hosting MISP Core, Modules, and Guard.
