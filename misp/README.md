@@ -51,7 +51,7 @@ docker compose version
 
 ### Prepare the environment
 
-1. Copy the `template.env` file to `.env` in the project root.
+1. Copy the `.env.example` file to `.env` in the project root.
 2. Customize `.env` according to your requirements (optional but recommended).
 
 ### Run
