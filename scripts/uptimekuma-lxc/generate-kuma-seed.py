@@ -72,7 +72,7 @@ def main():
         port_num = "NULL"
         
         if sv["domain"]:
-            url = f"https://{sv['domain']}"
+            url = f"http://{sv['domain']}"
         elif sv["ip"] and sv["ip"] != "DHCP" and sv["port"] and sv["port"] != "—":
             if "5432" in sv["port"] or "9200" in sv["port"] or "6379" in sv["port"]:
                 mtype = "port"
