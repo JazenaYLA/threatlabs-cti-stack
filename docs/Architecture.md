@@ -41,11 +41,29 @@ Implemented a **Branch-Aware Deployment Strategy**.
 - **Logic**: Pushes to `auto-swapper` automatically sync to the dev root; pushes to `main` are decoupled from automatic automation.
 - **Safety**: Production updates now require a manual `workflow_dispatch` trigger, ensuring that manual hotfixes and database states are preserved during normal development cycles.
 
+## 🌐 Reverse Proxy Layer (Feb 2026 Update)
+
+### The Stale IP Problem
+**Challenge**: Every `.env` file referenced services by hardcoded IP (e.g., `http://<SERVICE_IP>:3000`). When VLANs were restructured or IPs changed, every stack broke silently — services cached the old addresses in registration files that persisted across restarts.
+
+**Solution**:
+Deployed **Caddy** as a centralized reverse proxy with domain-based routing.
+- **Decision**: All inter-service URLs now use `*.lab.local` domains (e.g., `http://forgejo.lab.local`) via CNAME records pointing to Caddy.
+- **Tradeoff**: Requires DNS infrastructure (we use Unifi's DNS) and adds Caddy as a dependency. Direct IPs still work for simple setups.
+- **Benefit**: IP/VLAN changes only require updating one `A` record (Caddy's IP). All CNAME records and `.env` files remain unchanged.
+
+### Self-Healing Registrations
+Some services (notably the Forgejo runner) cache the server address at registration time in local files. We added **URL drift detection** to the runner's entrypoint — it compares the cached address against the environment variable on every start and automatically re-registers if they differ.
+
+> [!NOTE]
+> Both approaches (direct IP and Caddy proxy) are supported. See the [Reverse Proxy Guide](Reverse-Proxy-Guide.md) for setup and migration instructions.
+
 ## 🚀 Summary of Tradeoffs
 
 1.  **Complexity vs. Isolation**: We chose **Shared Networking** over complete isolation. This simplifies integration (direct IP connectivity) but requires careful naming (DNS conflicts).
-2.  **Standards vs. Customization**: We modified upstream `docker-compose.yml` files significantly (flattened structures, added build steps). This means "git pull" updates from upstream require manual merging, but gives us a stable, tailored homelab environment.
-3.  **Security**: We generated self-signed certs for internal HTTPS. This requires trusting the CA in your browser but encrypts traffic on the wire.
+2.  **Direct IPs vs. Reverse Proxy**: We migrated to **Caddy domain routing** for resilience. Direct IPs still work but are fragile across VLAN changes.
+3.  **Standards vs. Customization**: We modified upstream `docker-compose.yml` files significantly (flattened structures, added build steps). This means "git pull" updates from upstream require manual merging, but gives us a stable, tailored homelab environment.
+4.  **Security**: We generated self-signed certs for internal HTTPS. This requires trusting the CA in your browser but encrypts traffic on the wire.
 
 ---
 *Created by Antigravity Assistant - Feb 2026*

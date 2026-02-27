@@ -7,19 +7,21 @@ services:
     user: root
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-      # Pointing to your Architect Server
+      # Forgejo instance URL — use Caddy domain, never a raw IP
       - GITEA_INSTANCE_URL=${GITEA_INSTANCE_URL}
-      # Your Token from Step 2
-      - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_TOKEN} 
+      # Registration token from: Site Admin → Actions → Runners → Create new
+      - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_TOKEN}
       - GITEA_RUNNER_NAME=dockge-runner
       - GITEA_RUNNER_LABELS=local-shell:docker://node:20-bullseye,ubuntu-latest:docker://node:20-bullseye
     volumes:
       - ./data:/data
+      - ./entrypoint.sh:/entrypoint.sh:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/stacks:/opt/stacks
       - /opt/cti-dev:/opt/cti-dev
-    # The "Node Fix" command
-    command: sh -c "apk add --no-cache nodejs && forgejo-runner daemon"
-
-# No networks needed beyond default bridge
-networks: {}
+    networks:
+      - cti-net
+    entrypoint: /entrypoint.sh
+networks:
+  cti-net:
+    external: true

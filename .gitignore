@@ -18,3 +18,7 @@ wazuh/wazuh-certs-tool/
 docs/LXC-Integration-Guide.md
 source/
 internal_ips.md
+
+# Private notes (contain real IPs, credentials, or infra details)
+# See docs/OPSEC.md for guidelines
+*_private.md

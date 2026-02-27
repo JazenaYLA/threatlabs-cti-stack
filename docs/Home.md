@@ -6,8 +6,10 @@ This wiki documents the journey, architecture, and orchestration of our self-hos
 
 - **[Project Story & Timeline](Project-Timeline.md)**: A chronological account of our build process, challenges, and orchestration decisions.
 - **[Architecture & Decisions](Architecture.md)**: Design choices, tradeoffs (networking, permissions), and shared infrastructure details.
+- **[Reverse Proxy Guide](Reverse-Proxy-Guide.md)**: Setting up Caddy, migrating from direct IPs, and troubleshooting network changes.
 - **[Troubleshooting Guide](Troubleshooting.md)**: Common issues and fixes for the stack.
 - **[Changelog](Changelog.md)**: A high-level track of modifications across all stacks.
+- **[OPSEC Guide](OPSEC.md)**: Documentation hygiene rules for avoiding IP/credential leaks in public mirrors.
 
 ## 🏗️ Stack Overview
 
