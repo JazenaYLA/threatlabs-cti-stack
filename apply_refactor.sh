@@ -78,5 +78,6 @@ echo " - openaev.<BRAND_DOMAIN> / openaev.lan"
 echo " - thehive.<BRAND_DOMAIN> / thehive.lan"
 echo " - cortex.<BRAND_DOMAIN> / cortex.lan"
 echo " - vaultwarden.<BRAND_DOMAIN> / vaultwarden.lan"
-echo " - openclaw.<BRAND_DOMAIN> / openclaw.lan"
+echo " - openclaw.lab.local (LXC)
+"
 echo "=========================================="
