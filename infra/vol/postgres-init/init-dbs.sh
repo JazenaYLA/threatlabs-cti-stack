@@ -33,5 +33,7 @@ create_db_and_user "n8n" "n8n" "${N8N_DB_PASSWORD:-n8npass123!}"
 # FlowIntel
 create_db_and_user "flowintel" "flowintel" "${FLOWINTEL_DB_PASSWORD:-changeme}"
 
+# OpenClaw
+create_db_and_user "openclaw" "openclaw" "${OPENCLAW_DB_PASSWORD:-changeme}"
 
 echo "XXX Databases created XXX"
