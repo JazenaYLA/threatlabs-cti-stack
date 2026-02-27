@@ -78,5 +78,6 @@ echo " - openaev.threatresearcher.com / openaev.lan"
 echo " - thehive.threatresearcher.com / thehive.lan"
 echo " - cortex.threatresearcher.com / cortex.lan"
 echo " - vaultwarden.threatresearcher.com / vaultwarden.lan"
-echo " - openclaw.threatresearcher.com / openclaw.lan"
+echo " - openclaw.lab.local (LXC)
+"
 echo "=========================================="
