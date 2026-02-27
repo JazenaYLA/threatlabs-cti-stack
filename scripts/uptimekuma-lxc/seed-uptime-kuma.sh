@@ -55,15 +55,52 @@ INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_in
 INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (30, '[Default VLAN (1] Dockge-CTI', 'http', 'https://dockge-cti.lab.local', 3, 1, 60, 60, 1, 1);
 EOF
 
-echo "Seeding Status Pages (Lab/CTI and General)..."
+echo "Seeding Status Pages and Monitor Groups..."
 cat <<EOF | sqlite3 $DB
-INSERT INTO status_page (id, slug, title, theme, published) VALUES (1, 'lab-cti', 'ThreatLabs CTI Stack', 'dark', 1);
+-- Create Status Pages
+INSERT INTO status_page (id, slug, title, icon, theme, published, search_engine_index, show_tags) VALUES (1, 'lab-cti', 'ThreatLabs CTI Stack', '', 'dark', 1, 0, 0);
 INSERT INTO status_page_cname (status_page_id, domain) VALUES (1, 'status-cti.lab.local');
 
-INSERT INTO status_page (id, slug, title, theme, published) VALUES (2, 'general', 'General Infrastructure', 'dark', 1);
+INSERT INTO status_page (id, slug, title, icon, theme, published, search_engine_index, show_tags) VALUES (2, 'general', 'General Infrastructure', '', 'dark', 1, 0, 0);
 INSERT INTO status_page_cname (status_page_id, domain) VALUES (2, 'status-general.lab.local');
-EOF
 
+-- Create Display Groups for Status Pages
+INSERT INTO \`group\` (id, name, public, active, weight, status_page_id) VALUES (1, 'Threat Intelligence Lab', 1, 1, 10, 1);
+INSERT INTO \`group\` (id, name, public, active, weight, status_page_id) VALUES (2, 'General Services', 1, 1, 10, 2);
+
+-- Map Monitors to Groups
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (1, 1, 1000);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (2, 1, 1001);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (3, 1, 1002);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (4, 1, 1003);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (5, 1, 1004);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (6, 1, 1005);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (7, 1, 1006);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (8, 1, 1007);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (9, 1, 1008);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (11, 1, 1009);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (14, 1, 1010);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (17, 1, 1011);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (20, 1, 1012);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (23, 1, 1013);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (10, 2, 1000);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (12, 2, 1001);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (13, 2, 1002);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (15, 2, 1003);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (16, 2, 1004);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (18, 2, 1005);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (19, 2, 1006);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (21, 2, 1007);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (22, 2, 1008);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (24, 2, 1009);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (25, 2, 1010);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (26, 2, 1011);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (27, 2, 1012);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (28, 2, 1013);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (29, 2, 1014);
+INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (30, 2, 1015);
+
+EOF
 
 echo "Starting Uptime Kuma..."
 docker start uptime-kuma || true

@@ -131,27 +131,32 @@ cat <<EOF | sqlite3 $DB
     script += """
 EOF
 
-echo "Seeding Status Pages (Lab/CTI and General)..."
+echo "Seeding Status Pages and Monitor Groups..."
 cat <<EOF | sqlite3 $DB
-INSERT INTO status_page (id, slug, title, theme, published) VALUES (1, 'lab-cti', 'ThreatLabs CTI Stack', 'dark', 1);
+-- Create Status Pages
+INSERT INTO status_page (id, slug, title, icon, theme, published, search_engine_index, show_tags) VALUES (1, 'lab-cti', 'ThreatLabs CTI Stack', '', 'dark', 1, 0, 0);
 INSERT INTO status_page_cname (status_page_id, domain) VALUES (1, 'status-cti.lab.local');
 
-INSERT INTO status_page (id, slug, title, theme, published) VALUES (2, 'general', 'General Infrastructure', 'dark', 1);
+INSERT INTO status_page (id, slug, title, icon, theme, published, search_engine_index, show_tags) VALUES (2, 'general', 'General Infrastructure', '', 'dark', 1, 0, 0);
 INSERT INTO status_page_cname (status_page_id, domain) VALUES (2, 'status-general.lab.local');
+
+-- Create Display Groups for Status Pages
+INSERT INTO \\`group\\` (id, name, public, active, weight, status_page_id) VALUES (1, 'Threat Intelligence Lab', 1, 1, 10, 1);
+INSERT INTO \\`group\\` (id, name, public, active, weight, status_page_id) VALUES (2, 'General Services', 1, 1, 10, 2);
+
+-- Map Monitors to Groups
+"""
+    # Build the CTI mappings
+    for idx, mon_id in enumerate(cti_monitors):
+        script += f"INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES ({mon_id}, 1, {1000 + idx});\n"
+        
+    # Build the General mappings
+    for idx, mon_id in enumerate(general_monitors):
+        script += f"INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES ({mon_id}, 2, {1000 + idx});\n"
+
+    script += """
 EOF
 
-"""
-
-    # Group linking in status_page is usually JSON in newer versions, or monitor_group linking?
-    # Wait, in Uptime Kuma 1.23, the links are actually stored in `monitor_group` and `status_page_incident`? No, Status Page Monitor list.
-    # Actually, Uptime Kuma uses the `monitor_group` table to map groups to status pages, and then `monitor` records have a `parent` ID?? No.
-    # Wait, how does oneuptime's article do group insertion? Let's check.
-    # Uptime Kuma status pages store their monitors as JSON inside the `status_page` table? No, they have a `monitor_group` mapping?
-    # Actually, the user's article only shows creating the status_page and status_page_cname. It doesn't show the joining table.
-    # Let me bypass this by just not linking them or providing an easy way.
-    # Let's inspect what create-status-pages.py received as API error, which means we might need a `monitor_group` entry.
-    
-    script += """
 echo "Starting Uptime Kuma..."
 docker start uptime-kuma || true
 
