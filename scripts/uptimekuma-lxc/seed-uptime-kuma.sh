@@ -21,7 +21,7 @@ echo "Stopping Uptime Kuma to unlock database..."
 if command -v docker &> /dev/null && docker ps -a | grep -q uptime-kuma; then
     docker stop uptime-kuma || true
     START_CMD="docker start uptime-kuma"
-elif systemctl list-units --full -all | grep -q "uptime-kuma.service"; then
+elif systemctl list-units --full -all --no-pager | grep -q "uptime-kuma.service"; then
     systemctl stop uptime-kuma || true
     START_CMD="systemctl start uptime-kuma"
 elif command -v pm2 &> /dev/null; then
