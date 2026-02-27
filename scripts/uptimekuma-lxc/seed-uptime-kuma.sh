@@ -40,36 +40,36 @@ sqlite3 $DB "DELETE FROM monitor_group;"
 
 echo "Seeding Monitors..."
 cat <<EOF | sqlite3 $DB
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (1, '[VLAN 101 — Lab ] Caddy', 'http', 'https://caddy.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (2, '[VLAN 101 — Lab ] FlowiseAI', 'http', 'https://flowise.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (3, '[VLAN 101 — Lab ] n8n', 'http', 'https://n8n.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (4, '[VLAN 101 — Lab ] Wazuh', 'http', 'https://wazuh.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (5, '[VLAN 101 — Lab ] AIL Framework', 'http', 'https://ail.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (6, '[VLAN 101 — Lab ] Cortex', 'http', 'https://cortex.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (7, '[VLAN 101 — Lab ] Forgejo', 'http', 'https://forgejo.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (8, '[VLAN 101 — Lab ] Infisical', 'http', 'https://infisical.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (9, '[VLAN 101 — Lab ] Lookyloo', 'http', 'https://lookyloo.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (10, '[Docker Stacks o] Dockge UI', 'http', 'https://dockge-cti.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (11, '[Docker Stacks o] OpenCTI', 'http', 'https://opencti.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (12, '[Docker Stacks o] OpenAEV', 'http', 'https://openaev.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (13, '[Docker Stacks o] MISP', 'http', 'https://misp.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (14, '[Docker Stacks o] MISP (HTTPS)', 'http', 'https://misp-secure.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (15, '[Docker Stacks o] TheHive', 'http', 'https://thehive.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (16, '[Docker Stacks o] DFIR-IRIS', 'http', 'https://iris.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (17, '[Docker Stacks o] FlowIntel', 'http', 'https://flowintel.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (18, '[Docker Stacks o] Shuffle', 'http', 'https://shuffle.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (19, '[Docker Stacks o] Lacus', 'http', 'https://lacus.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (20, '[Docker Stacks o] AIL Proxy', 'http', 'https://ail-proxy.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (21, '[Docker Stacks o] Kibana 7', 'http', 'https://kibana7.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (22, '[Docker Stacks o] Kibana 8', 'http', 'https://kibana8.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (23, '[Docker Stacks o] MISP Modules', 'http', 'https://misp-modules.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (24, '[Docker Stacks o] CaddyManager', 'http', 'https://caddymanager.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (25, '[Docker Stacks o] CaddyGen', 'http', 'https://caddygen.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (26, '[Default VLAN (1] Vaultwarden (Alpine)', 'http', 'https://vaultwarden.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (1, '[VLAN 101 — Lab ] Caddy', 'http', 'http://caddy.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (2, '[VLAN 101 — Lab ] FlowiseAI', 'http', 'http://flowise.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (3, '[VLAN 101 — Lab ] n8n', 'http', 'http://n8n.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (4, '[VLAN 101 — Lab ] Wazuh', 'http', 'http://wazuh.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (5, '[VLAN 101 — Lab ] AIL Framework', 'http', 'http://ail.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (6, '[VLAN 101 — Lab ] Cortex', 'http', 'http://cortex.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (7, '[VLAN 101 — Lab ] Forgejo', 'http', 'http://forgejo.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (8, '[VLAN 101 — Lab ] Infisical', 'http', 'http://infisical.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (9, '[VLAN 101 — Lab ] Lookyloo', 'http', 'http://lookyloo.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (10, '[Docker Stacks o] Dockge UI', 'http', 'http://dockge-cti.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (11, '[Docker Stacks o] OpenCTI', 'http', 'http://opencti.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (12, '[Docker Stacks o] OpenAEV', 'http', 'http://openaev.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (13, '[Docker Stacks o] MISP', 'http', 'http://misp.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (14, '[Docker Stacks o] MISP (HTTPS)', 'http', 'http://misp-secure.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (15, '[Docker Stacks o] TheHive', 'http', 'http://thehive.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (16, '[Docker Stacks o] DFIR-IRIS', 'http', 'http://iris.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (17, '[Docker Stacks o] FlowIntel', 'http', 'http://flowintel.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (18, '[Docker Stacks o] Shuffle', 'http', 'http://shuffle.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (19, '[Docker Stacks o] Lacus', 'http', 'http://lacus.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (20, '[Docker Stacks o] AIL Proxy', 'http', 'http://ail-proxy.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (21, '[Docker Stacks o] Kibana 7', 'http', 'http://kibana7.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (22, '[Docker Stacks o] Kibana 8', 'http', 'http://kibana8.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (23, '[Docker Stacks o] MISP Modules', 'http', 'http://misp-modules.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (24, '[Docker Stacks o] CaddyManager', 'http', 'http://caddymanager.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (25, '[Docker Stacks o] CaddyGen', 'http', 'http://caddygen.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (26, '[Default VLAN (1] Vaultwarden (Alpine)', 'http', 'http://vaultwarden.lab.local', 3, 1, 60, 60, 1, 1);
 INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (27, '[Default VLAN (1] Vaultwarden (Debian)', 'http', 'http://192.168.3.163:80', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (28, '[Default VLAN (1] Ghost CMS', 'http', 'https://ghost.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (29, '[Default VLAN (1] Uptime Kuma', 'http', 'https://uptimekuma.lab.local', 3, 1, 60, 60, 1, 1);
-INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (30, '[Default VLAN (1] Dockge-CTI', 'http', 'https://dockge-cti.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (28, '[Default VLAN (1] Ghost CMS', 'http', 'http://ghost.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (29, '[Default VLAN (1] Uptime Kuma', 'http', 'http://uptimekuma.lab.local', 3, 1, 60, 60, 1, 1);
+INSERT INTO monitor (id, name, type, url, maxretries, active, interval, retry_interval, user_id, ignore_tls) VALUES (30, '[Default VLAN (1] Dockge-CTI', 'http', 'http://dockge-cti.lab.local', 3, 1, 60, 60, 1, 1);
 EOF
 
 echo "Seeding Status Pages and Monitor Groups..."
