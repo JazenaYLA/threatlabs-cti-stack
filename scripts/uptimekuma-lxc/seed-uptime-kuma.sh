@@ -12,8 +12,25 @@ if [ ! -f "$DB" ]; then
     fi
 fi
 
+if ! command -v sqlite3 &> /dev/null; then
+    echo "sqlite3 not found. Installing..."
+    apt-get update && apt-get install -y sqlite3
+fi
+
 echo "Stopping Uptime Kuma to unlock database..."
-docker stop uptime-kuma || true
+if command -v docker &> /dev/null && docker ps -a | grep -q uptime-kuma; then
+    docker stop uptime-kuma || true
+    START_CMD="docker start uptime-kuma"
+elif systemctl list-units --full -all | grep -q "uptime-kuma.service"; then
+    systemctl stop uptime-kuma || true
+    START_CMD="systemctl start uptime-kuma"
+elif command -v pm2 &> /dev/null; then
+    pm2 stop uptime-kuma || true
+    START_CMD="pm2 start uptime-kuma"
+else
+    echo "Warning: Could not determine how to stop Uptime Kuma safely. Assuming it is stopped."
+    START_CMD="echo 'Please start Uptime Kuma manually.'"
+fi
 
 echo "Wiping existing monitors and pages to apply IaC..."
 sqlite3 $DB "DELETE FROM monitor;"
@@ -103,6 +120,6 @@ INSERT INTO monitor_group (monitor_id, group_id, weight) VALUES (30, 2, 1015);
 EOF
 
 echo "Starting Uptime Kuma..."
-docker start uptime-kuma || true
+$START_CMD || true
 
 echo "Seeded $(sqlite3 $DB 'SELECT COUNT(*) FROM monitor') monitors successfully!"
