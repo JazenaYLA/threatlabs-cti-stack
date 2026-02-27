@@ -14,6 +14,18 @@ Tracking high-level modifications and standardization efforts across the ThreatL
 - **Wazuh**: Standardized environment variables.
 - **MISP**: Standardized environment variables.
 
+### [2026-02-27]
+
+#### Added
+- **Reverse Proxy**: Migrated from hardcoded IPs to Caddy domain-based routing (`*.lab.local`) across all stacks.
+- **Docs**: Created `docs/Reverse-Proxy-Guide.md` covering both direct IP and proxy approaches with migration steps.
+- **Forgejo Runner**: Added `entrypoint.sh` with **URL drift detection** — automatically re-registers when `GITEA_INSTANCE_URL` changes.
+- **Forgejo Runner**: Added `cti-net` network attachment (was declared but never assigned to service).
+- **Troubleshooting**: Added reverse proxy/network change troubleshooting section to `TROUBLESHOOTING.md`.
+
+#### Fixed
+- **Forgejo Runner**: Resolved `no route to host` error caused by stale cached address in `data/.runner` file (hardcoded IP instead of `forgejo.lab.local`).
+
 ### [2026-02-19]
 
 #### Added

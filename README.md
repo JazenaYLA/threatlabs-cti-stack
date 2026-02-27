@@ -63,11 +63,27 @@ This repository is organized into modular stacks that share common infrastructur
 
 All stacks communicate via an external Docker network named `cti-net`.
 
+### Networking Modes
+
+The stack supports two networking approaches:
+
+| Mode | Example URL | Best For |
+|------|-------------|----------|
+| **Direct IP** | `http://<SERVICE_IP>:3000` | Simple single-VLAN setups |
+| **Caddy Proxy** *(recommended)* | `http://forgejo.lab.local` | Multi-VLAN, resilient to IP changes |
+
+> [!TIP]
+> Using Caddy domain names instead of raw IPs means you only update one place (Caddy + DNS) when infrastructure changes. See the **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)** for setup instructions and migration steps.
+
+> [!WARNING]
+> Some services (like the Forgejo runner) **cache the server address** on first boot. Changing `.env` alone may not be enough — see [Reverse Proxy Guide: Gotchas](docs/Reverse-Proxy-Guide.md#gotchas) for details.
+
 ### Documentation & Troubleshooting
 
 For detailed architecture decisions, trade-offs, and troubleshooting steps, please refer to the **[Project Wiki](docs/Home.md)**:
 
 *   **[Architecture & Decisions](docs/Architecture.md)**
+*   **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
 *   **[Troubleshooting Guide](docs/Troubleshooting.md)**
 *   **[Project Timeline](docs/Project-Timeline.md)**
 
@@ -156,6 +172,9 @@ The services must be started in a specific order to ensure database availability
     cd proxy && docker compose up -d
     ```
 
+    > [!NOTE]
+    > If using the Caddy reverse proxy approach, ensure your DNS CNAME records point `*.lab.local` to `caddy.lab.local`, and that all `.env` files reference domain names instead of IPs. See the [Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md).
+
 1. **Start Application Stacks**
 
     You can start the stacks in any order:
@@ -230,6 +249,7 @@ Provides 200+ enrichment, expansion, import, and export modules as a shared serv
 ## Notes
 
 * **Networks**: All stacks communicate via the `cti-net` Docker network. Create it with `docker network create cti-net` or let `setup.sh` handle it.
+* **Reverse Proxy**: When using Caddy, services are accessed via `*.lab.local` domains instead of direct IPs. See the [Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md).
 * **Stack READMEs**: Each stack directory has its own `README.md` with detailed configuration and troubleshooting.
 * **Shared Infrastructure**: `infra/` provides PostgreSQL, Valkey, and ElasticSearch shared by multiple stacks. Always start it first.
 * **Enrichment API Keys**: Configure enrichment API keys (VirusTotal, Shodan, etc.) in `misp-modules/.env` for centralized access.

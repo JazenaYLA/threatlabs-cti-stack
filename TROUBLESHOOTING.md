@@ -1,4 +1,4 @@
-# XTM Stack Troubleshooting Guide
+# Troubleshooting Guide
 
 ## XTM Composer Errors
 
@@ -232,3 +232,69 @@ If you significantly change database passwords or encounter corrupted search clu
    - ES8: `sudo rm -rf /opt/stacks/infra/vol/es8/data/*`
 4. **Valkey Reset**: `sudo rm -rf /opt/stacks/infra/vol/valkey/data/*`
 5. **Restart Infra**, then wait for healthy state before starting dependent stacks.
+
+# Reverse Proxy & Network Changes
+
+These issues arise when using the Caddy reverse proxy approach or after changing IPs/VLANs. See the [Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md) for full context.
+
+## Stale Cached Address: `no route to host` After IP/VLAN Change
+
+**Symptoms:**
+- Service logs show `dial tcp <old-IP>:<port>: connect: no route to host`
+- The IP in the error doesn't match your current `.env` configuration
+
+**Cause:**
+- Some services cache the server address at registration/first-boot time and never re-read the environment variable. The most common culprit is the **Forgejo runner**, which stores the address in `data/.runner`.
+
+**Solution:**
+1. Check for cached state files that may contain the old address:
+   ```bash
+   # Forgejo runner
+   cat forgejo-runner/data/.runner | grep address
+   ```
+2. Delete the cached file and restart:
+   ```bash
+   rm forgejo-runner/data/.runner
+   docker compose -f forgejo-runner/compose.yaml down && docker compose -f forgejo-runner/compose.yaml up -d
+   ```
+
+> [!TIP]
+> The Forgejo runner's `entrypoint.sh` now includes **automatic URL drift detection** — it compares the cached address against `GITEA_INSTANCE_URL` on every start and re-registers if they differ. See [forgejo-runner/README.md](forgejo-runner/README.md).
+
+## Service Cannot Resolve Domain Names
+
+**Symptoms:**
+- Service logs show DNS resolution failures for `*.lab.local` domains
+- Service works with direct IPs but not domain names
+
+**Cause:**
+- The container is not attached to `cti-net`, so it uses the host's DNS resolver instead of Docker's internal DNS. The host DNS may resolve to a different VLAN or an unreachable IP.
+
+**Solution:**
+1. Verify the service's `docker-compose.yml` has `networks: [cti-net]` assigned to the service (not just declared at the top level):
+   ```yaml
+   services:
+     my-service:
+       # ... other config ...
+       networks:
+         - cti-net    # ← Must be here, not just in top-level networks block
+   networks:
+     cti-net:
+       external: true
+   ```
+2. Restart the service.
+
+## Caddy Returns 502 Bad Gateway
+
+**Symptoms:**
+- Browser shows `502 Bad Gateway` when accessing `service.lab.local`
+- Caddy logs show `dial tcp: lookup <container-name>: no such host`
+
+**Cause:**
+- The backend container is not running or not on `cti-net`
+- The container name in the Caddyfile doesn't match the actual container name
+
+**Solution:**
+1. Verify the backend is running: `docker ps | grep <container-name>`
+2. Verify it's on `cti-net`: `docker network inspect cti-net | grep <container-name>`
+3. Check the Caddyfile `reverse_proxy` target matches the container name and port
