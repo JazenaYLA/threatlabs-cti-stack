@@ -93,12 +93,6 @@ For detailed architecture decisions, trade-offs, and troubleshooting steps, plea
 *   **[Email Configuration Guide](docs/Email-Configuration.md)**
 *   **[Troubleshooting Guide](docs/Troubleshooting.md)**
 
-## ✍️ Blog Series
-
-*   **[Project Timeline](docs/blog/Project-Timeline.md)**
-*   **[AI Config Journal](docs/blog/AI-Config-Journal.md)**
-*   **[Narrative Arc](docs/blog/Narrative-Arc.md)**
-
 > [!TIP]
 > See [docs/Troubleshooting.md](docs/Troubleshooting.md) for network, permission, and common boot issues.
 
