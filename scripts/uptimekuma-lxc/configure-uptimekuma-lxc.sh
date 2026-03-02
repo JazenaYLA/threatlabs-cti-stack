@@ -6,7 +6,7 @@
 set -e
 
 # Primary IP for Uptime Kuma (VLAN 3)
-UPTIME_KUMA_IP="192.168.3.124" 
+UPTIME_KUMA_IP="<UPTIME_KUMA_IP>" 
 UPTIME_KUMA_DOMAIN="uptimekuma.lab.local"
 
 echo "=== Configuring Caddy Proxy for Uptime Kuma ==="

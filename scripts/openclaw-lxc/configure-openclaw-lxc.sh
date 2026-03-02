@@ -58,10 +58,10 @@ echo "=== OpenClaw configuration complete ==="
 echo "=== Configuring Caddy LXC ==="
 # Caddy proxy configuration for OpenClaw.
 
-# Original: openclaw.local { reverse_proxy 192.168.101.155:18789 }
+# Original: openclaw.local { reverse_proxy <OPENCLAW_IP_OLD>:18789 }
 CADDY_SNIPPET="
 openclaw.lab.local {
-    reverse_proxy 192.168.101.150:18789
+    reverse_proxy <OPENCLAW_IP>:18789
 }
 "
 
