@@ -40,6 +40,11 @@ This repository is organized into modular stacks that share common infrastructur
         Kuma[Uptime Kuma]
     end
 
+    subgraph "Email Gateway"
+        PMG[Proxmox Mail Gateway]
+        Stalwart[Stalwart Mail Server]
+    end
+
     %% Routing
     CF --> GT & CT
     GT --> Ghost
@@ -48,6 +53,12 @@ This repository is organized into modular stacks that share common infrastructur
     Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma
     
     Dockge --> Cortex & Stacks
+    
+    %% Email Flow
+    PMG <--> Stalwart
+    Stacks -- SMTP --> PMG
+    Stalwart -- IMAP --> Stacks
+    Wazuh -- SMTP --> PMG
 ```
 
 ### Directory Structure
@@ -63,7 +74,8 @@ This repository is organized into modular stacks that share common infrastructur
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 * **`dfir-iris/`**: **Incident Response**. DFIR-IRIS collaborative IR platform (self-contained Postgres 12 + RabbitMQ).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
-* **`scripts/`**: Contains core setup/permission scripts, as well as deployment helpers for **External LXCs** like **OpenClaw** and **Uptime Kuma**.
+* **`scripts/`**: Contains core setup/permission scripts and deployment helpers for **External LXCs**.
+* **Email Infrastructure (LXC)**: **Hygiene & Delivery**. Pre-configured **Proxmox Mail Gateway (PMG)** for spam filtering/relay and **Stalwart** for local IMAP service accounts. (See [Email Configuration Guide](docs/Email-Configuration.md))
 
 ### Shared Network
 

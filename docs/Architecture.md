@@ -58,6 +58,22 @@ Some services (notably the Forgejo runner) cache the server address at registrat
 > [!NOTE]
 > Both approaches (direct IP and Caddy proxy) are supported. See the [Reverse Proxy Guide](Reverse-Proxy-Guide.md) for setup and migration instructions.
 
+## 📧 Email Orchestration & Hygiene (March 2026 Update)
+
+### The "Service Account" Mailbox Problem
+**Challenge**: Many CTI tools (TheHive, MISP, OpenCTI) require email for alerts or "email-to-case" features. Storing credentials for external mailboxes (Gmail/Outlook) inside every container is an OPSEC risk and a maintenance nightmare during password rotations.
+
+**Solution**:
+Deployed a two-tier internal email gateway using **PMG** and **Stalwart**.
+- **Inbound Flow**: Cloudflare Email Routing -> Gmail -> **PMG** (Fetchmail) -> **Stalwart**.
+  - PMG polls Gmail every 120s, filters for spam/malware, and delivers to Stalwart.
+  - CTI tools fetch mail from local Stalwart IMAP mailboxes.
+- **Outbound Flow**: CTI Stack -> **PMG** -> Gmail SMTP Relay.
+  - Stacks treat PMG as a trusted internal relay (no auth needed from container side).
+  - PMG handles the authenticated SASL connection to Gmail.
+
+**Benefit**: Centralized credential management. If the master Gmail app password changes, you only update PMG, and every stack remains functional.
+
 ## 🚀 Summary of Tradeoffs
 
 1.  **Complexity vs. Isolation**: We chose **Shared Networking** over complete isolation. This simplifies integration (direct IP connectivity) but requires careful naming (DNS conflicts).
