@@ -44,11 +44,14 @@ graph TD
     
     subgraph cti-net [Internal Docker Network]
         S1
+        S2
     end
     
-    subgraph VLAN [VLAN 101/3]
-        S2
+    subgraph VLAN [External LXCs / VLANs]
         S3
+        S4
+        S5
+        S6
     end
 ```
 
