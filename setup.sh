@@ -273,15 +273,15 @@ echo ""
 echo "[*] Finalizing environment..."
 
 # 8. Apply Permissions
-if [ -f "./fix-permissions.sh" ]; then
+if [ -f "./scripts/fix-permissions.sh" ]; then
     echo "[+] Running automated permission fixes..."
-    sudo ./fix-permissions.sh
+    sudo ./scripts/fix-permissions.sh
 fi
 
 # 9. Setup Dockge
-if [ -f "./setup-dockge.sh" ]; then
+if [ -f "./scripts/setup-dockge.sh" ]; then
     echo "[+] Refreshing Dockge stack links..."
-    sudo ./setup-dockge.sh
+    sudo ./scripts/setup-dockge.sh
 fi
 
 echo ""

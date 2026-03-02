@@ -84,8 +84,14 @@ For detailed architecture decisions, trade-offs, and troubleshooting steps, plea
 
 *   **[Architecture & Decisions](docs/Architecture.md)**
 *   **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
+*   **[Email Configuration Guide](docs/Email-Configuration.md)**
 *   **[Troubleshooting Guide](docs/Troubleshooting.md)**
-*   **[Project Timeline](docs/Project-Timeline.md)**
+
+## ✍️ Blog Series
+
+*   **[Project Timeline](docs/blog/Project-Timeline.md)**
+*   **[AI Config Journal](docs/blog/AI-Config-Journal.md)**
+*   **[Narrative Arc](docs/blog/Narrative-Arc.md)**
 
 > [!TIP]
 > See [docs/Troubleshooting.md](docs/Troubleshooting.md) for network, permission, and common boot issues.
@@ -127,7 +133,7 @@ If you are managing your stacks with **Dockge**, you can use the `setup-dockge.s
 > `setup-dockge.sh` is **OPTIONAL** and only for users who want to see these stacks in their Dockge dashboard.
 
 ```bash
-sudo ./setup-dockge.sh
+sudo ./scripts/setup-dockge.sh
 ```
 
 ### 3. Configuration
