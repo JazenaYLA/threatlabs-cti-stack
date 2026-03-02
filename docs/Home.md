@@ -20,6 +20,7 @@ Our environment consists of several integrated stacks:
 - **DFIR-IRIS**: Collaborative incident response.
 - **Wazuh**: SIEM and XDR.
 - **Flowintel/Flowise/n8n**: Orchestration and automation.
+- **Email Gateway**: **PMG** (LXC) for hygiene and **Stalwart** (LXC) for internal service accounts.
 
 ## 🔧 Standardization
 
