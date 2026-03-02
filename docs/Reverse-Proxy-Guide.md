@@ -38,9 +38,12 @@ Moving to Caddy gives us:
 ```mermaid
 graph TD
     User([Browser / Service]) -->|DNS CNAME| Proxy[caddy.lab.local]
-    Proxy -->|reverse_proxy| S1[forgejo-container:3000]
-    Proxy -->|reverse_proxy| S2[uptimekuma-lxc:3001]
-    Proxy -->|reverse_proxy| S3[openclaw-lxc:18789]
+    Proxy -->|reverse_proxy| S1[forgejo-server:3000]
+    Proxy -->|reverse_proxy| S2[misp-core:80]
+    Proxy -->|reverse_proxy| S3[uptimekuma-lxc:3001]
+    Proxy -->|reverse_proxy| S4[openclaw-lxc:18789]
+    Proxy -->|reverse_proxy| S5[lookyloo-lxc:8000]
+    Proxy -->|reverse_proxy| S6[pmg-lxc:8006]
     
     subgraph cti-net [Internal Docker Network]
         S1
