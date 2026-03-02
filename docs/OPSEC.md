@@ -50,11 +50,11 @@ Git remote URLs are **another place where IPs get stale**. After an IP/VLAN chan
 ```bash
 # Production
 cd /opt/stacks
-git remote set-url origin http://forgejo.lab.local/jamz/threatlabs-cti-stack.git
+git remote set-url origin http://forgejo.lab.local/<YOUR_USER>/threatlabs-cti-stack.git
 
 # Development
 cd /opt/cti-dev
-git remote set-url origin http://forgejo.lab.local/jamz/threatlabs-cti-stack.git
+git remote set-url origin http://forgejo.lab.local/<YOUR_USER>/threatlabs-cti-stack.git
 ```
 
 > [!NOTE]
