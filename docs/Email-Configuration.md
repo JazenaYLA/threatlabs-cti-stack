@@ -16,13 +16,13 @@
 ┌──────────────────────┐        ┌─────────────────────────┐
 │ Cloudflare Email     │        │   Gmail SMTP Relay      │
 │ Routing              │        │  smtp.gmail.com:587     │
-│ (threatresearcher.   │        │  Auth: App Password     │
-│  net / .com)         │        └──────────┬──────────────┘
+│ (<YOUR_DOMAIN>)      │        │  Auth: App Password     │
+│                      │        └──────────┬──────────────┘
 └──────┬───────────────┘                   │
        │                                   │
        ▼                                   │
 ┌──────────────────────┐                   │
-│ home.threatlabs@     │                   │
+│ <YOUR_GMAIL>@        │                   │
 │ gmail.com            │                   │
 │ (catch-all for       │                   │
 │  service accounts)   │                   │
@@ -74,8 +74,8 @@ Cloudflare routes inbound email based on destination address:
 ### Personal/brand → `<PERSONAL_EMAIL>` (stays in Gmail)
 | Address | Domain |
 |---------|--------|
-| `jamz@` | <DOMAIN> |
-| `threatlabs@` | <DOMAIN> |
+| `<PERSONAL_PREFIX>@` | <DOMAIN> |
+| `<BRAND_PREFIX>@` | <DOMAIN> |
 | `security@` | <DOMAIN> |
 | `admin@` | <DOMAIN> |
 | `abuse@` | <DOMAIN> |
