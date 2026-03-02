@@ -40,6 +40,7 @@ graph TD
     User([Browser / Service]) -->|DNS CNAME| Proxy[caddy.lab.local]
     Proxy -->|reverse_proxy| S1[forgejo-container:3000]
     Proxy -->|reverse_proxy| S2[uptimekuma-lxc:3001]
+    Proxy -->|reverse_proxy| S3[openclaw-lxc:18789]
     
     subgraph cti-net [Internal Docker Network]
         S1
@@ -47,6 +48,7 @@ graph TD
     
     subgraph VLAN [VLAN 101/3]
         S2
+        S3
     end
 ```
 
