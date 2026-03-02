@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-UPTIME_KUMA_IP="192.168.3.124"
+UPTIME_KUMA_IP="<UPTIME_KUMA_IP>"
 UPTIME_KUMA_DOMAIN="uptimekuma.lab.local"
 
 echo "=== Local Caddy Configuration for Uptime Kuma ==="
