@@ -307,7 +307,7 @@ Alpine-based Postgres 17 uses UID `70`. Fix with:
 sudo chown -R 70:70 [BASE_PATH]/infra/vol/postgres-data
 ```
 
-See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) for the full stack troubleshooting guide.
+See [Troubleshooting Guide](../docs/Troubleshooting.md) for the full stack troubleshooting guide.
 
 ## Community
 

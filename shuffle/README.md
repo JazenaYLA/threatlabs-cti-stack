@@ -39,7 +39,7 @@ docker compose down
 
 ## Troubleshooting
 
-For common issues and fixes, please refer to the global [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) file in the parent directory.
+For common issues and fixes, please refer to the global [Troubleshooting Guide](../docs/Troubleshooting.md) file in the parent directory.
 
 ## Monitoring
 

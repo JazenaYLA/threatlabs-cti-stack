@@ -31,8 +31,13 @@ This repository is organized into modular stacks that share common infrastructur
 
     subgraph "Analysis & Stacks"
         Cortex[Cortex]
-        Wazuh[Wazuh]
         Stacks[Modular Docker Stacks]
+    end
+
+    subgraph "External LXC"
+        Wazuh[Wazuh SIEM]
+        OpenClaw[OpenClaw Gateway]
+        Kuma[Uptime Kuma]
     end
 
     %% Routing
@@ -40,9 +45,9 @@ This repository is organized into modular stacks that share common infrastructur
     GT --> Ghost
     CT --> Caddy
     
-    Caddy --> n8n & Flowise & Dockge
+    Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma
     
-    Dockge --> Cortex & Wazuh & Stacks
+    Dockge --> Cortex & Stacks
 ```
 
 ### Directory Structure
@@ -58,6 +63,7 @@ This repository is organized into modular stacks that share common infrastructur
 * **`thehive/`**: **Legacy Case Management**. TheHive 4, depends on `infra` (ES7).
 * **`dfir-iris/`**: **Incident Response**. DFIR-IRIS collaborative IR platform (self-contained Postgres 12 + RabbitMQ).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
+* **`scripts/`**: Contains core setup/permission scripts, as well as deployment helpers for **External LXCs** like **OpenClaw** and **Uptime Kuma**.
 
 ### Shared Network
 
@@ -192,7 +198,8 @@ The services must be started in a specific order to ensure database availability
     * **DFIR-IRIS**: `cd dfir-iris && docker compose up -d`
     * **Lacus**: `cd lacus && docker compose up -d`
     * **AIL Project**: See [ail-project/README.md](ail-project/README.md) for deployment.
-    * **Wazuh**: Deployed on independent instance (IP: <INTERNAL_IP>).
+    * **Wazuh**: Deployed on independent LXC instance (see [LXC-Integration-Guide](docs/LXC-Integration-Guide.md)).
+    * **OpenClaw** / **Uptime Kuma**: Deployed in independent LXC environments using helpers in `scripts/`.
 
 ## TheHive
 
@@ -235,7 +242,7 @@ INIT_ADMIN_PASSWORD=securepassword
 > [!NOTE]
 > If you have already started FlowIntel and want to change the initial admin:
 > 1. Stop the container: `docker compose down`
-> 2. Reset the database (see TROUBLESHOOTING.md)
+> 2. Reset the database (see docs/Troubleshooting.md)
 > 3. Restart: `docker compose up -d`
 
 ### MISP Modules (Analyzers)
