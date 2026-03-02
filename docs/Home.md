@@ -8,7 +8,6 @@ This wiki documents the journey, architecture, and orchestration of our self-hos
 - **[Reverse Proxy Guide](Reverse-Proxy-Guide.md)**: Setting up Caddy, migrating from direct IPs, and troubleshooting network changes.
 - **[Troubleshooting Guide](Troubleshooting.md)**: Common issues and fixes for the stack.
 - [Email Configuration Guide](Email-Configuration.md): Comprehensive guide for PMG and Stalwart Mail Flow configuration.
-- [OPSEC Guide](OPSEC.md): Documentation hygiene rules for avoiding IP/credential leaks in public mirrors.
 
 ## 🏗️ Stack Overview
 
