@@ -29,15 +29,19 @@ This repository is organized into modular stacks that share common infrastructur
         Dockge[Dockge Management]
     end
 
-    subgraph "Analysis & Stacks"
-        Cortex[Cortex]
-        Stacks[Modular Docker Stacks]
+    subgraph "Threat Intel & IR Stacks"
+        TheHive[TheHive]
+        MISP[MISP]
+        OpenCTI[OpenCTI]
+        IRIS[DFIR-IRIS]
+        Cortex[Cortex Analyzer]
     end
 
     subgraph "External LXC"
         Wazuh[Wazuh SIEM]
         OpenClaw[OpenClaw Gateway]
         Kuma[Uptime Kuma]
+        Lookyloo[Lookyloo Capture]
     end
 
     subgraph "Email Gateway"
@@ -50,14 +54,14 @@ This repository is organized into modular stacks that share common infrastructur
     GT --> Ghost
     CT --> Caddy
     
-    Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma
+    Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma & Lookyloo
     
-    Dockge --> Cortex & Stacks
+    Dockge --> TheHive & MISP & OpenCTI & IRIS & Cortex
     
     %% Email Flow
     PMG <--> Stalwart
-    Stacks -- SMTP --> PMG
-    Stalwart -- IMAP --> Stacks
+    TheHive & MISP & OpenCTI -- SMTP --> PMG
+    Stalwart -- IMAP --> TheHive & OpenCTI
     Wazuh -- SMTP --> PMG
 ```
 
