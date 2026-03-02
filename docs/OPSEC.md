@@ -68,3 +68,9 @@ When generating or updating documentation:
 - Check existing `.gitignore` before creating files with sensitive content
 - Reference `internal_ips.md` for real values but never copy them into tracked files
 - After edits, scan for leaked IPs: `grep -rn '192\.168\.' docs/ *.md`
+
+### Agent Cleanup Instructions
+Before completing a task, AI agents MUST:
+1. Verify no generated files containing context bundles or conversation histories are left in the working directory (e.g. `llm_context_bundle.md`).
+2. Delete any temporary extraction or debugging files used during the session.
+3. Ensure no `.env` files or `internal_ips.md` contents were accidentally echoed into public summaries or markdown files.

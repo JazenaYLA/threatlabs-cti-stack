@@ -76,8 +76,8 @@ if [[ "$wipe_envs" =~ ^[Yy]$ ]]; then
 fi
 
 echo "[*] Refreshing Dockge symlinks..."
-if [ -f "setup-dockge.sh" ]; then
-    sudo ./setup-dockge.sh
+if [ -f "./scripts/setup-dockge.sh" ]; then
+    sudo ./scripts/setup-dockge.sh
 fi
 
 echo "[*] Removing generated configuration files..."

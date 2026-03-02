@@ -22,3 +22,6 @@ internal_ips.md
 # Private notes (contain real IPs, credentials, or infra details)
 # See docs/OPSEC.md for guidelines
 *_private.md
+
+# Blog series (narrative/historical docs not needed for replication)
+docs/blog/
