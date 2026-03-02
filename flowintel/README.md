@@ -48,7 +48,7 @@ Default admin credentials (set **before first run** in `.env`):
 - **Email**: `admin@admin.admin`
 - **Password**: `admin`
 
-> To change after first run: stop the container, reset the database (see TROUBLESHOOTING.md), and restart.
+> To change after first run: stop the container, reset the database (see ../docs/Troubleshooting.md), and restart.
 
 ## MISP Modules Integration (Analyzers)
 

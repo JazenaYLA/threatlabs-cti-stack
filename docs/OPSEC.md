@@ -36,7 +36,7 @@ If you need to document something with real infrastructure details:
 
 Before pushing to Forgejo:
 
-- [ ] `grep -rn '192\.168\.' docs/ README.md TROUBLESHOOTING.md` — should return nothing
+- [ ] `grep -rn '192\.168\.' docs/ README.md` — should return nothing
 - [ ] `grep -rn 'password\|token\|secret' docs/` — no real credentials
 - [ ] New `.md` files with real IPs use `_private.md` suffix or are in `.gitignore`
 
