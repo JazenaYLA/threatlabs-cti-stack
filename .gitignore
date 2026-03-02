@@ -18,5 +18,6 @@ wazuh/wazuh-certs-tool/
 docs/LXC-Integration-Guide.md
 
 # Private notes (contain real IPs, credentials, or infra details)
-# See docs/OPSEC.md for guidelines
+# See docs/OPSEC.md (gitignored) for guidelines
 *_private.md
+docs/OPSEC.md
