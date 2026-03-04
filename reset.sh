@@ -2,6 +2,10 @@
 
 # Reset / Nuke Script for ThreatLabs CTI Stack
 # WARNING: This will delete ALL data (ElasticSearch indices, Postgres DBs, etc.)
+# NOTE: .env files are preserved by default.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/scripts/volume-config.sh"
 
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "!                     DANGER: NUKE PROTOCOL INITIATED                !"
@@ -11,6 +15,8 @@ echo "1. Stop ALL containers in the CTI stack."
 echo "2. Remove the 'cti-net' network."
 echo "3. PERMANENTLY DELETE all persistent data volumes (infra/vol, xtm/vol, etc.)"
 echo ""
+echo "Your .env files will NOT be touched (unless you explicitly opt in)."
+echo ""
 echo "Are you sure you want to proceed? (Type 'NUKE' to confirm)"
 read -r confirmation
 
@@ -19,20 +25,19 @@ if [ "$confirmation" != "NUKE" ]; then
     exit 1
 fi
 
-echo "[*] Stopping and removing containers..."
-# We try to use docker compose down if possible, but a blanket kill is more effective for a "nuke"
-# Iterate through known stacks
-STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "lacus" "thehive" "dfir-iris" "shuffle" "ail-project" "forgejo-runner")
-
-for stack in "${STACKS[@]}"; do
+echo "[*] Stopping and removing containers (reverse order — infra last)..."
+for (( i=${#CTI_STACKS[@]}-1; i>=0; i-- )); do
+    stack="${CTI_STACKS[$i]}"
     if [ -d "$stack" ]; then
         echo "    Stopping and removing volumes for $stack..."
-        # Down the standard project
         (cd "$stack" && sudo docker compose down -v --remove-orphans 2>/dev/null || true)
-        # Also attempt to down the cti- prefixed project if it exists
         (cd "$stack" && sudo docker compose -p "cti-$stack" down -v --remove-orphans 2>/dev/null || true)
     fi
 done
+
+# Shuffle spawns a tenzir-node sidecar that persists after shutdown
+echo "[*] Cleaning up Shuffle sidecar (tenzir-node)..."
+docker rm -f tenzir-node 2>/dev/null || true
 
 echo "[*] Cleaning up network..."
 docker network rm cti-net 2>/dev/null || true
@@ -47,28 +52,20 @@ echo "[*] Pruning unused docker volumes (This kills ALL orphaned volumes)..."
 docker volume prune -f
 
 echo "[*] Phase 1: Cleaning Git Repository Storage (Relative)..."
-# Explicitly delete the volume directories we created in setup.sh (Local Git Repo)
-sudo rm -rf infra/vol
-sudo rm -rf xtm/volumes
-sudo rm -rf n8n/vol
-sudo rm -rf flowise/vol
-sudo rm -rf flowintel/vol
-sudo rm -rf lacus/vol
-sudo rm -rf thehive/vol
-sudo rm -rf ail-project/vol
+for dir in "${CTI_RESET_DIRS[@]}"; do
+    sudo rm -rf "$dir"
+done
 
-# Explicitly delete /opt/stacks volume directories (Dockge)
+# Explicitly delete /opt/stacks volume directories (Dockge/Production)
 if [ -d "/opt/stacks" ]; then
     echo "[*] Phase 2: Cleaning /opt/stacks Storage (Dockge/Production)..."
-    sudo rm -rf /opt/stacks/*/vol
-    sudo rm -rf /opt/stacks/xtm/volumes
-    # Also remove generated configs in /opt/stacks if they were linked/copied
-
-    sudo rm -f /opt/stacks/thehive/vol/thehive/application.conf
+    for dir in "${CTI_RESET_DIRS[@]}"; do
+        sudo rm -rf "/opt/stacks/$dir"
+    done
 fi
 
 echo "[*] Cleaning up environment files (Optional)..."
-# We keep .env by default but let's offer to wipe them for a true reset
+echo "    Your .env files are currently PRESERVED."
 read -p "Do you want to PERMANENTLY DELETE all .env files and start over? (y/N) " wipe_envs
 if [[ "$wipe_envs" =~ ^[Yy]$ ]]; then
     echo "[!] Wiping all .env files..."
@@ -81,7 +78,6 @@ if [ -f "./scripts/setup-dockge.sh" ]; then
 fi
 
 echo "[*] Removing generated configuration files..."
-
 rm -f thehive/vol/thehive/application.conf
 
 echo "[+] Nuke complete. The codebase is clean (configuration files preserved, data gone)."

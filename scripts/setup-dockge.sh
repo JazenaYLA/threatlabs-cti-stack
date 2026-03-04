@@ -5,6 +5,9 @@ set -e
 # Usage: sudo ./setup-dockge.sh [DOCKGE_STACKS_DIR]
 # Default DOCKGE_STACKS_DIR is /opt/stacks
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/volume-config.sh"
+
 STACKS_DIR="${1:-/opt/stacks}"
 REPO_DIR="$(pwd)"
 
@@ -30,9 +33,6 @@ link_stack() {
         echo "[!] Stack '$STACK_NAME' already exists in $STACKS_DIR."
     else
         echo "[+] Linking stack: $STACK_NAME"
-        # We link the directory effectively, or just the compose file?
-        # Dockge usually expects a folder per stack with a docker-compose.yml inside.
-        # Best approach: Create the folder, symlink the cli
         sudo mkdir -p "$TARGET_DIR"
         sudo ln -sf "$SOURCE_FILE" "$TARGET_DIR/docker-compose.yml"
         
@@ -44,21 +44,7 @@ link_stack() {
     fi
 }
 
-# Link all known stacks
-STACKS=(
-    "infra"
-    "xtm"
-    "misp"
-    "misp-modules"
-    "n8n"
-    "flowise"
-    "flowintel"
-    "thehive"
-    "lacus"
-    "ail-project"
-)
-
-for STACK_NAME in "${STACKS[@]}"; do
+for STACK_NAME in "${CTI_STACKS[@]}"; do
     link_stack "$STACK_NAME"
 done
 
