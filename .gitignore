@@ -20,7 +20,7 @@ docs/LXC-Integration-Guide.md
 # Private notes (contain real IPs, credentials, or infra details)
 # See docs/OPSEC.md (gitignored) for guidelines
 *_private.md
-# docs/OPSEC.md (Removed from ignore to allow tracking)
+docs/OPSEC.md
 # Temporary and project-specific ignores
 *.tmp
 autokuma/
