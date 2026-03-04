@@ -4,6 +4,9 @@ set -e
 # Setup Script for ThreatLabs CTI Stack
 # Usage: ./setup.sh
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/scripts/volume-config.sh"
+
 echo "[*] Initializing ThreatLabs CTI Stack Setup..."
 
 # 0. Initialize Submodules (if missing)
@@ -12,9 +15,10 @@ if [ -f ".gitmodules" ]; then
     git submodule update --init --recursive
 fi
 
-# 1. Create Shared Network
-# We check if it exists first to avoid errors
+# Clean up stale Shuffle sidecar (tenzir-node) if present
+docker rm -f tenzir-node 2>/dev/null || true
 
+# 1. Create Shared Network
 if docker network ls | grep -q "cti-net"; then
     echo "[+] Network 'cti-net' already exists."
 else
@@ -32,7 +36,6 @@ create_vol() {
     echo "    Creating $PATH_SUFFIX..."
     mkdir -p "$PATH_SUFFIX"
     # If /opt/stacks exists, create there too (assuming standard naming)
-    # Extract stack name from path (first component)
     local STACK_NAME=$(echo "$PATH_SUFFIX" | cut -d'/' -f1)
     if [ -d "/opt/stacks/$STACK_NAME" ]; then
         echo "    Mirroring to /opt/stacks/$STACK_NAME..."
@@ -41,81 +44,24 @@ create_vol() {
     fi
 }
 
-# 2. Prepare Infrastructure Volumes (Infra)
-echo "[*] Preparing Infra volumes..."
-create_vol "infra/vol/esdata7/data"
-create_vol "infra/vol/esdata8/data"
-create_vol "infra/vol/postgres/data"
-create_vol "infra/vol/valkey/data"
-create_vol "infra/vol/postgres-init"
+# 3. Prepare All Volumes (from single source of truth)
+echo "[*] Preparing volumes..."
+for entry in "${CTI_VOLUMES[@]}"; do
+    IFS='|' read -r dir_path perm_path uid_gid <<< "$entry"
+    create_vol "$dir_path"
+    if [ -d "$perm_path" ]; then
+        sudo chown -R "$uid_gid" "$perm_path" 2>/dev/null || echo "[-] Warning: Failed to chown $perm_path"
+    fi
+done
+
+# Restore git-tracked files inside vol/ dirs (wiped by reset)
+echo "[*] Restoring git-tracked config files..."
+git checkout HEAD -- infra/vol/postgres-init/init-dbs.sh 2>/dev/null || echo "[-] Warning: Could not restore init-dbs.sh from git"
+
 # Ensure init script execution permission
 chmod +x infra/vol/postgres-init/init-dbs.sh 2>/dev/null || true
-# Set permissions selectively based on container requirements
-# ElasticSearch (runs as 1000)
-if [ -d "infra/vol/esdata7" ]; then sudo chown -R 1000:1000 infra/vol/esdata7; fi
-if [ -d "infra/vol/esdata8" ]; then sudo chown -R 1000:1000 infra/vol/esdata8; fi
 
-# Postgres (Alpine runs as 70, Debian as 999. using 70 for alpine image)
-if [ -d "infra/vol/postgres" ]; then sudo chown -R 70:70 infra/vol/postgres; fi
-
-# Valkey/Redis (runs as 999 usually, sometimes 1000? Valkey docker follows Redis)
-# Redis standard image uses 999.
-if [ -d "infra/vol/valkey" ]; then sudo chown -R 999:999 infra/vol/valkey; fi
-
-# Init scripts
-sudo chown -R 1000:1000 infra/vol/postgres-init || true
-
-# 3. Prepare XTM Volumes (OpenCTI/OpenAEV)
-# 3. Prepare XTM Volumes (OpenCTI/OpenAEV)
-echo "[*] Preparing XTM volumes..."
-create_vol "xtm/volumes/pgsqldata"
-create_vol "xtm/volumes/s3data"
-create_vol "xtm/volumes/redisdata"
-create_vol "xtm/volumes/amqpdata"
-create_vol "xtm/volumes/rsakeys"
-sudo chown -R 1000:1000 xtm/volumes || echo "[-] Warning: Failed to chown xtm/volumes."
-
-# 4. Prepare Modular Stack Volumes
-echo "[*] Preparing modular stack volumes..."
-
-# n8n (DB moved to infra)
-create_vol "n8n/vol/n8n/.n8n"
-sudo chown -R 1000:1000 n8n/vol || echo "[-] Warning: Failed to chown n8n/vol."
-
-# Flowise
-create_vol "flowise/vol/flowise"
-sudo chown -R 1000:1000 flowise/vol || echo "[-] Warning: Failed to chown flowise/vol."
-
-# FlowIntel (DB/Cache moved to infra)
-create_vol "flowintel/vol/flowintel/data"
-sudo chown -R 1000:1000 flowintel/vol || echo "[-] Warning: Failed to chown flowintel/vol."
-
-# Lacus (Cache moved to infra)
-create_vol "lacus/vol/lacus-data"
-create_vol "lacus/vol/lacus-cache"
-sudo chown -R 1000:1000 lacus/vol || echo "[-] Warning: Failed to chown lacus/vol."
-
-# TheHive (Legacy/Archive)
-create_vol "thehive/vol/cassandra/data"
-create_vol "thehive/vol/thehive"
-create_vol "thehive/vol/thehive/data"
-sudo chown -R 1000:1000 thehive/vol || echo "[-] Warning: Failed to chown thehive/vol."
-
-# MISP Modules (Shared)
-create_vol "misp-modules/.vol/custom/action_mod"
-create_vol "misp-modules/.vol/custom/expansion"
-create_vol "misp-modules/.vol/custom/export_mod"
-create_vol "misp-modules/.vol/custom/import_mod"
-sudo chown -R 1000:1000 misp-modules/.vol || echo "[-] Warning: Failed to chown misp-modules/.vol."
-
-# DFIR-IRIS
-create_vol "dfir-iris/vol/db_data"
-create_vol "dfir-iris/vol/iris-downloads"
-create_vol "dfir-iris/vol/user_templates"
-create_vol "dfir-iris/vol/server_data"
-sudo chown -R 1000:1000 dfir-iris/vol || echo "[-] Warning: Failed to chown dfir-iris/vol."
-
-# 5. Generate Default Configurations (if missing)
+# 4. Generate Default Configurations (if missing)
 echo "[*] Checking for default configurations..."
 
 # TheHive Default Config
@@ -142,6 +88,7 @@ db.janusgraph {
 storage {
   provider = localfs
   localfs.location = /opt/thp/thehive/data
+}
 EOF
 fi
 
@@ -176,21 +123,18 @@ if [ -f dfir-iris/.env ]; then
     fi
 fi
 
-# 6. Generate Environment Files
+# 5. Generate Environment Files
 echo "[*] Checking for environment files..."
 
 generate_uuid() {
     if command -v uuidgen &> /dev/null; then
         uuidgen | tr '[:upper:]' '[:lower:]'
     else
-        # Fallback for systems without uuidgen
         cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "00000000-0000-0000-0000-000000000000"
     fi
 }
 
-STACKS=("infra" "xtm" "misp" "misp-modules" "n8n" "flowise" "flowintel" "thehive" "lacus" "dfir-iris" "shuffle" "ail-project" "forgejo-runner")
-
-for stack in "${STACKS[@]}"; do
+for stack in "${CTI_STACKS[@]}"; do
     if [ -d "$stack" ]; then
         if [ ! -f "$stack/.env" ]; then
             echo "    [$stack] .env not found. Creating from template..."
@@ -208,13 +152,11 @@ for stack in "${STACKS[@]}"; do
                 if [ "$stack" == "xtm" ]; then
                     echo "    [$stack] Generating unique UUIDs for connectors..."
                     TEMP_ENV="$stack/.env.tmp"
-                    # Reset temp file
                     : > "$TEMP_ENV"
                     
                     while IFS= read -r line || [ -n "$line" ]; do
                         if [[ "$line" == *"ChangeMe_UUIDv4"* ]]; then
                             NEW_UUID=$(generate_uuid)
-                            # Bash string replacement for first occurrence per line
                             echo "${line/ChangeMe_UUIDv4/$NEW_UUID}" >> "$TEMP_ENV"
                         else
                             echo "$line" >> "$TEMP_ENV"
@@ -254,7 +196,7 @@ echo "#"
 echo "################################################################################"
 read -p "Press Enter once you have reviewed your .env files to continue..."
 
-# 7. Check Host Requirements
+# 6. Check Host Requirements
 echo "[*] Checking host requirements..."
 VM_MAX_MAP_COUNT=$(sysctl -n vm.max_map_count)
 if [ "$VM_MAX_MAP_COUNT" -lt 262144 ]; then
@@ -266,19 +208,18 @@ else
 fi
 
 echo "[+] Setup completed. You can now deploy stacks with Docker Compose or Dockge."
-echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. n8n/flowise/lacus/dfir-iris/shuffle."
-echo "    * Wazuh is now hosted on LXC (ID 105)."
+echo "    Order: 1. infra, 2. misp-modules, 3. misp, 4. thehive/xtm/flowintel, 5. lacus/dfir-iris/shuffle."
 
 echo ""
 echo "[*] Finalizing environment..."
 
-# 8. Apply Permissions
+# 7. Apply Permissions
 if [ -f "./scripts/fix-permissions.sh" ]; then
     echo "[+] Running automated permission fixes..."
     sudo ./scripts/fix-permissions.sh
 fi
 
-# 9. Setup Dockge
+# 8. Setup Dockge
 if [ -f "./scripts/setup-dockge.sh" ]; then
     echo "[+] Refreshing Dockge stack links..."
     sudo ./scripts/setup-dockge.sh
