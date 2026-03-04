@@ -7,6 +7,10 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/scripts/volume-config.sh"
 
+# Global Configuration (Override via env vars if needed)
+ADMIN_EMAIL="${GLOBAL_ADMIN_EMAIL:-jamz@threatresearcher.net}"
+ADMIN_PASSWORD="${GLOBAL_ADMIN_PASSWORD:-ThreatLabs}"
+
 echo "[*] Initializing ThreatLabs CTI Stack Setup..."
 
 # 0. Initialize Submodules (if missing)
@@ -148,6 +152,14 @@ for stack in "${CTI_STACKS[@]}"; do
             if [ -f "$TEMPLATE" ]; then
                 cp "$TEMPLATE" "$stack/.env"
                 
+                # Injection of Global Admin Credentials
+                echo "    [$stack] Injecting global admin config..."
+                sed -i "s/admin@opencti.io/$ADMIN_EMAIL/g" "$stack/.env"
+                sed -i "s/admin@openaev.io/$ADMIN_EMAIL/g" "$stack/.env"
+                sed -i "s/ChangeMe@domain.com/$ADMIN_EMAIL/g" "$stack/.env"
+                sed -i "s/changeme/$ADMIN_PASSWORD/g" "$stack/.env"
+                sed -i "s/ChangeMe/$ADMIN_PASSWORD/g" "$stack/.env"
+
                 # Special handling for XTM UUIDs to ensure UNIQUE UUIDs for each connector
                 if [ "$stack" == "xtm" ]; then
                     echo "    [$stack] Generating unique UUIDs for connectors..."
