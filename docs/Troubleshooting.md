@@ -261,6 +261,14 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 * **Cause**: Transient issue. OpenAEV may return a 500 error if queried too early.
 * **Solution**: Ignore it. The composer automatically retries.
 
+### Admin Identity / Token Mismatch
+* **Issue**: Logs show "Cannot identify user with token" or you changed your email in `.env` but the UI still shows the old one.
+* **Cause**: OpenCTI and OpenAEV only bootstrap the admin user from the `.env` file on the **very first boot**. Subsequent changes to the `.env` file are ignored by the application databases.
+* **Fix**: Run the identity synchronization script to reconcile the running platforms with your current `.env` configuration:
+    ```bash
+    ./scripts/sync-identity.sh
+    ```
+
 ### Shuffle
 
 * **Issue**: Tenzir Load_TCP Error

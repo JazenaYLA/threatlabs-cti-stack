@@ -171,6 +171,12 @@ Run the setup script to prepare networks, volumes, and generate environment file
 **Action Required:**
 When the script pauses, open the `.env` files in each directory (e.g., `infra/.env`, `xtm/.env`) and set your specific secrets (passwords, API keys, domains).
 
+> [!TIP]
+> **Identity Change?** If you change your `ADMIN_EMAIL` in `.env` **after** the platforms have already been initialized, use the provided sync script to update the running databases:
+> ```bash
+> ./scripts/sync-identity.sh
+> ```
+
 > [!IMPORTANT]
 >
 > * **infra/.env**: Verify `ES_HEAP_SIZE_GB` fits your host's RAM.
