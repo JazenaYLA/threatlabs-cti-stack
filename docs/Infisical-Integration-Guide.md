@@ -121,7 +121,7 @@ infisical_core['env_smtp_port'] = 25
 infisical_core['env_smtp_secure'] = false
 infisical_core['env_smtp_ignore_tls'] = true
 infisical_core['env_smtp_name'] = 'ThreatLabs Infisical'
-infisical_core['env_smtp_from_address'] = 'noreply@threatresearcher.com'
+infisical_core['env_smtp_from_address'] = 'noreply@threatresearcher.net'
 ```
 
 Apply the changes:

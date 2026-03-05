@@ -61,6 +61,7 @@
 Cloudflare routes inbound email based on destination address:
 
 ### Service accounts → `<SERVICE_EMAIL>` (fetched by PMG)
+
 | Address | Domain |
 |---------|--------|
 | `noreply@` | <DOMAIN> |
@@ -72,6 +73,7 @@ Cloudflare routes inbound email based on destination address:
 | `misp@` | <DOMAIN> |
 
 ### Personal/brand → `<PERSONAL_EMAIL>` (stays in Gmail)
+
 | Address | Domain |
 |---------|--------|
 | `<PERSONAL_PREFIX>@` | <DOMAIN> |
@@ -87,13 +89,17 @@ Cloudflare routes inbound email based on destination address:
 ## PMG Configuration (<SERVICE_IP>)
 
 ### Trusted Networks
+
 Allows all homelab LXCs to send mail through PMG without authentication:
+
 ```
 <SERVICE_IP>/24    # Main LAN
 <SERVICE_IP>/24    # Default VLAN (general services)
 <SERVICE_IP>/24  # VLAN 101 (CTI services)
 ```
+
 **Command used:**
+
 ```bash
 pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
 pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
@@ -101,23 +107,31 @@ pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
 ```
 
 ### Gmail Smarthost Relay (Outbound)
+
 PMG relays all outbound mail through Gmail SMTP:
+
 ```
 Relay host:  smtp.gmail.com
 Port:        587
 No MX:       yes (connect directly, don't look up MX records)
 ```
+
 **Commands used:**
+
 ```bash
 pmgsh set /config/mail -relay smtp.gmail.com -relaynomx 1 -relayport 587
 ```
 
 ### SASL Authentication for Gmail
+
 Created at `/etc/postfix/sasl_passwd`:
+
 ```
 [smtp.gmail.com]:587 <SERVICE_EMAIL>:<PMG-smarthost app password>
 ```
+
 **Commands used:**
+
 ```bash
 echo '[smtp.gmail.com]:587 <SERVICE_EMAIL>:<app-password>' > /etc/postfix/sasl_passwd
 postmap /etc/postfix/sasl_passwd
@@ -125,7 +139,9 @@ chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
 ```
 
 ### Postfix Template Override
+
 Custom SASL/TLS config appended to `/etc/pmg/templates/main.cf.in` (copied from `/var/lib/pmg/templates/main.cf.in` first):
+
 ```
 # === Gmail SASL relay authentication ===
 smtp_sasl_auth_enable = yes
@@ -134,22 +150,27 @@ smtp_sasl_security_options = noanonymous
 smtp_tls_security_level = encrypt
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 ```
+
 > **Important**: Always copy the default template first, then append. Never overwrite.
 
 ### Relay Domains
+
 ```bash
 pmgsh create /config/domains -domain <DOMAIN> -comment 'CTI service domain'
 pmgsh create /config/domains -domain <BRAND_DOMAIN> -comment 'Brand domain'
 ```
 
 ### Transport Rules (Deliver to Stalwart)
+
 ```bash
 pmgsh create /config/transport -domain <DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
 pmgsh create /config/transport -domain <BRAND_DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
 ```
 
 ### Fetchmail (Inbound IMAP Polling)
+
 Installed via `apt-get install fetchmail`. Configuration at `/etc/fetchmailrc`:
+
 ```
 set daemon 120
 set syslog
@@ -167,12 +188,15 @@ poll imap.gmail.com
   nokeep
   mda '/usr/sbin/sendmail -oi -f %F -- %T'
 ```
+
 **Key settings:**
+
 - Polls every **120 seconds**
 - Fetches **all** messages, does **not keep** them on Gmail after fetch
 - Re-injects into PMG's Postfix via `sendmail` MDA for filtering before delivery to Stalwart
 
 **Service management:**
+
 ```bash
 sed -i 's/START_DAEMON=no/START_DAEMON=yes/' /etc/default/fetchmail
 systemctl enable fetchmail
@@ -180,7 +204,9 @@ systemctl start fetchmail
 ```
 
 ### Apply Config Changes
+
 After any PMG configuration change:
+
 ```bash
 pmgconfig sync --restart 1
 ```
@@ -190,16 +216,19 @@ pmgconfig sync --restart 1
 ## Stalwart Configuration (<SERVICE_IP>)
 
 ### Admin Access
+
 - **Web UI**: `http://<SERVICE_IP>:8080` (or via Caddy: `https://mail.<DOMAIN>`)
 - **Credentials**: `admin` / `fJ8Vtns9GB`
 
 ### Domains Created
+
 | Domain | Type | ID |
 |--------|------|----|
 | `<DOMAIN>` | CTI service domain | 1 |
 | `<BRAND_DOMAIN>` | Brand domain | 2 |
 
 ### Service Accounts Created
+
 All accounts use password `cti-service-2026` and role `user`.
 
 | Account | Email | Purpose |
@@ -214,13 +243,16 @@ All accounts use password `cti-service-2026` and role `user`.
 | `ioc` | `ioc@<DOMAIN>` | IOC submissions |
 
 ### API Notes
+
 Stalwart uses a unified `/api/principal` endpoint for ALL directory objects. The `type` field distinguishes them:
+
 - `"type":"domain"` for domains
 - `"type":"individual"` for user accounts
 
 > **Gotcha**: JSON payloads sent via `curl` through SSH from Windows will fail due to multi-layer shell escaping. Always SCP the JSON file to the server first, then use `curl -d @/path/to/file.json`.
 
 ### Creation Commands (for reference)
+
 ```bash
 # Domains were created via API using SCP'd JSON payloads
 curl -s -u admin:fJ8Vtns9GB -X POST -H 'Content-Type: application/json' \
@@ -234,11 +266,13 @@ curl -s -u admin:fJ8Vtns9GB -X POST -H 'Content-Type: application/json' \
 ## DKIM Configuration
 
 ### PMG DKIM Selector
+
 - **Selector name**: `pmg2026`
 - **Key size**: 2048-bit RSA
 - **Private key**: `/etc/pmg/dkim/pmg2026.private`
 
 ### DKIM Signing Domains
+
 ```bash
 pmgsh create /config/dkim/selector --keysize 2048 --selector pmg2026
 pmgsh create /config/dkim/domains --domain <DOMAIN> --comment 'CTI domain'
@@ -247,6 +281,7 @@ pmgconfig sync --restart 1
 ```
 
 ### DNS TXT Records for Cloudflare
+
 Add the following TXT record to **both** `<DOMAIN>` and `<BRAND_DOMAIN>`:
 
 | Type | Name | Content |
@@ -258,6 +293,7 @@ Add the following TXT record to **both** `<DOMAIN>` and `<BRAND_DOMAIN>`:
 ## DNS Configuration
 
 ### Unifi Controller (Internal A Records)
+
 We bypass Caddy entirely and route directly to the backend servers:
 
 | Record | Target IP | URL |
@@ -266,6 +302,7 @@ We bypass Caddy entirely and route directly to the backend servers:
 | `mail.lab.local` | `<SERVICE_IP>` | `http://mail.lab.local:8080` |
 
 ### Cloudflare (External)
+
 - MX records managed by Cloudflare Email Routing
 - DKIM TXT records (`pmg2026._domainkey`) added for both domains
 
@@ -273,14 +310,16 @@ We bypass Caddy entirely and route directly to the backend servers:
 
 ## LXC Service SMTP Testing
 
-Every LXC that needs to send email should be configured to use `<SERVICE_IP>:25` with no authentication (trusted relay).
+Every LXC that needs to send email should be configured to use `<SERVICE_IP>:26` with no authentication (trusted relay).
 
 To verify the end-to-end outbound relay is working, SSH into any trusted LXC (or PMG itself) and run:
+
 ```bash
 echo "Test email" | mail -s "Outbound Relay Test" -r noreply@<DOMAIN> <SERVICE_EMAIL>
 ```
 
 To verify inbound IMAP delivery, check the Stalwart `noreply` mailbox:
+
 ```python
 import imaplib, ssl
 ctx = ssl.create_default_context()
@@ -313,18 +352,21 @@ m.logout()
 ## Troubleshooting
 
 ### Test outbound relay
+
 ```bash
 echo 'Test' | mail -s 'PMG Test' -r noreply@<DOMAIN> <SERVICE_EMAIL>
 tail -30 /var/log/mail.log | grep -i 'relay\|status\|error\|sasl'
 ```
 
 ### Check fetchmail status
+
 ```bash
 systemctl status fetchmail
 grep fetchmail /var/log/syslog | tail -10
 ```
 
 ### Check PMG configuration
+
 ```bash
 pmgsh get /config/mail
 pmgsh get /config/domains
