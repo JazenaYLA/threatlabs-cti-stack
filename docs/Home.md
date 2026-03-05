@@ -7,13 +7,13 @@ This wiki documents the journey, architecture, and orchestration of our self-hos
 - **[Architecture & Decisions](Architecture.md)**: Design choices, tradeoffs (networking, permissions), and shared infrastructure details.
 - **[Reverse Proxy Guide](Reverse-Proxy-Guide.md)**: Setting up Caddy, migrating from direct IPs, and troubleshooting network changes.
 - **[Troubleshooting Guide](Troubleshooting.md)**: Common issues and fixes for the stack.
-- [Email Configuration Guide](Email-Configuration.md): Comprehensive guide for PMG and Stalwart Mail Flow configuration.
-
-## 🏗️ Stack Overview
+- **[Email Configuration Guide](Email-Configuration.md)**: Comprehensive guide for PMG and Stalwart Mail Flow configuration.
+- **[Infisical Secret Management (Advanced)](Infisical-Integration-Guide.md)**: Guide for dynamically injecting secrets at runtime to replace plaintext `.env` files.
 
 ## 🏗️ Stack Overview
 
 Our environment consists of several integrated stacks:
+
 - **TheHive**: Security Incident Response Platform.
 - **MISP**: Malware Information Sharing Platform.
 - **Lacus**: URL capture and analysis service.
