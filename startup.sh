@@ -16,7 +16,7 @@ source "$SCRIPT_DIR/scripts/volume-config.sh"
 # Phase 4: Auxiliary (lacus, dfir-iris, shuffle)
 
 PHASE_1=("infra")
-PHASE_2=("misp-modules" "ail-project" "forgejo-runner" "proxy" "autokuma")
+PHASE_2=("misp-modules" "ail-project" "forgejo-runner" "proxy")
 PHASE_3=("misp" "xtm" "thehive" "flowintel")
 PHASE_4=("lacus" "dfir-iris" "shuffle")
 
