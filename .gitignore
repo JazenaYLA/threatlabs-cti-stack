@@ -23,3 +23,5 @@ docs/LXC-Integration-Guide.md
 docs/OPSEC.md
 # Temporary and project-specific ignores
 *.tmp
+docs/to-do/
+.infisical.json
