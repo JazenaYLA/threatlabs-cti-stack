@@ -93,6 +93,27 @@ storage {
   provider = localfs
   localfs.location = /opt/thp/thehive/data
 }
+
+## SMTP Configuration
+play.mailer {
+  host = \${?SMTP_HOST}
+  port = \${?SMTP_PORT}
+  auth = false
+  tls = false
+  ssl = false
+  user = \${?SMTP_USERNAME}
+  password = \${?SMTP_PASSWORD}
+}
+
+## IMAP Configuration
+imap {
+  host = \${?IMAP_HOST}
+  port = \${?IMAP_PORT}
+  ssl = false
+  starttls = true
+  user = \${?IMAP_USERNAME}
+  password = \${?IMAP_PASSWORD}
+}
 EOF
 fi
 
