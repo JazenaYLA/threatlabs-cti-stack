@@ -22,25 +22,34 @@ fi
 # Clean up stale Shuffle sidecar (tenzir-node) if present
 docker rm -f tenzir-node 2>/dev/null || true
 
-# 1. Create Shared Network
-if docker network ls | grep -q "cti-net"; then
-    echo "[+] Network 'cti-net' already exists."
+# 1. Shared Network Setup
+if command -v docker &> /dev/null; then
+    echo "[*] Ensuring shared network 'cti-net' exists..."
+    docker network inspect cti-net >/dev/null 2>&1 || \
+        docker network create cti-net
+    echo "[+] Network 'cti-net' verified."
 else
-    echo "[+] Network 'cti-net' created."
+    echo "[!] Warning: 'docker' command not found. Skipping network creation."
 fi
 
 # 2. Ensure Permissions on Shell Scripts
 echo "[*] Ensuring shell scripts are executable..."
-find . -name "*.sh" -exec chmod +x {} +
+find ./scripts -name "*.sh" -exec chmod +x {} + 2>/dev/null || true
+chmod +x setup.sh startup.sh reset.sh 2>/dev/null || true
 
-
+# 3. Handle data directory permissions (if running on Docker host)
+if [ -d infra/vol/postgres-init ]; then
+    echo "[*] Ensuring init-dbs.sh is executable..."
+    chmod +x infra/vol/postgres-init/init-dbs.sh 2>/dev/null || true
+fi
 # Helper function to create volumes in both Repo and /opt/stacks
 create_vol() {
     local PATH_SUFFIX=$1
     echo "    Creating $PATH_SUFFIX..."
     mkdir -p "$PATH_SUFFIX"
     # If /opt/stacks exists, create there too (assuming standard naming)
-    local STACK_NAME=$(echo "$PATH_SUFFIX" | cut -d'/' -f1)
+    local STACK_NAME
+    STACK_NAME=$(echo "$PATH_SUFFIX" | cut -d'/' -f1)
     if [ -d "/opt/stacks/$STACK_NAME" ]; then
         echo "    Mirroring to /opt/stacks/$STACK_NAME..."
         sudo mkdir -p "/opt/stacks/$PATH_SUFFIX"
@@ -161,54 +170,55 @@ generate_uuid() {
 
 for stack in "${CTI_STACKS[@]}"; do
     if [ -d "$stack" ]; then
-        if [ ! -f "$stack/.env" ]; then
-            echo "    [$stack] .env not found. Creating from template..."
-            
-            # Determine template file
-            TEMPLATE="$stack/.env.example"
-            if [ "$stack" == "misp" ]; then
-                TEMPLATE="$stack/template.env"
-            fi
-            
-            if [ -f "$TEMPLATE" ]; then
-                cp "$TEMPLATE" "$stack/.env"
-                
-                # Injection of Global Admin Credentials
-                echo "    [$stack] Injecting global admin config..."
-                sed -i "s/admin@opencti.io/$ADMIN_EMAIL/g" "$stack/.env"
-                sed -i "s/admin@openaev.io/$ADMIN_EMAIL/g" "$stack/.env"
-                sed -i "s/ChangeMe@domain.com/$ADMIN_EMAIL/g" "$stack/.env"
-                sed -i "s/changeme/$ADMIN_PASSWORD/g" "$stack/.env"
-                sed -i "s/ChangeMe/$ADMIN_PASSWORD/g" "$stack/.env"
+        # Determine template file
+        TEMPLATE="$stack/.env.example"
+        [ "$stack" == "misp" ] && TEMPLATE="$stack/template.env"
 
-                # Special handling for XTM UUIDs to ensure UNIQUE UUIDs for each connector
-                if [ "$stack" == "xtm" ]; then
-                    echo "    [$stack] Generating unique UUIDs for connectors..."
-                    TEMP_ENV="$stack/.env.tmp"
-                    : > "$TEMP_ENV"
-                    
-                    while IFS= read -r line || [ -n "$line" ]; do
-                        if [[ "$line" == *"ChangeMe_UUIDv4"* ]]; then
-                            NEW_UUID=$(generate_uuid)
-                            echo "${line/ChangeMe_UUIDv4/$NEW_UUID}" >> "$TEMP_ENV"
-                        else
-                            echo "$line" >> "$TEMP_ENV"
-                        fi
-                    done < "$stack/.env"
-                    
-                    if [ -s "$TEMP_ENV" ]; then
-                        mv "$TEMP_ENV" "$stack/.env"
-                    else
-                         echo "    [-] Error generating xtm/.env"
-                         rm "$TEMP_ENV"
-                    fi
-                fi
-                echo "    [+] Created $stack/.env"
-            else
-                echo "    [-] Warning: Template $TEMPLATE not found for $stack"
-            fi
+        if [ ! -f "$stack/.env" ]; then
+            echo "    [$stack] .env not found. Initializing from template..."
+            [ -f "$TEMPLATE" ] && cp "$TEMPLATE" "$stack/.env"
         else
-            echo "    [$stack] .env exists. Skipping."
+            echo "    [$stack] .env exists. Syncing missing keys from template..."
+            if [ -f "$TEMPLATE" ]; then
+                # Merge missing keys from template (non-destructive)
+                while IFS= read -r line || [ -n "$line" ]; do
+                    if [[ "$line" =~ ^[A-Za-z0-9_]+= ]]; then
+                        key=$(echo "$line" | cut -d= -f1)
+                        if ! grep -q "^${key}=" "$stack/.env" 2>/dev/null; then
+                            echo "    [+] Appending missing key: $key"
+                            echo "$line" >> "$stack/.env"
+                        fi
+                    fi
+                done < "$TEMPLATE"
+            fi
+        fi
+
+        if [ -f "$stack/.env" ]; then
+            # Uniform injection of Global Admin Credentials
+            sed -i "s/admin@opencti.io/$ADMIN_EMAIL/g" "$stack/.env" 
+            sed -i "s/admin@openaev.io/$ADMIN_EMAIL/g" "$stack/.env"
+            sed -i "s/ChangeMe@domain.com/$ADMIN_EMAIL/g" "$stack/.env"
+            sed -i "s/changeme/$ADMIN_PASSWORD/g" "$stack/.env"
+            sed -i "s/ChangeMe/$ADMIN_PASSWORD/g" "$stack/.env"
+
+            # Special handling for XTM UUIDs (only generates for lines still containing placeholder)
+            if [ "$stack" == "xtm" ]; then
+                TEMP_ENV="$stack/.env.tmp"
+                : > "$TEMP_ENV"
+                while IFS= read -r line || [ -n "$line" ]; do
+                    if [[ "$line" == *"ChangeMe_UUIDv4"* ]]; then
+                        NEW_UUID=$(generate_uuid)
+                        echo "${line/ChangeMe_UUIDv4/$NEW_UUID}" >> "$TEMP_ENV"
+                    else
+                        echo "$line" >> "$TEMP_ENV"
+                    fi
+                done < "$stack/.env"
+                if [ -s "$TEMP_ENV" ]; then
+                    mv "$TEMP_ENV" "$stack/.env"
+                else
+                    rm -f "$TEMP_ENV"
+                fi
+            fi
         fi
     fi
 done
