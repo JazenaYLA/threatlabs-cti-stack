@@ -58,7 +58,18 @@
 
 ## Cloudflare Email Routing
 
-Cloudflare routes inbound email based on destination address:
+Cloudflare routes inbound email based on destination address.
+
+### AI & Automation (AgentMail Integration)
+
+We use AgentMail as an API-first backend for our OpenClaw/n8n automation workflows, bypassing PMG entirely.
+
+| Public Domain | AgentMail Destination | Purpose |
+|---------------|------------------------|---------|
+| `*@<BRAND_DOMAIN>` | `threatresearcher@agentmail.to` | AI Triage for the `.com` domain |
+| `*@<DOMAIN>` | `threatlabs@agentmail.to` | AI Triage for the `.net` domain |
+
+> **Note**: Plus-addressing (e.g., `ai+phishing@`) can be used to route specific webhooks payload types inside your orchestration scripts.
 
 ### Service accounts → `<SERVICE_EMAIL>` (fetched by PMG)
 
@@ -172,7 +183,7 @@ pmgsh create /config/transport -domain <BRAND_DOMAIN> -host <SERVICE_IP> -port 2
 Installed via `apt-get install fetchmail`. Configuration at `/etc/fetchmailrc`:
 
 ```
-set daemon 120
+set daemon 900
 set syslog
 set no bouncemail
 
@@ -191,7 +202,7 @@ poll imap.gmail.com
 
 **Key settings:**
 
-- Polls every **120 seconds**
+- Polls every **15 minutes (900 seconds)** to avoid Gmail rate limits
 - Fetches **all** messages, does **not keep** them on Gmail after fetch
 - Re-injects into PMG's Postfix via `sendmail` MDA for filtering before delivery to Stalwart
 
@@ -199,6 +210,7 @@ poll imap.gmail.com
 
 ```bash
 sed -i 's/START_DAEMON=no/START_DAEMON=yes/' /etc/default/fetchmail
+echo 'OPTIONS="--daemon 900"' >> /etc/default/fetchmail
 systemctl enable fetchmail
 systemctl start fetchmail
 ```
