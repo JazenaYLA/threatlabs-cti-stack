@@ -4,9 +4,9 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 ## Architecture
 
-> This repository is organized into modular stacks that share common infrastructure. For a detailed comparison between the Homelab and Enterprise deployment models, please refer to the **[Architecture Documentation](docs/Architecture.md)**.
+> This repository is organized into modular stacks that share common infrastructure. For a detailed comparison between the basic Homelab deployment below and the advanced zero-trust Enterprise deployment, please refer to the **[Architecture Documentation](docs/Architecture.md)**.
 >
-> **The diagram below represents the Enterprise Zero-Trust topology:**
+> **The diagram below represents the straightforward Homelab topology:**
 
 ```mermaid
 graph TD
@@ -294,6 +294,7 @@ To share API keys and custom modules with the rest of the stack, you can optiona
 See [misp-modules/README.md](misp-modules/README.md) for full documentation.
 
 Provides 200+ enrichment, expansion, import, and export modules as a shared service:
+
 * **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
 * **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
 
