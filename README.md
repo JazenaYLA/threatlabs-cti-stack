@@ -5,7 +5,7 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 ## Architecture
 
 > [!CAUTION]
-> **Production Branch:** You are currently viewing the \`production\` branch. This branch is designed for advanced deployments and relies natively on **Infisical** for centralized Machine Identity secret management. If you are looking for the simple, standalone \`.env\` deployment, please switch back to the \`main\` branch.
+> **Enterprise Branch:** You are currently viewing the \`enterprise\` branch. This branch is designed for advanced deployments and relies natively on **Infisical** for centralized Machine Identity secret management. If you are looking for the simple, standalone \`.env\` deployment, please switch back to the \`main\` branch.
 
 This repository is organized into modular stacks that share common infrastructure.
 
