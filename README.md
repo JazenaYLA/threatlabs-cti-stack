@@ -100,6 +100,7 @@ The stack supports two networking approaches:
 |------|-------------|----------|
 | **Direct IP** | `http://<SERVICE_IP>:3000` | Simple single-VLAN setups |
 | **Caddy Proxy** *(recommended)* | `http://forgejo.lab.local` | Multi-VLAN, resilient to IP changes |
+| **Headscale VPN** *(enterprise)* | `http://<100.x.x.x>:8080` | Zero-trust remote operations across VLANs (Replaces SSH Keys) |
 
 > [!TIP]
 > Using Caddy domain names instead of raw IPs means you only update one place (Caddy + DNS) when infrastructure changes. See the **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)** for setup instructions and migration steps.

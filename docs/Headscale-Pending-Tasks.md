@@ -1,10 +1,10 @@
 # Headscale Pending Tasks
 
-As part of the **ThreatLabs CTI** production architecture, we established a Tailscale mesh overlay network powered by a self-hosted **Headscale** control plane on `192.168.101.151`. The core ThreatLabs CTI server (`192.168.101.169`) was successfully registered to this mesh, giving it a secure `100.64.0.1` overlay IP.
+As part of the **ThreatLabs CTI** enterprise architecture, we established a Tailscale mesh overlay network powered by a self-hosted **Headscale** control plane on `192.168.101.151`. The core ThreatLabs CTI server (`192.168.101.169`) was successfully registered to this mesh, giving it a secure `100.64.0.1` overlay IP.
 
 The following items are deferred and must be completed to finalize the Zero-Trust network layer across the homelab subnets.
 
-### 1. Connect Home Assistant to the Mesh (Deferred)
+## 1. Connect Home Assistant to the Mesh (Deferred)
 
 The Home Assistant (HA) node physically resides on the IoT VLAN (107) at `192.168.107.50`. To grant it secure, zero-trust access to the ThreatLabs CTI network (e.g., to fetch MQTT passwords from the Infisical Vault), it must join the Tailscale mesh.
 
@@ -29,7 +29,7 @@ The Home Assistant (HA) node physically resides on the IoT VLAN (107) at `192.16
    headscale nodes list
    ```
 
-### 2. Configure Pinhole Firewall Rules
+## 2. Configure Pinhole Firewall Rules
 
 Once Home Assistant is actively joining the `.101` Headscale server, cross-VLAN communication must be aggressively restricted at the router (pfSense/OPNsense/UniFi) to prevent compromised IoT devices from pivoting into the CTI enclave.
 
