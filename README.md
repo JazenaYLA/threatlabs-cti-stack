@@ -45,6 +45,7 @@ This repository is organized into modular stacks that share common infrastructur
         OpenClaw[OpenClaw Gateway]
         Kuma[Uptime Kuma]
         Lookyloo[Lookyloo Capture]
+        Headscale[Headscale VPN]
     end
 
     subgraph "Email Gateway"
@@ -56,6 +57,9 @@ This repository is organized into modular stacks that share common infrastructur
     CF --> GT & CT
     GT --> Ghost
     CT --> Caddy
+    
+    %% VPN Mesh
+    Headscale -.-> Dockge & TheHive & OpenCTI & MISP & IRIS
     
     Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma & Lookyloo
     
@@ -283,6 +287,7 @@ To share API keys and custom modules with the rest of the stack, you can optiona
 See [misp-modules/README.md](misp-modules/README.md) for full documentation.
 
 Provides 200+ enrichment, expansion, import, and export modules as a shared service:
+
 * **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
 * **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
 
