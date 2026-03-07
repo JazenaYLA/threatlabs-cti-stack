@@ -4,11 +4,12 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 ## Architecture
 
-This repository is organized into modular stacks that share common infrastructure.
+> This repository is organized into modular stacks that share common infrastructure. For a detailed comparison between the Homelab and Enterprise deployment models, please refer to the **[Architecture Documentation](docs/Architecture.md)**.
+>
+> **The diagram below represents the Enterprise Zero-Trust topology:**
 
 ```mermaid
-    graph TD
-
+graph TD
     subgraph "Public Gateway"
         CF[Cloudflare Edge]
     end
@@ -20,6 +21,11 @@ This repository is organized into modular stacks that share common infrastructur
 
     subgraph "Internal Routing"
         Caddy[Caddy Proxy]
+    end
+
+    subgraph "Zero-Trust Security Layer"
+        Infisical[Infisical Vault]
+        Headscale[Headscale VPN]
     end
 
     subgraph "Core Services"
@@ -49,14 +55,22 @@ This repository is organized into modular stacks that share common infrastructur
         Stalwart[Stalwart Mail Server]
     end
 
-    %% Routing
+    %% Edge Routing
     CF --> GT & CT
     GT --> Ghost
     CT --> Caddy
     
+    %% VPN Mesh Routing
+    Headscale -.-> Dockge & TheHive & OpenCTI & MISP & IRIS & Infisical
+    
+    %% Proxied Web Traffic
     Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma & Lookyloo
     
+    %% Management Path
     Dockge --> TheHive & MISP & OpenCTI & IRIS & Cortex
+    
+    %% Secrets Fetch Path
+    TheHive & MISP & OpenCTI & IRIS -.-> Infisical
     
     %% Email Flow
     PMG <--> Stalwart
@@ -104,10 +118,10 @@ The stack supports two networking approaches:
 
 For detailed architecture decisions, trade-offs, and troubleshooting steps, please refer to the **[Project Wiki](docs/Home.md)**:
 
-*   **[Architecture & Decisions](docs/Architecture.md)**
-*   **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
-*   **[Email Configuration Guide](docs/Email-Configuration.md)**
-*   **[Troubleshooting Guide](docs/Troubleshooting.md)**
+* **[Architecture & Decisions](docs/Architecture.md)**
+* **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
+* **[Email Configuration Guide](docs/Email-Configuration.md)**
+* **[Troubleshooting Guide](docs/Troubleshooting.md)**
 
 > [!TIP]
 > See [docs/Troubleshooting.md](docs/Troubleshooting.md) for network, permission, and common boot issues.
@@ -173,6 +187,7 @@ When the script pauses, open the `.env` files in each directory (e.g., `infra/.e
 
 > [!TIP]
 > **Identity Change?** If you change your `ADMIN_EMAIL` in `.env` **after** the platforms have already been initialized, use the provided sync script to update the running databases:
+>
 > ```bash
 > ./scripts/sync-identity.sh
 > ```
@@ -220,6 +235,7 @@ The services must be started in a specific order to ensure database availability
 ## TheHive
 
 ### Initial Login Credentials
+
 * **Username**: `admin@thehive.local`
 * **Password**: `secret`
 
@@ -231,7 +247,9 @@ The services must be started in a specific order to ensure database availability
 Collaborative Incident Response platform. Accessible via **HTTPS** on port `4433` (configurable via `IRIS_HTTPS_PORT`).
 
 ### Initial Login Credentials
+
 The administrator password is **randomly generated on first boot** and printed in the app container logs:
+
 ```bash
 sudo docker logs iris-app 2>&1 | grep "create_safe_admin"
 ```
@@ -245,11 +263,14 @@ sudo docker logs iris-app 2>&1 | grep "create_safe_admin"
 See [flowintel/README.md](flowintel/README.md) for full documentation.
 
 ### Initial Login Credentials
+
 By default, the stack is configured to create an initial admin user:
+
 * **Email**: `admin@admin.admin`
 * **Password**: `admin`
 
 You can change these **before the first run** by editing `flowintel/.env`:
+
 ```bash
 INIT_ADMIN_EMAIL=your@email.com
 INIT_ADMIN_PASSWORD=ChangeMe_SecurePassword
@@ -257,6 +278,7 @@ INIT_ADMIN_PASSWORD=ChangeMe_SecurePassword
 
 > [!NOTE]
 > If you have already started FlowIntel and want to change the initial admin:
+>
 > 1. Stop the container: `docker compose down`
 > 2. Reset the database (see docs/Troubleshooting.md)
 > 3. Restart: `docker compose up -d`
@@ -272,8 +294,8 @@ To share API keys and custom modules with the rest of the stack, you can optiona
 See [misp-modules/README.md](misp-modules/README.md) for full documentation.
 
 Provides 200+ enrichment, expansion, import, and export modules as a shared service:
-- **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
-- **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
+* **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
+* **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
 
 ## Notes
 
@@ -282,4 +304,3 @@ Provides 200+ enrichment, expansion, import, and export modules as a shared serv
 * **Stack READMEs**: Each stack directory has its own `README.md` with detailed configuration and troubleshooting.
 * **Shared Infrastructure**: `infra/` provides PostgreSQL, Valkey, and ElasticSearch shared by multiple stacks. Always start it first.
 * **Enrichment API Keys**: Configure enrichment API keys (VirusTotal, Shodan, etc.) in `misp-modules/.env` for centralized access.
-
