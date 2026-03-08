@@ -1,7 +1,7 @@
 # Email Configuration Guide
 
 > **Last updated**: 2026-03-01  
-> **Scope**: PMG (<PMG_IP>), Stalwart (<STALWART_IP>), Cloudflare Email Routing, Gmail
+> **Scope**: PMG (<SERVICE_IP>), Stalwart (<SERVICE_IP>), Cloudflare Email Routing, Gmail
 
 ---
 
@@ -13,6 +13,9 @@
 └──────────┬──────────────────────────────┬───────────────────┘
            │ INBOUND                      │ OUTBOUND
            ▼                              ▲
+```
+
+```text
 ┌──────────────────────┐        ┌─────────────────────────┐
 │ Cloudflare Email     │        │   Gmail SMTP Relay      │
 │ Routing              │        │  smtp.gmail.com:587     │
@@ -58,29 +61,18 @@
 
 ## Cloudflare Email Routing
 
-Cloudflare routes inbound email based on destination address.
+Cloudflare routes inbound email based on destination address:
 
-### AI & Automation (AgentMail Integration)
-
-We use AgentMail as an API-first backend for our OpenClaw/n8n automation workflows, bypassing PMG entirely.
-
-| Public Domain | AgentMail Destination | Purpose |
-|---------------|------------------------|---------|
-| `*@<BRAND_DOMAIN>` | `threatresearcher@agentmail.to` | AI Triage for the `.com` domain |
-| `*@<DOMAIN>` | `threatlabs@agentmail.to` | AI Triage for the `.net` domain |
-
-> **Note**: Plus-addressing (e.g., `ai+phishing@`) can be used to route specific webhooks payload types inside your orchestration scripts.
-
-### Service accounts → `<SERVICE_EMAIL>` (fetched by PMG)
+### Service accounts → `<YOUR_GMAIL>@gmail.com` (fetched by PMG)
 | Address | Domain |
 |---------|--------|
-| `noreply@` | <YOUR_DOMAIN> |
-| `wazuh@` | <YOUR_DOMAIN> |
-| `ioc@` | <YOUR_DOMAIN> |
-| `ti@` | <YOUR_DOMAIN> |
-| `ai@` | <YOUR_DOMAIN> |
-| `opencti@` | <YOUR_DOMAIN> |
-| `misp@` | <YOUR_DOMAIN> |
+| `noreply@` | <DOMAIN> |
+| `wazuh@` | <DOMAIN> |
+| `ioc@` | <DOMAIN> |
+| `ti@` | <DOMAIN> |
+| `ai@` | <DOMAIN> |
+| `opencti@` | <DOMAIN> |
+| `misp@` | <DOMAIN> |
 
 ### Personal/brand → `<PERSONAL_EMAIL>` (stays in Gmail)
 
@@ -103,17 +95,15 @@ We use AgentMail as an API-first backend for our OpenClaw/n8n automation workflo
 Allows all homelab LXCs to send mail through PMG without authentication:
 
 ```
-<SERVICE_IP>/24    # Main LAN
-<SERVICE_IP>/24    # Default VLAN (general services)
-<SERVICE_IP>/24  # VLAN 101 (CTI services)
+10.0.0.0/24    # Main LAN
+10.0.1.0/24    # VLAN 101 (CTI services)
 ```
 
 **Command used:**
 
 ```bash
-pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
-pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
-pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
+pmgsh create /config/mynetworks -cidr '10.0.0.0/24'
+pmgsh create /config/mynetworks -cidr '10.0.1.0/24'
 ```
 
 ### Yahoo Smarthost Relay (Outbound)
@@ -166,23 +156,22 @@ smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 ### Relay Domains
 
 ```bash
-pmgsh create /config/domains -domain <YOUR_DOMAIN> -comment 'CTI service domain'
-pmgsh create /config/domains -domain <YOUR_BRAND_DOMAIN> -comment 'Brand domain'
+pmgsh create /config/domains -domain threatresearcher.net -comment 'CTI service domain'
+pmgsh create /config/domains -domain threatresearcher.com -comment 'Brand domain'
 ```
 
 ### Transport Rules (Deliver to Stalwart)
 
 ```bash
-pmgsh create /config/transport -domain <YOUR_DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
-pmgsh create /config/transport -domain <YOUR_BRAND_DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
+pmgsh create /config/transport -domain threatresearcher.net -host <STALWART_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
+pmgsh create /config/transport -domain threatresearcher.com -host <STALWART_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
 ```
 
 ### Fetchmail (Inbound IMAP Polling)
 
 Installed via `apt-get install fetchmail`. Configuration at `/etc/fetchmailrc`:
-
 ```
-set daemon 900
+set daemon 120
 set syslog
 set no bouncemail
 
@@ -198,10 +187,8 @@ poll imap.gmail.com
   nokeep
   mda '/usr/sbin/sendmail -oi -f %F -- %T'
 ```
-
 **Key settings:**
-
-- Polls every **15 minutes (900 seconds)** to avoid Gmail rate limits
+- Polls every **120 seconds**
 - Fetches **all** messages, does **not keep** them on Gmail after fetch
 - Re-injects into PMG's Postfix via `sendmail` MDA for filtering before delivery to Stalwart
 
@@ -224,10 +211,9 @@ pmgconfig sync --restart 1
 
 ---
 
-## Stalwart Configuration (<SERVICE_IP>)
+## Stalwart Configuration (<STALWART_IP>)
 
 ### Admin Access
-
 - **Web UI**: `http://<SERVICE_IP>:8080` (or via Caddy: `https://mail.<DOMAIN>`)
 - **Credentials**: `admin` / `<STALWART_PASSWORD>`
 
@@ -235,22 +221,22 @@ pmgconfig sync --restart 1
 
 | Domain | Type | ID |
 |--------|------|----|
-| `<DOMAIN>` | CTI service domain | 1 |
-| `<BRAND_DOMAIN>` | Brand domain | 2 |
+| `threatresearcher.net` | CTI service domain | 1 |
+| `threatresearcher.com` | Brand domain | 2 |
 
 ### Service Accounts Created
-All accounts use password `<SERVICE_PASSWORD>` and role `user`.
+All accounts use password `<PASSWORD>` and role `user`.
 
 | Account | Email | Purpose |
 |---------|-------|---------|
-| `opencti` | `opencti@<YOUR_DOMAIN>` | OpenCTI connector |
-| `misp` | `misp@<YOUR_DOMAIN>` | MISP alerts |
-| `thehive` | `thehive@<YOUR_DOMAIN>` | TheHive email-to-case |
-| `noreply` | `noreply@<YOUR_DOMAIN>`, `noreply@<YOUR_BRAND_DOMAIN>` | Service notifications |
-| `wazuh` | `wazuh@<YOUR_DOMAIN>` | Security alerts |
-| `ai` | `ai@<YOUR_DOMAIN>` | AI service account |
-| `ti` | `ti@<YOUR_DOMAIN>` | Threat intelligence |
-| `ioc` | `ioc@<YOUR_DOMAIN>` | IOC submissions |
+| `opencti` | `opencti@<DOMAIN>` | OpenCTI connector |
+| `misp` | `misp@<DOMAIN>` | MISP alerts |
+| `thehive` | `thehive@<DOMAIN>` | TheHive email-to-case |
+| `noreply` | `noreply@<DOMAIN>`, `noreply@<BRAND_DOMAIN>` | Service notifications |
+| `wazuh` | `wazuh@<DOMAIN>` | Security alerts |
+| `ai` | `ai@<DOMAIN>` | AI service account |
+| `ti` | `ti@<DOMAIN>` | Threat intelligence |
+| `ioc` | `ioc@<DOMAIN>` | IOC submissions |
 
 ### API Notes
 
@@ -296,7 +282,7 @@ Add the following TXT record to **both** `<DOMAIN>` and `<BRAND_DOMAIN>`:
 
 | Type | Name | Content |
 |------|------|---------|
-| TXT | `pmg2026._domainkey` | `<DKIM_RECORD>` |
+| TXT | `pmg2026._domainkey` | `v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAswvmehkEZXb/PVmC63knFoQOYyrJhG24njh6lGy0gfsIQ+YznLDgDHBvqUJNRiO+y6Isg3JnRMkePn5c/75MmZgg9El6FksvT4Ebpo8kirei8TQC59tYvgkGpHwpFMNwD507RVPSJkysD9JgSv3beXQoOVu4qdtLosKWa4FGM1IzVg/z+QbD04MfQdEsS2hparsxCyVIu4FV1G/NvZ1KTLEMsZ/OGq9HJINeegGZ+YN+SzB0GSsAZOILx3nYfvDZwCYelztRC9D67/BDiqxobD2Xr2q5w/gcSLpdJISt1G2eMINpdbdb0PJUSO6scDEMjJHJ2xvG3sNEPEZGmuIBWwIDAQAB` |
 
 ---
 
@@ -308,8 +294,8 @@ We bypass Caddy entirely and route directly to the backend servers:
 
 | Record | Target IP | URL |
 |--------|-----------|-----|
-| `pmg.lab.local` | `<SERVICE_IP>` | `https://pmg.lab.local:8006` |
-| `mail.lab.local` | `<SERVICE_IP>` | `http://mail.lab.local:8080` |
+| `pmg.lab.local` | <PMG_IP> | `https://pmg.lab.local:8006` |
+| `mail.lab.local` | <STALWART_IP> | `http://mail.lab.local:8080` |
 
 ### Cloudflare (External)
 
@@ -320,7 +306,7 @@ We bypass Caddy entirely and route directly to the backend servers:
 
 ## LXC Service SMTP Testing
 
-Every LXC that needs to send email should be configured to use `<SERVICE_IP>:26` with no authentication (trusted relay).
+Every LXC that needs to send email should be configured to use `<SERVICE_IP>:25` with no authentication (trusted relay).
 
 To verify the end-to-end outbound relay is working, SSH into any trusted LXC (or PMG itself) and run:
 

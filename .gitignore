@@ -29,3 +29,6 @@ docs/to-do/
 
 # Blog series
 docs/blog/
+
+# Shared to-do (gitignored for multi-device sync)
+docs/to-do/
