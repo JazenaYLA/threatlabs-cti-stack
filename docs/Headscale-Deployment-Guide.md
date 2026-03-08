@@ -16,7 +16,7 @@ On the client (laptop/desktop/LXC):
 ```bash
 tailscale up --login-server http://<HEADSCALE_IP>:8080
 ```
-This will provide a registration link. Copy the key and run on the Headscale server (LXC 131):
+This will provide a registration link. Copy the key and run on the Headscale server (LXC 137):
 ```bash
 headscale nodes register --user <YOUR_USER> --key <REGISTRATION_KEY>
 ```
