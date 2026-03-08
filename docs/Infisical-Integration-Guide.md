@@ -110,11 +110,7 @@ If a secret rotates in the Infisical UI, the containers won't automatically appl
 
 ## 4. SMTP Email Configuration (User Invites)
 
-<<<<<<< HEAD
-Infisical must be able to send emails to invite other administrators or users to the organization. This bypasses authentication by utilizing the internal PMG relay (`<INFISICAL_PMG_RELAY_IP>`).
-=======
 Infisical must be able to send emails to invite other administrators or users to the organization. This bypasses authentication by utilizing the internal PMG relay (`<PMG_IP>`).
->>>>>>> a2d7855 (docs: sync sanitized email configuration and add infisical guide and startup script)
 
 Modify `/etc/infisical/infisical.rb` inside the LXC:
 
@@ -125,11 +121,7 @@ infisical_core['env_smtp_port'] = 25
 infisical_core['env_smtp_secure'] = false
 infisical_core['env_smtp_ignore_tls'] = true
 infisical_core['env_smtp_name'] = 'ThreatLabs Infisical'
-<<<<<<< HEAD
 infisical_core['env_smtp_from_address'] = 'noreply@<DOMAIN>'
-=======
-infisical_core['env_smtp_from_address'] = 'noreply@threatresearcher.net'
->>>>>>> a2d7855 (docs: sync sanitized email configuration and add infisical guide and startup script)
 ```
 
 Apply the changes:

@@ -170,27 +170,29 @@ pmgsh create /config/transport -domain threatresearcher.com -host <STALWART_IP> 
 ### Fetchmail (Inbound IMAP Polling)
 
 Installed via `apt-get install fetchmail`. Configuration at `/etc/fetchmailrc`:
-```
-set daemon 120
+
+```properties
+set daemon 900
 set syslog
 set no bouncemail
 
-poll imap.gmail.com
-  protocol IMAP
-  port 993
-  user '<SERVICE_EMAIL>'
-  password '<PMG-fetchmail app password>'
-  ssl
-  sslcertck
-  folder 'INBOX'
-  fetchall
-  nokeep
-  mda '/usr/sbin/sendmail -oi -f %F -- %T'
+poll imap.gmail.com with proto IMAP
+  localdomains threatresearcher.net threatresearcher.com
+  envelope "To"
+  user "<SERVICE_EMAIL>" there with password "<PMG-fetchmail app password>" is * here
+  options ssl sslcertck folder "INBOX" fetchall nokeep smtphost 127.0.0.1
+  smtpaddress threatresearcher.net
 ```
-**Key settings:**
-- Polls every **120 seconds**
-- Fetches **all** messages, does **not keep** them on Gmail after fetch
-- Re-injects into PMG's Postfix via `sendmail` MDA for filtering before delivery to Stalwart
+
+**Key settings to resolve Cloudflare routing (Multidrop):**
+
+- **`envelope "To"`**: Forces Fetchmail to extract the real service recipient from the `To:` header instead of defaulting to the Gmail inbox owner.
+- **`localdomains`**: Specifies which domains Fetchmail should consider as local, ensuring it correctly validates the extracted envelope recipient.
+- **`is * here`**: Maps the extracted envelope recipient to the same local username.
+- **`smtpaddress threatresearcher.net`**: Appends this domain if the extracted address lacks one, preventing Postfix `501 5.1.3 Bad recipient address syntax` rejections.
+- **`smtphost 127.0.0.1`**: Injects mail directly into the PMG SMTP filter port (which listens on 25), allowing transport rules to take effect and route to Stalwart.
+- Polls every **15 minutes (900 seconds)** to avoid Gmail rate limits.
+- Fetches **all** messages, does **not keep** them on Gmail after fetch.
 
 **Service management:**
 
