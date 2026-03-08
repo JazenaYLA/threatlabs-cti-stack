@@ -1,7 +1,7 @@
 # Email Configuration Guide
 
 > **Last updated**: 2026-03-01  
-> **Scope**: PMG (<SERVICE_IP>), Stalwart (<SERVICE_IP>), Cloudflare Email Routing, Gmail
+> **Scope**: PMG (<PMG_IP>), Stalwart (<STALWART_IP>), Cloudflare Email Routing, Gmail
 
 ---
 
@@ -30,17 +30,17 @@
        │ IMAP fetch (every 120s)           │
        ▼                                   │
 ┌──────────────────────────────────────────┤
-│         PMG  <SERVICE_IP>               │
+│         PMG  <PMG_IP>                   │
 │  • Fetchmail polls Gmail IMAP            │
 │  • SpamAssassin + ClamAV filtering       │
 │  • DKIM signing (outbound)               │
 │  • Transport rules → Stalwart            │
-│  • Gmail smarthost relay (outbound)      │
+│  • Yahoo smarthost relay (outbound)      │
 └──────────┬───────────────────────────────┘
            │ SMTP deliver to Stalwart
            ▼
 ┌──────────────────────────────────────────┐
-│       Stalwart  <SERVICE_IP>            │
+│       Stalwart  <STALWART_IP>           │
 │  • Local mailboxes for service accounts  │
 │  • IMAP access for CTI tools             │
 │  • opencti@ misp@ thehive@ wazuh@ etc.   │
@@ -72,16 +72,15 @@ We use AgentMail as an API-first backend for our OpenClaw/n8n automation workflo
 > **Note**: Plus-addressing (e.g., `ai+phishing@`) can be used to route specific webhooks payload types inside your orchestration scripts.
 
 ### Service accounts → `<SERVICE_EMAIL>` (fetched by PMG)
-
 | Address | Domain |
 |---------|--------|
-| `noreply@` | <DOMAIN> |
-| `wazuh@` | <DOMAIN> |
-| `ioc@` | <DOMAIN> |
-| `ti@` | <DOMAIN> |
-| `ai@` | <DOMAIN> |
-| `opencti@` | <DOMAIN> |
-| `misp@` | <DOMAIN> |
+| `noreply@` | <YOUR_DOMAIN> |
+| `wazuh@` | <YOUR_DOMAIN> |
+| `ioc@` | <YOUR_DOMAIN> |
+| `ti@` | <YOUR_DOMAIN> |
+| `ai@` | <YOUR_DOMAIN> |
+| `opencti@` | <YOUR_DOMAIN> |
+| `misp@` | <YOUR_DOMAIN> |
 
 ### Personal/brand → `<PERSONAL_EMAIL>` (stays in Gmail)
 
@@ -97,7 +96,7 @@ We use AgentMail as an API-first backend for our OpenClaw/n8n automation workflo
 
 ---
 
-## PMG Configuration (<SERVICE_IP>)
+## PMG Configuration (<PMG_IP>)
 
 ### Trusted Networks
 
@@ -117,34 +116,34 @@ pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
 pmgsh create /config/mynetworks -cidr '<SERVICE_IP>/24'
 ```
 
-### Gmail Smarthost Relay (Outbound)
+### Yahoo Smarthost Relay (Outbound)
 
-PMG relays all outbound mail through Gmail SMTP:
+PMG relays all outbound mail through Yahoo SMTP:
 
 ```
-Relay host:  smtp.gmail.com
+Relay host:  smtp.mail.yahoo.com
 Port:        587
-No MX:       yes (connect directly, don't look up MX records)
+No MX:       yes
 ```
 
 **Commands used:**
 
 ```bash
-pmgsh set /config/mail -relay smtp.gmail.com -relaynomx 1 -relayport 587
+pmgsh set /config/mail -smarthost smtp.mail.yahoo.com -smarthostport 587
 ```
 
-### SASL Authentication for Gmail
+### SASL Authentication for Yahoo
 
 Created at `/etc/postfix/sasl_passwd`:
 
 ```
-[smtp.gmail.com]:587 <SERVICE_EMAIL>:<PMG-smarthost app password>
+[smtp.mail.yahoo.com]:587 <PERSONAL_EMAIL>@yahoo.com:<YAHOO_APP_PASSWORD>
 ```
 
 **Commands used:**
 
 ```bash
-echo '[smtp.gmail.com]:587 <SERVICE_EMAIL>:<app-password>' > /etc/postfix/sasl_passwd
+echo '[smtp.mail.yahoo.com]:587 <PERSONAL_EMAIL>@yahoo.com:<YAHOO_APP_PASSWORD>' > /etc/postfix/sasl_passwd
 postmap /etc/postfix/sasl_passwd
 chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
 ```
@@ -154,7 +153,7 @@ chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
 Custom SASL/TLS config appended to `/etc/pmg/templates/main.cf.in` (copied from `/var/lib/pmg/templates/main.cf.in` first):
 
 ```
-# === Gmail SASL relay authentication ===
+# === Yahoo SASL relay authentication ===
 smtp_sasl_auth_enable = yes
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 smtp_sasl_security_options = noanonymous
@@ -167,15 +166,15 @@ smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 ### Relay Domains
 
 ```bash
-pmgsh create /config/domains -domain <DOMAIN> -comment 'CTI service domain'
-pmgsh create /config/domains -domain <BRAND_DOMAIN> -comment 'Brand domain'
+pmgsh create /config/domains -domain <YOUR_DOMAIN> -comment 'CTI service domain'
+pmgsh create /config/domains -domain <YOUR_BRAND_DOMAIN> -comment 'Brand domain'
 ```
 
 ### Transport Rules (Deliver to Stalwart)
 
 ```bash
-pmgsh create /config/transport -domain <DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
-pmgsh create /config/transport -domain <BRAND_DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
+pmgsh create /config/transport -domain <YOUR_DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
+pmgsh create /config/transport -domain <YOUR_BRAND_DOMAIN> -host <SERVICE_IP> -port 25 -use_mx 0 -comment 'Deliver to Stalwart'
 ```
 
 ### Fetchmail (Inbound IMAP Polling)
@@ -230,7 +229,7 @@ pmgconfig sync --restart 1
 ### Admin Access
 
 - **Web UI**: `http://<SERVICE_IP>:8080` (or via Caddy: `https://mail.<DOMAIN>`)
-- **Credentials**: `admin` / `ChangeMe_StalwartAdminPassword`
+- **Credentials**: `admin` / `<STALWART_PASSWORD>`
 
 ### Domains Created
 
@@ -240,19 +239,18 @@ pmgconfig sync --restart 1
 | `<BRAND_DOMAIN>` | Brand domain | 2 |
 
 ### Service Accounts Created
-
-All accounts use password `ChangeMe_StalwartAccountPassword` and role `user`.
+All accounts use password `<SERVICE_PASSWORD>` and role `user`.
 
 | Account | Email | Purpose |
 |---------|-------|---------|
-| `opencti` | `opencti@<DOMAIN>` | OpenCTI connector |
-| `misp` | `misp@<DOMAIN>` | MISP alerts |
-| `thehive` | `thehive@<DOMAIN>` | TheHive email-to-case |
-| `noreply` | `noreply@<DOMAIN>`, `noreply@<BRAND_DOMAIN>` | Service notifications |
-| `wazuh` | `wazuh@<DOMAIN>` | Security alerts |
-| `ai` | `ai@<DOMAIN>` | AI service account |
-| `ti` | `ti@<DOMAIN>` | Threat intelligence |
-| `ioc` | `ioc@<DOMAIN>` | IOC submissions |
+| `opencti` | `opencti@<YOUR_DOMAIN>` | OpenCTI connector |
+| `misp` | `misp@<YOUR_DOMAIN>` | MISP alerts |
+| `thehive` | `thehive@<YOUR_DOMAIN>` | TheHive email-to-case |
+| `noreply` | `noreply@<YOUR_DOMAIN>`, `noreply@<YOUR_BRAND_DOMAIN>` | Service notifications |
+| `wazuh` | `wazuh@<YOUR_DOMAIN>` | Security alerts |
+| `ai` | `ai@<YOUR_DOMAIN>` | AI service account |
+| `ti` | `ti@<YOUR_DOMAIN>` | Threat intelligence |
+| `ioc` | `ioc@<YOUR_DOMAIN>` | IOC submissions |
 
 ### API Notes
 
@@ -267,7 +265,7 @@ Stalwart uses a unified `/api/principal` endpoint for ALL directory objects. The
 
 ```bash
 # Domains were created via API using SCP'd JSON payloads
-curl -s -u admin:ChangeMe_StalwartAdminPassword -X POST -H 'Content-Type: application/json' \
+curl -s -u admin:<STALWART_PASSWORD> -X POST -H 'Content-Type: application/json' \
   -d @/tmp/stalwart_domain1.json http://127.0.0.1:8080/api/principal
 
 # Account payloads follow same pattern — batch created via /tmp/stalwart_create_all.sh
@@ -298,7 +296,7 @@ Add the following TXT record to **both** `<DOMAIN>` and `<BRAND_DOMAIN>`:
 
 | Type | Name | Content |
 |------|------|---------|
-| TXT | `pmg2026._domainkey` | `v=DKIM1; h=sha256; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAswvmehkEZXb/PVmC63knFoQOYyrJhG24njh6lGy0gfsIQ+YznLDgDHBvqUJNRiO+y6Isg3JnRMkePn5c/75MmZgg9El6FksvT4Ebpo8kirei8TQC59tYvgkGpHwpFMNwD507RVPSJkysD9JgSv3beXQoOVu4qdtLosKWa4FGM1IzVg/z+QbD04MfQdEsS2hparsxCyVIu4FV1G/NvZ1KTLEMsZ/OGq9HJINeegGZ+YN+SzB0GSsAZOILx3nYfvDZwCYelztRC9D67/BDiqxobD2Xr2q5w/gcSLpdJISt1G2eMINpdbdb0PJUSO6scDEMjJHJ2xvG3sNEPEZGmuIBWwIDAQAB` |
+| TXT | `pmg2026._domainkey` | `<DKIM_RECORD>` |
 
 ---
 
@@ -340,7 +338,7 @@ ctx.verify_mode = ssl.CERT_NONE
 # Stalwart requires STARTTLS and short usernames
 m = imaplib.IMAP4('<SERVICE_IP>', 143)
 m.starttls(context=ctx)
-m.login('noreply', 'ChangeMe_StalwartAccountPassword')
+m.login('noreply', '<SERVICE_PASSWORD>')
 m.select('INBOX')
 typ, data = m.search(None, 'ALL')
 print(f"Messages: {len(data[0].split())}")

@@ -93,7 +93,10 @@ graph TD
 * **`dfir-iris/`**: **Incident Response**. DFIR-IRIS collaborative IR platform (self-contained Postgres 12 + RabbitMQ).
 * **`ail-project/`**: **Dark Web Analysis**. Instructions for deploying AIL Framework in a separate LXC.
 * **`scripts/`**: Contains core setup/permission scripts and deployment helpers for **External LXCs**.
-* **Email Infrastructure (LXC)**: **Hygiene & Delivery**. Pre-configured **Proxmox Mail Gateway (PMG)** for spam filtering/relay and **Stalwart** for local IMAP service accounts. (See [Email Configuration Guide](docs/Email-Configuration.md))
+* **`lacus/`**: **Crawling**. AIL Framework crawler (Playwright-based).
+* **`vaultwarden/`**: **Password Management**. Secure vault for service credentials.
+* **`infisical/`**: **Secret Management**. Centralized API keys and environment variables.
+* **Email Infrastructure (LXC)**: **Hygiene & Delivery**. Pre-configured **Proxmox Mail Gateway (PMG)** and **Stalwart**. (See [Email Configuration Guide](docs/Email-Configuration.md))
 
 ### Shared Network
 
@@ -121,6 +124,7 @@ For detailed architecture decisions, trade-offs, and troubleshooting steps, plea
 * **[Architecture & Decisions](docs/Architecture.md)**
 * **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
 * **[Email Configuration Guide](docs/Email-Configuration.md)**
+* **[Production Implementation Guide](docs/Production-Implementation.md)** (Host Tuning & Scripts)
 * **[Troubleshooting Guide](docs/Troubleshooting.md)**
 
 > [!TIP]

@@ -188,6 +188,11 @@ Implemented a **Branch-Aware Deployment Strategy**.
 - **Logic**: Pushes to `auto-swapper` automatically sync to the dev root; pushes to `main` are decoupled from automatic automation.
 - **Safety**: Production updates now require a manual `workflow_dispatch` trigger, ensuring that manual hotfixes and database states are preserved during normal development cycles.
 
+### The "Janitor" Logic
+To maintain stability, the production environment relies on host-level automation (see [Production Implementation Guide](Production-Implementation.md)):
+- **Permissions**: `fix-permissions.sh` ensures bind-mounts have correct UIDs for Postgres/ES.
+- **Kernal Tuning**: `vm.max_map_count` is enforced on the host to prevent ElasticSearch crash-loops.
+
 ## 🌐 Reverse Proxy Layer (Feb 2026 Update)
 
 ### The Stale IP Problem

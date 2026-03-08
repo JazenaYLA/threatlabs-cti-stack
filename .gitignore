@@ -15,6 +15,7 @@ flowintel/.env
 wazuh/wazuh-certificates/
 wazuh/wazuh-certs-tool/
 *.tar.gz
+internal_ips.md
 docs/LXC-Integration-Guide.md
 
 # Private notes (contain real IPs, credentials, or infra details)
@@ -25,3 +26,6 @@ docs/OPSEC.md
 *.tmp
 docs/to-do/
 .infisical.json
+
+# Blog series
+docs/blog/

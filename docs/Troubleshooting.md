@@ -108,6 +108,26 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 2. Type `NUKE` to confirm.
 3. Run `./setup.sh` to recreate the directory structure and permissions.
 
+## Application-Specific "Gotchas"
+
+### MISP: "Too Many Redirects" Loop
+- **Cause**: MISP's internal nginx is unaware of the external port (e.g., 8443) used by a reverse proxy.
+- **Fix**: 
+    1. Ensure `CORE_HTTPS_PORT` in `misp/.env` matches your proxy's listener port.
+    2. Restart the stack: `docker compose down && docker compose up -d`.
+
+### PMG: Mail Service Crash After Edits
+- **Cause**: PMG templates are all-or-nothing. Creating `/etc/pmg/templates/main.cf.in` with only custom lines replaces the default Postfix config entirely.
+- **Fix**: 
+    1. `cp /var/lib/pmg/templates/main.cf.in /etc/pmg/templates/main.cf.in`
+    2. Append your changes to the *end* of the file.
+    3. `pmgconfig sync --restart 1`.
+
+### Stalwart: IMAP Authentication Failed
+- **Cause 1**: Stalwart mandates **STARTTLS** on port 143. Plain logins will fail.
+- **Cause 2**: Stalwart uses "Short Usernames" from the principal name (e.g., `noreply` instead of `noreply@domain.com`).
+- **Fix**: Enforce SSL/TLS in your client and use the base username without the domain.
+
 ## Specific Stack Issues
 
 ### "Secret Key" Errors (TheHive)
