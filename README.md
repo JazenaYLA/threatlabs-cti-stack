@@ -124,6 +124,7 @@ For detailed architecture decisions, trade-offs, and troubleshooting steps, plea
 * **[Architecture & Decisions](docs/Architecture.md)**
 * **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
 * **[Email Configuration Guide](docs/Email-Configuration.md)**
+* **[Headscale Zero-Trust Overlay (Enterprise)](docs/Headscale-Deployment-Guide.md)**
 * **[Production Implementation Guide](docs/Production-Implementation.md)** (Host Tuning & Scripts)
 * **[Troubleshooting Guide](docs/Troubleshooting.md)**
 

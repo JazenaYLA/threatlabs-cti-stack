@@ -9,6 +9,7 @@ This wiki documents the journey, architecture, and orchestration of our self-hos
 - **[Troubleshooting Guide](Troubleshooting.md)**: Common issues and fixes for the stack.
 - **[Email Configuration Guide](Email-Configuration.md)**: Comprehensive guide for PMG and Stalwart Mail Flow configuration.
 - **[Infisical Secret Management (Advanced)](Infisical-Integration-Guide.md)**: Guide for dynamically injecting secrets at runtime to replace plaintext `.env` files.
+- **[Headscale Zero-Trust Overlay (Enterprise)](Headscale-Deployment-Guide.md)**: Pending tasks and firewall requirements for the Tailscale mesh.
 
 ## 🏗️ Stack Overview
 
