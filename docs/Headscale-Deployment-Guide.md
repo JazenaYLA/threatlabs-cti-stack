@@ -4,7 +4,7 @@ This guide documents the setup and maintenance of the Zero-Trust overlay using *
 
 ## 🏗️ Architecture
 
-- **Control Plane**: Headscale running on **LXC 131**.
+- **Control Plane**: Headscale running on **LXC 137**.
 - **Nodes**: Dockge CTI Server, Home Assistant, and other authorized client devices.
 - **Protocol**: WireGuard-based encrypted tunnels.
 - **Purpose**: Replaces traditional SSH keys and port-forwarding with an audited, identity-based overlay.
@@ -22,7 +22,7 @@ headscale nodes register --user <YOUR_USER> --key <REGISTRATION_KEY>
 ```
 
 ### 2. Monitoring the Mesh
-On the Headscale server:
+On the Headscale server (LXC 137):
 ```bash
 headscale nodes list
 ```
@@ -45,6 +45,30 @@ Allow ONLY the following traffic from your Home Assistant/IoT IP to the Headscal
 - **Destination**: `CTI_Subnet` (VLAN 101)
 - **Rule Intent**: Ensures that while devices can broker a WireGuard session, no standard local traffic can reach the backend CTI databases or Web UIs directly.
 
+## 🛡️ Hardening (Phase 4)
+
+### 1. Automated Node Expiry
+To prevent "zombie" nodes from persisting in the mesh, configure the OIDC expiry in `config.yaml`:
+```yaml
+oidc:
+  # Sets the default expiry for OIDC-authenticated nodes (e.g., 30 days)
+  expiry: 30d
+  # Or use the OIDC token's own expiry (short-lived, more secure, but more prompts)
+  use_expiry_from_token: false
+```
+*Note*: For "Gateway" nodes that should never expire, manually set their expiry to NULL in the Headscale DB (SQLite/Postgres).
+
+### 2. OIDC / SSO Integration (Authentik/Keycloak)
+Enable the `oidc` block to enforce identity-based authentication:
+```yaml
+oidc:
+  issuer: "https://auth.<DOMAIN>/application/o/headscale/"
+  client_id: "<CLIENT_ID>"
+  client_secret: "<CLIENT_SECRET>"
+  scope: ["openid", "profile", "email"]
+```
+
 ## 📅 Roadmap tasks
-- [ ] Configure automated node expiry.
-- [ ] Enable OIDC/SSO for the Headscale control plane.
+- [x] Configure automated node expiry.
+- [x] Enable OIDC/SSO for the Headscale control plane.
+- [ ] Implement group-based ACLs for cross-VLAN isolation.
