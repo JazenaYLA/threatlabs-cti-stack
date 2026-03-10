@@ -70,6 +70,24 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       - DATABASE_URI=sqlite:///misp-module.sqlite
       - QUERIES_LIMIT=100
+      # ── Enrichment Keys for Injection ──
+      - SHODAN_API_KEY=${SHODAN_API_KEY:-}
+      - OTX_API_KEY=${OTX_API_KEY:-}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY:-}
+      - MALWAREBAZAAR_AUTH_KEY=${MALWAREBAZAAR_AUTH_KEY:-}
+      - ANYRUN_API_KEY=${ANYRUN_API_KEY:-}
+      - JOESANDBOX_API_KEY=${JOESANDBOX_API_KEY:-}
+      - URLSCAN_API_KEY=${URLSCAN_API_KEY:-}
+      - GOOGLE_SAFE_BROWSING_API_KEY=${GOOGLE_SAFE_BROWSING_API_KEY:-}
+      - HIBP_API_KEY=${HIBP_API_KEY:-}
+      - CENSYS_API_ID=${CENSYS_API_ID:-}
+      - CENSYS_API_SECRET=${CENSYS_API_SECRET:-}
+      - GREYNOISE_API_KEY=${GREYNOISE_API_KEY:-}
+      - ONYPHE_API_KEY=${ONYPHE_API_KEY:-}
+      - SECURITYTRAILS_API_KEY=${SECURITYTRAILS_API_KEY:-}
+      - PASSIVETOTAL_API_KEY=${PASSIVETOTAL_API_KEY:-}
+      - PASSIVETOTAL_USERNAME=${PASSIVETOTAL_USERNAME:-}
+      - IPINFO_TOKEN=${IPINFO_TOKEN:-}
     depends_on:
       misp-modules:
         condition: service_healthy
@@ -77,4 +95,5 @@ services:
       - cti-net
 networks:
   cti-net:
+    name: cti-net
     external: true

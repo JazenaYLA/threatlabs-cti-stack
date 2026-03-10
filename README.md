@@ -4,6 +4,9 @@ A comprehensive Cyber Threat Intelligence (CTI) stack running on Docker, designe
 
 ## Architecture
 
+> [!CAUTION]
+> **Enterprise Branch:** You are currently viewing the \`enterprise\` branch. This branch is designed for advanced deployments and relies natively on **Infisical** for centralized Machine Identity secret management. If you are looking for the simple, standalone \`.env\` deployment, please switch back to the \`main\` branch.
+
 This repository is organized into modular stacks that share common infrastructure.
 
 ```mermaid
@@ -42,6 +45,7 @@ This repository is organized into modular stacks that share common infrastructur
         OpenClaw[OpenClaw Gateway]
         Kuma[Uptime Kuma]
         Lookyloo[Lookyloo Capture]
+        Headscale[Headscale VPN]
     end
 
     subgraph "Email Gateway"
@@ -53,6 +57,9 @@ This repository is organized into modular stacks that share common infrastructur
     CF --> GT & CT
     GT --> Ghost
     CT --> Caddy
+    
+    %% VPN Mesh
+    Headscale -.-> Dockge & TheHive & OpenCTI & MISP & IRIS
     
     Caddy --> n8n & Flowise & Dockge & OpenClaw & Kuma & Lookyloo
     
@@ -85,6 +92,14 @@ This repository is organized into modular stacks that share common infrastructur
 
 All stacks communicate via an external Docker network named `cti-net`.
 
+### Secret Management & Declarativity
+
+Our stack follows a strict **Secret-as-Code** model using Infisical and dynamic configuration injection:
+
+- **Infisical Integration**: Secrets are pulled centrally and merged into local `.env` files via `update-secrets.sh`.
+- **Dynamic Patching**: Services like MISP and Lacus use specialized patcher scripts (e.g., `misp/patch-config.sh`) to inject environment variables into legacy configuration files (like PHP/Conf) at runtime.
+- **Standalone Sync**: The `misp-modules-web` interface uses an automated bridge to synchronize environment variables into its internal SQLite database, ensuring a unified secret model across the entire ecosystem.
+
 ### Networking Modes
 
 The stack supports two networking approaches:
@@ -93,6 +108,7 @@ The stack supports two networking approaches:
 |------|-------------|----------|
 | **Direct IP** | `http://<SERVICE_IP>:3000` | Simple single-VLAN setups |
 | **Caddy Proxy** *(recommended)* | `http://forgejo.lab.local` | Multi-VLAN, resilient to IP changes |
+| **Headscale VPN** *(enterprise)* | `http://<100.x.x.x>:8080` | Zero-trust remote operations across VLANs (Replaces SSH Keys) |
 
 > [!TIP]
 > Using Caddy domain names instead of raw IPs means you only update one place (Caddy + DNS) when infrastructure changes. See the **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)** for setup instructions and migration steps.
@@ -104,10 +120,11 @@ The stack supports two networking approaches:
 
 For detailed architecture decisions, trade-offs, and troubleshooting steps, please refer to the **[Project Wiki](docs/Home.md)**:
 
-*   **[Architecture & Decisions](docs/Architecture.md)**
-*   **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
-*   **[Email Configuration Guide](docs/Email-Configuration.md)**
-*   **[Troubleshooting Guide](docs/Troubleshooting.md)**
+* **[Architecture & Decisions](docs/Architecture.md)**
+* **[Reverse Proxy Guide](docs/Reverse-Proxy-Guide.md)**
+* **[Email Configuration Guide](docs/Email-Configuration.md)**
+* **[Headscale Zero-Trust Overlay (Enterprise)](docs/Headscale-Deployment-Guide.md)**
+* **[Troubleshooting Guide](docs/Troubleshooting.md)**
 
 > [!TIP]
 > See [docs/Troubleshooting.md](docs/Troubleshooting.md) for network, permission, and common boot issues.
@@ -165,14 +182,37 @@ Run the setup script to prepare networks, volumes, and generate environment file
 1. Creates the shared network `cti-net`.
 2. Creates necessary docker volumes.
 3. **Generates `.env` files** for all stacks from templates.
-    * For **OpenCTI (xtm)**, it automatically generates unique UUIDv4 tokens for all connectors.
-4. **Pauses** to allow you to review and edit the generated `.env` files.
+4. **Infisical Sync**: If using the Enterprise branch, it will prompt you to run `./scripts/update-secrets.sh` to immediately pull live secrets into these templates.
 
-**Action Required:**
-When the script pauses, open the `.env` files in each directory (e.g., `infra/.env`, `xtm/.env`) and set your specific secrets (passwords, API keys, domains).
+> [!TIP]
+> Our [Environment Restoration & Merge Logic](docs/Infisical-Integration-Guide.md#merge-logic) ensures that your `.env` documentation and comments are preserved even when secrets are updated from Infisical.
+
+### 4. Startup Order (Integrated)
+
+In the Enterprise branch, you no longer need to manually start stacks in order. The **`./startup.sh`** script handles everything:
+
+1. **Automatic Secret Sync**: It calls Infisical to refresh all 12 stacks.
+2. **Phased Boot**: It ensures `infra` (databases) is healthy before starting applications.
+
+```bash
+./startup.sh
+```
+
+*Tip: Use `./startup.sh --skip-sync` to boot with existing cached keys.*
+
+### 5. Standard Deployment (Manual)
+
+If you prefer granular control, you can still start stacks manually:
+
+1. **Start Infrastructure Stack (REQUIRED FIRST)**
+    ```bash
+    cd infra && docker compose up -d
+    ```
+    *Wait for ElasticSearch clusters to be fully healthy.*
 
 > [!TIP]
 > **Identity Change?** If you change your `ADMIN_EMAIL` in `.env` **after** the platforms have already been initialized, use the provided sync script to update the running databases:
+>
 > ```bash
 > ./scripts/sync-identity.sh
 > ```
@@ -220,6 +260,7 @@ The services must be started in a specific order to ensure database availability
 ## TheHive
 
 ### Initial Login Credentials
+
 * **Username**: `admin@thehive.local`
 * **Password**: `secret`
 
@@ -231,7 +272,9 @@ The services must be started in a specific order to ensure database availability
 Collaborative Incident Response platform. Accessible via **HTTPS** on port `4433` (configurable via `IRIS_HTTPS_PORT`).
 
 ### Initial Login Credentials
+
 The administrator password is **randomly generated on first boot** and printed in the app container logs:
+
 ```bash
 sudo docker logs iris-app 2>&1 | grep "create_safe_admin"
 ```
@@ -245,11 +288,14 @@ sudo docker logs iris-app 2>&1 | grep "create_safe_admin"
 See [flowintel/README.md](flowintel/README.md) for full documentation.
 
 ### Initial Login Credentials
+
 By default, the stack is configured to create an initial admin user:
+
 * **Email**: `admin@admin.admin`
 * **Password**: `admin`
 
 You can change these **before the first run** by editing `flowintel/.env`:
+
 ```bash
 INIT_ADMIN_EMAIL=your@email.com
 INIT_ADMIN_PASSWORD=ChangeMe_SecurePassword
@@ -257,6 +303,7 @@ INIT_ADMIN_PASSWORD=ChangeMe_SecurePassword
 
 > [!NOTE]
 > If you have already started FlowIntel and want to change the initial admin:
+>
 > 1. Stop the container: `docker compose down`
 > 2. Reset the database (see docs/Troubleshooting.md)
 > 3. Restart: `docker compose up -d`
@@ -272,8 +319,9 @@ To share API keys and custom modules with the rest of the stack, you can optiona
 See [misp-modules/README.md](misp-modules/README.md) for full documentation.
 
 Provides 200+ enrichment, expansion, import, and export modules as a shared service:
-- **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
-- **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
+
+* **API** on port `6666` — used by MISP Core, FlowIntel, and any HTTP client
+* **Web UI** on port `7008` — standalone interface for querying modules without a MISP instance
 
 ## Notes
 
@@ -282,4 +330,3 @@ Provides 200+ enrichment, expansion, import, and export modules as a shared serv
 * **Stack READMEs**: Each stack directory has its own `README.md` with detailed configuration and troubleshooting.
 * **Shared Infrastructure**: `infra/` provides PostgreSQL, Valkey, and ElasticSearch shared by multiple stacks. Always start it first.
 * **Enrichment API Keys**: Configure enrichment API keys (VirusTotal, Shodan, etc.) in `misp-modules/.env` for centralized access.
-

@@ -23,8 +23,12 @@ with app.app_context():
 "
     echo "[+] Database initialized."
 else
-    echo "[*] Database already exists, skipping init."
+    echo "[*] Database already exists, skipping schema creation."
 fi
+
+# Synchronize API keys from environment variables into the database
+echo "[*] Synchronizing API keys from environment..."
+python3 inject_keys.py
 
 echo "[+] Starting gunicorn on 0.0.0.0:${FLASK_PORT:-7008}..."
 exec gunicorn -k gevent -w 4 -b "0.0.0.0:${FLASK_PORT:-7008}" "main:app"

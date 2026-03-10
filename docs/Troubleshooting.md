@@ -108,6 +108,26 @@ ln -s /path/to/repo/thehive/docker-compose.yml thehive
 2. Type `NUKE` to confirm.
 3. Run `./setup.sh` to recreate the directory structure and permissions.
 
+## Secrets & Synchronization
+
+### Infisical: `x509: certificate signed by unknown authority`
+
+**Cause**: The Infisical CLI fails to verify the local self-signed certificate, even if it's in the system's CA store.
+**Solution**: Our synchronization logic (`update-secrets.sh`) includes an **API Fallback**. It uses `curl -k` to communicate directly with the Infisical V3 API, bypassing the CLI's verification requirements for robust headless operation.
+
+### MISP Modules UI: Keys not appearing after `.env` update
+
+**Cause**: The standalone web UI stores keys in a SQLite database (`misp-module.sqlite`) which doesn't natively listen to `.env` changes.
+**Solution**: We've added an **Injection Bridge**. Restart the container: `docker compose restart misp-modules-web`. The `inject_keys.py` script will run on startup and synchronize your `.env` (Infisical) keys into the database entries.
+
+### Patching: Syntax error in `config.php`
+
+**Cause**: A corrupted `.env` value or an unexpected special character broke the PHP array structure during the automated patching.
+**Fix**: 
+1. Check the patched file: `cat misp/configs/config.php | grep -C 5 "Plugin"`.
+2. Fix the value in Infisical/`.env`.
+3. Re-run the patcher: `docker exec misp-core /custom/patch-config.sh`.
+
 ## Specific Stack Issues
 
 ### "Secret Key" Errors (TheHive)

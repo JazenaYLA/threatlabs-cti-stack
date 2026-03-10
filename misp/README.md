@@ -121,6 +121,14 @@ To override these behaviours edit the docker-compose.yml file's misp-core volume
 If it is just a default setting that is meant to be set if not already set by the user, add it in one of the `*.default.json` files.
 If it is a setting controlled by an environment variable which is meant to override whatever is set, add it in one of the `*.envars.json` files (note that you can still specify a default value).
 
+#### Declarative Enrichment Plugins
+
+Unlike standard MISP settings, enrichment plugins (Shodan, OTX, VT, etc.) are patched into `config.php` at runtime using the **`misp/patch-config.sh`** helper. 
+
+- **How it works**: The script identifies `MISP_PLUGIN_*` variables in your `.env` file and uses a generic patching function to inject them into the `Plugin.Enrichment_*_key` arrays in `config.php`.
+- **Statelessness**: This ensures that your enrichment keys are managed as code and automatically restored even after a container wipe or image update.
+- **Support**: Currently supports Shodan, OTX, AbuseIPDB, MalBeacon, IPInfo, MalwareBazaar, Hybrid Analysis, and Unpac.me.
+
 ### MISP-Guard (optional)
 
 [MISP-Guard](https://github.com/MISP/misp-guard) is a mitmproxy add-on designed to apply configurable filters that prevent the unintentional leakage of sensitive threat intelligence data while facilitating controlled information sharing.  

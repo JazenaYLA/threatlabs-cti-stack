@@ -1,7 +1,12 @@
 .env
 .DS_Store
 **/vol/
+# MISP
+misp/patch-config.sh
 misp/ssl/
+
+# Lacus
+lacus/patch-config.sh
 misp/configs/
 misp/files/
 misp/gnupg/
@@ -19,8 +24,10 @@ docs/LXC-Integration-Guide.md
 
 # Private notes (contain real IPs, credentials, or infra details)
 # See docs/OPSEC.md (gitignored) for guidelines
+internal_ips.md
 *_private.md
 docs/OPSEC.md
+llm_context_bundle.md
 # Temporary and project-specific ignores
 *.tmp
 docs/to-do/

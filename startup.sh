@@ -9,16 +9,19 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/scripts/volume-config.sh"
 
-# ─── Boot Order ────────────────────────────────────────────────────────
-# Phase 1: Infrastructure (ES, Postgres, Valkey, cti-net)
-# Phase 2: Standalone services (misp-modules, ail-project, forgejo-runner)
-# Phase 3: Core platforms (misp, xtm, thehive, flowintel)
-# Phase 4: Auxiliary (lacus, dfir-iris, shuffle)
+# Phases are sourced from scripts/volume-config.sh
+# PHASE_1, PHASE_2, PHASE_3, PHASE_4 are the canonical boot order.
 
-PHASE_1=("infra")
-PHASE_2=("misp-modules" "ail-project" "forgejo-runner" "proxy")
-PHASE_3=("misp" "xtm" "thehive" "flowintel")
-PHASE_4=("lacus" "dfir-iris" "shuffle")
+# 0. Handle Infisical Secret Sync (Optional)
+SKIP_SYNC=false
+if [[ "$*" == *"--skip-sync"* ]]; then
+    SKIP_SYNC=true
+fi
+
+if [ "$SKIP_SYNC" = false ] && [ -f "./scripts/update-secrets.sh" ]; then
+    echo "[*] Synchronizing secrets from Infisical before boot..."
+    ./scripts/update-secrets.sh --sync-only || echo "[-] Warning: Secret sync failed. Booting with existing .env files..."
+fi
 
 start_stack() {
     local stack="$1"
@@ -59,7 +62,7 @@ echo ""
 
 # --- Phase 1: Infrastructure ---
 echo "[Phase 1] Infrastructure (databases, cti-net)..."
-for stack in "${PHASE_1[@]}"; do
+for stack in "${CTI_PHASE_1[@]}"; do
     start_stack "$stack"
 done
 # Wait for critical infra services before proceeding
@@ -90,22 +93,28 @@ echo ""
 
 # --- Phase 2: Shared Services ---
 echo "[Phase 2] Shared services..."
-for stack in "${PHASE_2[@]}"; do
+for stack in "${CTI_PHASE_2[@]}"; do
     start_stack "$stack"
 done
 wait_for_healthy "misp-modules-shared" 60
 echo ""
 
 # --- Phase 3: Core Platforms ---
-echo "[Phase 3] Core platforms..."
-for stack in "${PHASE_3[@]}"; do
+echo "[Phase 3] Core platform services..."
+if [ -x "./misp/patch-config.sh" ]; then
+    ./misp/patch-config.sh
+fi
+for stack in "${CTI_PHASE_3[@]}"; do
     start_stack "$stack"
 done
 echo ""
 
 # --- Phase 4: Auxiliary ---
 echo "[Phase 4] Auxiliary services..."
-for stack in "${PHASE_4[@]}"; do
+if [ -x "./lacus/patch-config.sh" ]; then
+    ./lacus/patch-config.sh
+fi
+for stack in "${CTI_PHASE_4[@]}"; do
     start_stack "$stack"
 done
 echo ""

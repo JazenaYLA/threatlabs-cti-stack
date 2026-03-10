@@ -84,25 +84,37 @@ infisical login --method=universal-auth \
 
 ---
 
-## 3. Dynamic Secret Injection (Replacing `.env`)
+## 3. Persistent Secret Synchronization (Merging to Disk)
 
-Once the server is authenticated, you no longer need the plaintext `.env` files sitting in `/opt/stacks/*`.
+In this deployment, we prioritize **Documentation-First** `.env` files. Instead of using `infisical run` for in-memory injection (which hides secrets from the disk), we use a custom **Merge Logic** that patches your documented `.env` files with live secrets.
 
-Instead of running standard `docker compose up -d`, you wrap the command using the Infisical CLI. This injects the environment variables securely into the containers at runtime, without writing them to disk.
+### The `update-secrets.sh` Script
 
-### Updating `startup.sh`
+Found in `scripts/update-secrets.sh`, this script:
+1.  **Authenticates** with Infisical via raw `curl` (Universal Auth).
+2.  **Exports** the vault content to a temporary location.
+3.  **Merges** values into your local `.env` files using `sed`, preserving all of your original comments, headers, and documentation.
 
-Modify your startup sequence (or manual commands) to execute through Infisical:
+### Why this is better:
+-   **Visibility**: You can always `cat .env` to see what is currently configured.
+-   **Stability**: If Infisical is offline, the containers boot with the last known "cached" `.env` values on disk.
+-   **Documentation**: Your 300+ lines of MISP documentation remain intact.
+
+### Manual Synchronization
+```bash
+./scripts/update-secrets.sh
+```
+*Note: This script iterates through all 12 stacks (Phase 1-4) defined in `volume-config.sh`.*
+
+---
+
+## 4. Integrated Startup
+
+The primary way to start the enterprise stack is now through the root **`startup.sh`**. It automatically calls the secret sync before performing its health-checked boot sequence.
 
 ```bash
-# Example for XTM Stack
-cd /opt/stacks/xtm
-
-# Make sure to point to the correct subfolder if you organized secrets in the UI
-infisical run --env=prod --path="/xtm" -- docker compose up -d
+./startup.sh
 ```
-
-### Automatic Restarting (Optional)
 
 If a secret rotates in the Infisical UI, the containers won't automatically apply it unless restarted. You can configure the Infisical Agent to automatically trigger a `docker compose restart` via a bash script when it detects a vault change.
 
@@ -130,3 +142,18 @@ Apply the changes:
 infisical-ctl reconfigure
 infisical-ctl restart
 ```
+
+---
+
+## 5. Troubleshooting & API Fallback
+
+### TLS Verification Issues (`x509: certificate signed by unknown authority`)
+
+When using self-signed certificates for your Infisical instance, the CLI may fail to verify the certificate even after running `update-ca-certificates`.
+
+-   **Symptoms**: `infisical login` or `infisical export` returns a TLS verification error.
+-   **Workaround**: Use the **API Fallback** logic implemented in `update-secrets.sh`. Instead of relying on the CLI, we utilize `curl -k` (to skip TLS verification) and `jq` to fetch raw secrets directly from the Infisical V3 API.
+-   **Universal Auth**: The script handles token generation via the machine identity Client ID/Secret pair, making it independent of the CLI's state.
+
+### Infisical Offline
+If the Infisical LXC is unreachable, the stack will continue to operate using the last successfully synchronized `.env` files stored on the Docker host. The `startup.sh` script will warn you if the sync fails but will proceed with the boot sequence to ensure service availability.

@@ -127,3 +127,4 @@ networks:
   # Shared network for all CTI stack components (xtm, misp, etc.) to communicate
   cti-net:
     name: cti-net
+    external: true

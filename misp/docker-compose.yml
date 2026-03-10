@@ -82,12 +82,10 @@ services:
     build:
       context: core/.
       args:
-        - CORE_TAG=${CORE_TAG:?Missing or outdated .env file, see README.md for
-          instructions}
+        - CORE_TAG=${CORE_TAG:-v2.5.32}
         - CORE_COMMIT=${CORE_COMMIT}
         - CORE_FLAVOR=${CORE_FLAVOR:-standard}
-        - PHP_VER=${PHP_VER:?Missing or outdated .env file, see README.md for
-          instructions}
+        - PHP_VER=${PHP_VER:-20240924}
         - PYPI_REDIS_VERSION=${PYPI_REDIS_VERSION}
         - PYPI_LIEF_VERSION=${PYPI_LIEF_VERSION}
         - PYPI_PYDEEP2_VERSION=${PYPI_PYDEEP2_VERSION}
@@ -319,8 +317,7 @@ services:
     build:
       context: guard/.
       args:
-        - GUARD_TAG=${GUARD_TAG:?Missing or outdated .env file, see README.md
-          for instructions}
+        - GUARD_TAG=${GUARD_TAG:-v1.2}
         - GUARD_COMMIT=${GUARD_COMMIT}
     depends_on:
       - misp-core

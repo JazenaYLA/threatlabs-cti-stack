@@ -38,6 +38,14 @@ services:
       - ES_HOSTS=es7-cti:9200
       - THEHIVE_SECRET=${THEHIVE_SECRET}
       - CORTEX_KEY=${CORTEX_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME:-""}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-""}
+      - IMAP_HOST=${IMAP_HOST}
+      - IMAP_PORT=${IMAP_PORT}
+      - IMAP_USERNAME=${IMAP_USERNAME}
+      - IMAP_PASSWORD=${IMAP_PASSWORD}
     depends_on:
       cassandra:
         condition: service_healthy

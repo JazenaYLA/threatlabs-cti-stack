@@ -7,16 +7,18 @@
 # To add a reset dir:   Add to CTI_RESET_DIRS
 
 # ─── Canonical Stack List ──────────────────────────────────────────────
+# Stacks grouped by Phase for shared use across setup/reset/startup/secrets
+CTI_PHASE_1=("infra")
+CTI_PHASE_2=("misp-modules" "ail-project" "forgejo-runner" "proxy")
+CTI_PHASE_3=("misp" "xtm" "thehive" "flowintel")
+CTI_PHASE_4=("lacus" "dfir-iris" "shuffle")
+
+# Flattened list for scripts that iterate through all stacks
 CTI_STACKS=(
-    "infra"
-    "xtm"
-    "misp"
-    "misp-modules"
-    "flowintel"
-    "thehive"
-    "lacus"
-    "dfir-iris"
-    "shuffle"
+    "${CTI_PHASE_1[@]}"
+    "${CTI_PHASE_2[@]}"
+    "${CTI_PHASE_3[@]}"
+    "${CTI_PHASE_4[@]}"
 )
 
 # ─── Volume Definitions ───────────────────────────────────────────────
@@ -41,6 +43,9 @@ CTI_VOLUMES=(
 
     # --- FlowIntel ---
     "flowintel/vol/flowintel/data|flowintel/vol|1000:1000"
+
+    # --- Forgejo Runner ---
+    "forgejo-runner/data|forgejo-runner/data|1000:1000"
 
     # --- Lacus ---
     "lacus/vol/lacus-data|lacus/vol|1000:1000"
@@ -86,4 +91,5 @@ CTI_RESET_DIRS=(
     "dfir-iris/vol"
     "misp-modules/.vol"
     "shuffle/vol"
+    "forgejo-runner/data"
 )

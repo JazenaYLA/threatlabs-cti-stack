@@ -81,4 +81,5 @@ echo "[*] Removing generated configuration files..."
 rm -f thehive/vol/thehive/application.conf
 
 echo "[+] Nuke complete. The codebase is clean (configuration files preserved, data gone)."
-echo "    Run ./setup.sh to start fresh."
+echo "    1. Run ./setup.sh to initialize directories and templates (includes sync prompt)."
+echo "    2. Run ./startup.sh to automatically sync secrets and boot the stack."

@@ -18,4 +18,5 @@ services:
       - ail-lxc:${AIL_LXC_IP}
 networks:
   cti-net:
+    name: cti-net
     external: true

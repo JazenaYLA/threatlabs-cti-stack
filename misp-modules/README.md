@@ -191,6 +191,14 @@ Our version is based on [<YOUR_USER>/misp-modules](https://github.com/<YOUR_USER
 | Gunicorn instead of `mmw dev` / systemd | Docker-native production serving |
 | Inline DB init instead of `mmw db init` | `db_init()` spawns a local subprocess; we use the external API container |
 
+## Standalone UI Secret Sync
+
+The `misp-modules-web` interface uses a persistent SQLite database (`misp-module.sqlite`) to store module configurations. To maintain our declarative "Secret-as-Code" model, we've implemented an automated synchronization bridge:
+
+- **`inject_keys.py`**: A specialized Python bridge that maps environment variables (e.g., `SHODAN_API_KEY`) to their respective database entries.
+- **Automated Injection**: The bridge executes on every container startup via the custom `entrypoint-web.sh`.
+- **Unification**: This allows you to manage enrichment keys centrally in your `.env` (or Infisical) while keeping the standalone web UI perfectly in sync without manual entry.
+
 ## Troubleshooting
 
 - **Web UI: "Instance of misp-modules is unreachable"** — Ensure `misp-modules` is healthy: `docker compose ps`. Restart web UI: `docker compose restart misp-modules-web`
